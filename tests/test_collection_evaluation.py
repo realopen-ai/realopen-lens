@@ -2,8 +2,11 @@
 
 from copy import deepcopy
 import json
+import os
 from pathlib import Path
+import shutil
 import sqlite3
+import subprocess
 from types import SimpleNamespace
 
 import numpy as np
@@ -297,6 +300,51 @@ def test_frozen_multilingual_judgments_and_corpus_are_consistent():
         assert all(q["judgments"] == queries[0]["judgments"] for q in queries)
         assert all(q["split"] == queries[0]["split"] for q in queries)
         assert all(q["review"]["independent_human_review"] is False for q in queries)
+
+
+def test_frozen_references_preserve_bytes_with_windows_git_settings(tmp_path):
+    git = shutil.which("git")
+    if git is None:
+        pytest.skip("Git is required to exercise checkout line-ending conversion")
+    root = Path(__file__).resolve().parents[1]
+    checkout = tmp_path / "checkout"
+    checkout.mkdir()
+    attributes = root / ".gitattributes"
+    if attributes.exists():
+        shutil.copyfile(attributes, checkout / ".gitattributes")
+    originals = {}
+    for source in (root / "benchmarks/sources/retrieval-v1").glob("*.json"):
+        target = checkout / source.relative_to(root)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        originals[target] = source.read_bytes()
+        target.write_bytes(originals[target])
+
+    def run_git(*args):
+        subprocess.run(
+            [
+                git,
+                "-c",
+                "core.autocrlf=true",
+                "-c",
+                f"core.attributesFile={os.devnull}",
+                "-C",
+                str(checkout),
+                *args,
+            ],
+            check=True,
+            capture_output=True,
+            timeout=30,
+        )
+
+    run_git("init")
+    run_git("add", "--force", "--all")
+    for target in originals:
+        target.unlink()
+    run_git("checkout-index", "--all", "--force")
+    for target, original in originals.items():
+        assert target.read_bytes() == original, f"Checkout changed frozen bytes: {target.name}"
+    base = checkout / "benchmarks/sources/retrieval-v1"
+    load(base / "corpus.json", base / "judgments.json")
 
 
 def test_pixel_identity_uses_production_orientation_and_alpha(tmp_path):
