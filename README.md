@@ -7,9 +7,13 @@ document images by their visual content and the text they contain. It combines
 multilingual image embeddings, optical character recognition (OCR), and hybrid
 retrieval, with a lightweight ranking model that can learn from explicit feedback.
 
-> **Status: early development.** This repository currently contains the project
-> architecture and roadmap. The application, installation commands, and benchmarks
-> are not available yet. Features below describe the planned first release.
+> **Status: early development.** A local inference benchmark is available to test
+> the selected models, OCR, retrieval, and resource use. The full application is
+> not available yet. Features below describe the planned first release.
+
+Start with the [benchmark setup and usage guide](docs/benchmark.md), or the
+[500-image benchmark guide](docs/large-benchmark.md). Add your own
+images to the root `data/` folder, which is ignored by Git.
 
 ## What you'll be able to do
 
@@ -60,7 +64,7 @@ OCR, and text retrieval.
    thumbnails, read visible text, and compute embeddings.
 2. **Retrieve:** search visual embeddings, OCR keywords, and OCR passage embeddings
    independently.
-3. **Combine:** merge image candidates using reciprocal rank fusion and optionally
+3. **Combine:** merge candidates using score-preserving, evidence-gated fusion and optionally
    rerank them with a validated learned model.
 4. **Improve:** store explicit feedback locally and compare candidate ranking
    updates against held-out evaluation data before promotion.
@@ -92,5 +96,20 @@ profiles, privacy requirements, and evaluation methodology.
 - [ ] Add explicit feedback, validated model updates, and collection management.
 - [ ] Build the local image gallery and verify installation on all three platforms.
 
-Installation instructions and usage examples will be added when the first working
-prototype is ready.
+See [the benchmark guide](docs/benchmark.md) for current installation instructions,
+offline setup, query judgments, and measurement limitations. Application setup
+instructions will follow when the first user-facing prototype is ready.
+
+## Repository layout
+
+- `src/realopen_lens/`: application engine and CLI.
+- `benchmarks/`: development harness, sample downloaders, fixtures, and evaluation metrics.
+- `tests/`: automated tests.
+- `docs/`: architecture, benchmark instructions, and published results.
+
+Benchmark tools run from the checkout with `python -m benchmarks`; they are not
+included in the application wheel. See the [benchmark guide](docs/benchmark.md)
+for commands and setup.
+
+The [500-image hardening report](docs/benchmarks/2026-10-19-pipeline-hardening.md)
+includes before/after results, failure analysis, resource costs and remaining limitations.
