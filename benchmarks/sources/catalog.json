@@ -1,0 +1,1780 @@
+{
+  "seed": 20261019,
+  "sources": [
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/columns.png",
+      "git_blob_sha1": "328bbd964db106c2f839d90de8828b8d4304a2fe",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/features.png",
+      "git_blob_sha1": "5ba75f5dbb398435a4cdba8e65594d44ba3a1fc5",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/hello_world.png",
+      "git_blob_sha1": "80ad36e6356730d4a06ca8964a65fbdcefab831b",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/inspect.png",
+      "git_blob_sha1": "62e4f8b906c1595252c2d254939acaa7ef9f5e3a",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/log.png",
+      "git_blob_sha1": "b29bd6988b415ee3f3c7286b237259caeb4434e0",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/logging.png",
+      "git_blob_sha1": "08c6eba328a805fadf7e74db17dff4023c5ca7c4",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/markdown.png",
+      "git_blob_sha1": "442ea0679f284a24dedcf951a1ec3bea7362468f",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/print.png",
+      "git_blob_sha1": "3c4c086095dcb1bc4e416259f42961ef6e56394e",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/progress.png",
+      "git_blob_sha1": "3f7440234ee7dde945aef0e8a42e8441f33fedc7",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/repl.png",
+      "git_blob_sha1": "da065b99061fa538aab816d53061988721829ac7",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/syntax.png",
+      "git_blob_sha1": "b90b50df9f6cff323e0ed84f4eb6836297e64bc3",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/table.png",
+      "git_blob_sha1": "649279b06ecbf98bfb22e2a7d9792edc7984a076",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/table2.png",
+      "git_blob_sha1": "2b0d250f7a0a5950699266c327b795a43da03717",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/traceback.png",
+      "git_blob_sha1": "07a4a50076fa22d03c693529af35a3ffd625be1e",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/tree.png",
+      "git_blob_sha1": "04a30a53e20ca30fffc0b060df138e6d842b148d",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/rich",
+      "commit": "9d8f9a372cc5916fd4781fec207ced7ddac2f08f",
+      "path": "imgs/where_there_is_a_will.png",
+      "git_blob_sha1": "70005f85e5b2e9414307aa2cb11300238b93efc4",
+      "category": "screenshots",
+      "subcategory": "terminal",
+      "license": "MIT",
+      "license_file": "Textualize-rich.LICENSE"
+    },
+    {
+      "repo": "Textualize/textual",
+      "commit": "5e5b7ef58b8c5572c13a3ff9027d756623661495",
+      "path": "imgs/demo.png",
+      "git_blob_sha1": "159eb2899d36908e9e99cdc497306bcbc080ce48",
+      "category": "screenshots",
+      "subcategory": "terminal-application",
+      "license": "MIT",
+      "license_file": "Textualize-textual.LICENSE"
+    },
+    {
+      "repo": "Textualize/textual",
+      "commit": "5e5b7ef58b8c5572c13a3ff9027d756623661495",
+      "path": "docs/blog/images/textual-plotext/demo4.png",
+      "git_blob_sha1": "84050cd849f50797a89a315afd7bb6114eb04e52",
+      "category": "screenshots",
+      "subcategory": "terminal-application",
+      "license": "MIT",
+      "license_file": "Textualize-textual.LICENSE"
+    },
+    {
+      "repo": "Textualize/textual",
+      "commit": "5e5b7ef58b8c5572c13a3ff9027d756623661495",
+      "path": "docs/blog/images/2022-11-26-davep-devlog/unbored-2.png",
+      "git_blob_sha1": "2c73679c2d49d25465c920238f26b3ccb2b26c83",
+      "category": "screenshots",
+      "subcategory": "terminal-application",
+      "license": "MIT",
+      "license_file": "Textualize-textual.LICENSE"
+    },
+    {
+      "repo": "Textualize/textual",
+      "commit": "5e5b7ef58b8c5572c13a3ff9027d756623661495",
+      "path": "docs/blog/images/text-area-learnings/cursor_position_updating_via_api.png",
+      "git_blob_sha1": "c10f78dc845d50f4273a6ea767dbac5de60f838d",
+      "category": "screenshots",
+      "subcategory": "terminal-application",
+      "license": "MIT",
+      "license_file": "Textualize-textual.LICENSE"
+    },
+    {
+      "repo": "Textualize/textual",
+      "commit": "5e5b7ef58b8c5572c13a3ff9027d756623661495",
+      "path": "docs/images/testing/snapshot_report_diff_before.png",
+      "git_blob_sha1": "575cafd44bee127a8f39c53e1ae57d5ee2992767",
+      "category": "screenshots",
+      "subcategory": "terminal-application",
+      "license": "MIT",
+      "license_file": "Textualize-textual.LICENSE"
+    },
+    {
+      "repo": "Textualize/textual",
+      "commit": "5e5b7ef58b8c5572c13a3ff9027d756623661495",
+      "path": "docs/blog/images/textual-plotext/demo2.png",
+      "git_blob_sha1": "50d47c090ad1b94f6248417eda38b6f028b3ee42",
+      "category": "screenshots",
+      "subcategory": "terminal-application",
+      "license": "MIT",
+      "license_file": "Textualize-textual.LICENSE"
+    },
+    {
+      "repo": "Textualize/textual",
+      "commit": "5e5b7ef58b8c5572c13a3ff9027d756623661495",
+      "path": "docs/blog/images/calcinline.png",
+      "git_blob_sha1": "1cf54bb507e5531adbec5f4d48cc529c2c6c77b4",
+      "category": "screenshots",
+      "subcategory": "terminal-application",
+      "license": "MIT",
+      "license_file": "Textualize-textual.LICENSE"
+    },
+    {
+      "repo": "Textualize/textual",
+      "commit": "5e5b7ef58b8c5572c13a3ff9027d756623661495",
+      "path": "docs/images/testing/snapshot_report_console_output.png",
+      "git_blob_sha1": "50389b410292ff40baabc40af78b45f76db7b7f2",
+      "category": "screenshots",
+      "subcategory": "terminal-application",
+      "license": "MIT",
+      "license_file": "Textualize-textual.LICENSE"
+    },
+    {
+      "repo": "Textualize/textual",
+      "commit": "5e5b7ef58b8c5572c13a3ff9027d756623661495",
+      "path": "docs/blog/images/textual-plotext/scatter.png",
+      "git_blob_sha1": "fdfba713937d895b1d212b14e92df571f8ca8895",
+      "category": "screenshots",
+      "subcategory": "terminal-application",
+      "license": "MIT",
+      "license_file": "Textualize-textual.LICENSE"
+    },
+    {
+      "repo": "Textualize/textual",
+      "commit": "5e5b7ef58b8c5572c13a3ff9027d756623661495",
+      "path": "docs/blog/images/2022-11-26-davep-devlog/gridinfo-1.png",
+      "git_blob_sha1": "14dc746007222a3449de9431aa26a790e7eeb67b",
+      "category": "screenshots",
+      "subcategory": "terminal-application",
+      "license": "MIT",
+      "license_file": "Textualize-textual.LICENSE"
+    },
+    {
+      "repo": "Textualize/textual",
+      "commit": "5e5b7ef58b8c5572c13a3ff9027d756623661495",
+      "path": "docs/blog/images/darren-year-in-review/devtools.png",
+      "git_blob_sha1": "6c88789da4413365fa9b978141e4f5262428c79c",
+      "category": "screenshots",
+      "subcategory": "terminal-application",
+      "license": "MIT",
+      "license_file": "Textualize-textual.LICENSE"
+    },
+    {
+      "repo": "Textualize/textual",
+      "commit": "5e5b7ef58b8c5572c13a3ff9027d756623661495",
+      "path": "docs/blog/images/2022-11-26-davep-devlog/unbored-1.png",
+      "git_blob_sha1": "e96a8c2d655b819bda7719a22a1730b2760b0e61",
+      "category": "screenshots",
+      "subcategory": "terminal-application",
+      "license": "MIT",
+      "license_file": "Textualize-textual.LICENSE"
+    },
+    {
+      "repo": "Textualize/textual",
+      "commit": "5e5b7ef58b8c5572c13a3ff9027d756623661495",
+      "path": "imgs/textual.png",
+      "git_blob_sha1": "63054eac633b5544f155ebf72834c2e3cbeba51f",
+      "category": "screenshots",
+      "subcategory": "terminal-application",
+      "license": "MIT",
+      "license_file": "Textualize-textual.LICENSE"
+    },
+    {
+      "repo": "Textualize/textual",
+      "commit": "5e5b7ef58b8c5572c13a3ff9027d756623661495",
+      "path": "docs/blog/images/textual-plotext/demo3.png",
+      "git_blob_sha1": "25866ded172f95a58afaac323a43d7af61d48df2",
+      "category": "screenshots",
+      "subcategory": "terminal-application",
+      "license": "MIT",
+      "license_file": "Textualize-textual.LICENSE"
+    },
+    {
+      "repo": "Textualize/textual",
+      "commit": "5e5b7ef58b8c5572c13a3ff9027d756623661495",
+      "path": "docs/blog/images/textual-plotext/weather.png",
+      "git_blob_sha1": "9a7063acc4ff18add73ed27fa71fc39cebaa1f41",
+      "category": "screenshots",
+      "subcategory": "terminal-application",
+      "license": "MIT",
+      "license_file": "Textualize-textual.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/getting-into-the-code/guidelines-for-setting-up-a-local-workspace/12-03-project-sdk.png",
+      "git_blob_sha1": "eeeda60184f31b3a1f9644592e4d2b814089ded4",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/getting-into-the-code/guidelines-for-setting-up-a-local-workspace/12-13-tests-are-green.png",
+      "git_blob_sha1": "a19f86b6cd3eb6cc58e1d70bc743408d061f7d80",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/getting-into-the-code/guidelines-for-setting-up-a-local-workspace/guidelines-intellij-settings-run-tests-using-intellij.png",
+      "git_blob_sha1": "9288ae40a81da502bd951e4e0f559e54c45e8014",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/getting-into-the-code/guidelines-for-setting-up-a-local-workspace/12-02-project-folder.png",
+      "git_blob_sha1": "7b3030a047ce06310ff2b94fc3914044730aef0d",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/getting-into-the-code/guidelines-for-setting-up-a-local-workspace/13-13-editor-auto-import.png",
+      "git_blob_sha1": "91709cd407ff0594ac8bdfdffac3aeb2db84ada7",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/getting-into-the-code/guidelines-for-setting-up-a-local-workspace/12-05-download-jdk-dialog.png",
+      "git_blob_sha1": "62c6e079f0cb155c91c4d577ae3c955a72dd8808",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/decisions/assets/0040-placement-in-sidepane.png",
+      "git_blob_sha1": "a8829abe23ab5f367b7fc31c32bd0a9f433042f7",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/decisions/assets/0050-spring-empty-lines.png",
+      "git_blob_sha1": "e0aba803112fcc83150c452d50ed240a42fbc4aa",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/getting-into-the-code/guidelines-for-setting-up-a-local-workspace/12-09-run-single-test.png",
+      "git_blob_sha1": "dc5abf216b711df24c8b236130a130398c1a763b",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/images/submodules.png",
+      "git_blob_sha1": "6540210a827e1607211f10e0fb40792d94de9873",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/getting-into-the-code/guidelines-for-setting-up-a-local-workspace/12-02-open-project-settings.png",
+      "git_blob_sha1": "380d9cec80cff48876c59ff542e402e3f80bb8a6",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/getting-into-the-code/guidelines-for-setting-up-a-local-workspace/11-08-low-memory.png",
+      "git_blob_sha1": "09f6c2c18819bde06489edd152e0d44cd2ffec69",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/images/tooltip.png",
+      "git_blob_sha1": "d64c91b71651485b3bddcce94edd90d5930a6225",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/images/panel-step.png",
+      "git_blob_sha1": "243d452bc868007121e39fdbd93a4830b2662db1",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/getting-into-the-code/guidelines-for-setting-up-a-local-workspace/11-05-download-jdk-temurin.png",
+      "git_blob_sha1": "62c6e079f0cb155c91c4d577ae3c955a72dd8808",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/getting-into-the-code/guidelines-for-setting-up-a-local-workspace/12-10-run-single-test-launch-config.png",
+      "git_blob_sha1": "61e56aed84bcd1cbc293e6c26895356a73d1901d",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/getting-into-the-code/guidelines-for-setting-up-a-local-workspace/12-06-enable-annotation-processing.png",
+      "git_blob_sha1": "7d147e0e420e86df0cc0516cfad3db997beeacb9",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/decisions/assets/0040-placement-in-maintable.png",
+      "git_blob_sha1": "37704645e130070b52934bc05ce6798a5b84152a",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/images/rewriteRun.png",
+      "git_blob_sha1": "2bfde7b275526014b3229ff009618a54c9255217",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commit": "c18eb3545c39daf295dd7cda47d200114f9c7d1b",
+      "path": "docs/images/intellij-run-configuration-command-line.png",
+      "git_blob_sha1": "cc71d5d068e3ecf6d23f981d402819e42bfa3b3f",
+      "category": "screenshots",
+      "subcategory": "desktop-ide",
+      "license": "MIT",
+      "license_file": "JabRef-jabref.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.4-settings-import-export.png",
+      "git_blob_sha1": "df80df407ce6158f88e405eb91e7cf589da32404",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.3-dialogs.png",
+      "git_blob_sha1": "32f5e768327d13aa6e0550d925badeae7361af20",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.6-kernel-sources-filter.png",
+      "git_blob_sha1": "38a03ef581c986f61fc48811195733ebf88f7935",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.2-delete-shortcut.png",
+      "git_blob_sha1": "6647273efef83ce1b62c4f628d335247db5efab5",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.5-open-with-no-kernel.png",
+      "git_blob_sha1": "f8c09bc57cc1da42e11b6b5b791c654af02ecf6f",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.6-open-in-terminal.png",
+      "git_blob_sha1": "d718e5b3a9778975bce53c67fb0e60214ba8f463",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.1-toc-error-indicator.png",
+      "git_blob_sha1": "e831ca8e5fb1d586c126211a0c8cb6cedc60d69b",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.6-move-sidebar-submenu.png",
+      "git_blob_sha1": "e3813d8daf1f4621986e7e2099318549c5480147",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.5-terminal-search.png",
+      "git_blob_sha1": "c4e4a05ec6fed620635b96c29989a8684fafdeb3",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.1-inline-completer.png",
+      "git_blob_sha1": "35ae4bfb597ebb2d7ba0380f65217cbb7caad80a",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.5-media-support.png",
+      "git_blob_sha1": "fb5be95091c9b82b059bfb246adc91978cc8227e",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.5-debugger-console.png",
+      "git_blob_sha1": "c16c69a8b8a8e3d0a349fa3d72cbaeded40ee6bc",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.6-debugger-overlay.png",
+      "git_blob_sha1": "7f1c4a01f691422e1a1634c7e7814eca6024f862",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.6-split-tab-menu.png",
+      "git_blob_sha1": "4811dbf79f532f7d49ff1fa92e5e51070ec03940",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/statusbar.png",
+      "git_blob_sha1": "201e6cc7f52a3225ea21dd1a364ed20b3eb207cc",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.6-ghost-text-highlighting.png",
+      "git_blob_sha1": "46fb4c3df5a48480dc1b9450bfae0816264f95a5",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.4-workspace-indicator.png",
+      "git_blob_sha1": "7ca849374bc6c76041f9e3dc5103cff5c3d4aff4",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.6-open-tabs-in-file-browser.png",
+      "git_blob_sha1": "c92de8f91e920363f81a8e0e947b84db8ff02386",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.4-console.png",
+      "git_blob_sha1": "8e5ea3f9b3529e2a9bd6eb0cf439904617a51aa8",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_searchoutput-fs8.png",
+      "git_blob_sha1": "1516fbdad6fcf6c4637078fee27fbe33034a8589",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.2-recent-sidebar.png",
+      "git_blob_sha1": "f9319d3ae9e8edc6c7d87fcb01b33ecc44118687",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.4-console-singlecell.png",
+      "git_blob_sha1": "9f0c3f654a24047cb7ccaf90ef62bcf29dc51d46",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.6-date-created.png",
+      "git_blob_sha1": "26d7bbc67bb5e8aff034f73fc7237140ce356179",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_celltags.png",
+      "git_blob_sha1": "bf13b1fab36ebac8a7fbaafebfd3e0bb8020ccdf",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/menu_button.jpg",
+      "git_blob_sha1": "873dbbf238074d202ed6545d58a07f7802512e8e",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/json.jpg",
+      "git_blob_sha1": "45a2b8653736d454e433a2e9a17158052605f0a6",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/slider.jpg",
+      "git_blob_sha1": "273ac2e3609adbc6ceda4ac79a9afd2b9a99b825",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/checkbox.jpg",
+      "git_blob_sha1": "c8ee6f4113c885db2fabc9bd3b59ff70d663645e",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/select_slider.jpg",
+      "git_blob_sha1": "cd3e5c22ab23e200a1309703f5f1b5ee3ec0d0bb",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/pills.jpg",
+      "git_blob_sha1": "d424397ea2901d915ecb0014a03c2a7877f5e8d6",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/metric.jpg",
+      "git_blob_sha1": "2c6eecaebdc57c8b76d26fc82906dc295d357888",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/chat_message.jpg",
+      "git_blob_sha1": "dcc89769fcd4e06dbb27bd57071d36e1b8dc311b",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/warning.jpg",
+      "git_blob_sha1": "a7de6a40faaf0125b0e16df812f5b9377c47fe39",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/space.jpg",
+      "git_blob_sha1": "2aee597ad0ecc29940b005c115b1032fa693e7b7",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/st.header.png",
+      "git_blob_sha1": "1493812234a102c94d00f9a220fedc4d035fc8e3",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/sidebar.jpg",
+      "git_blob_sha1": "6f7cc8c990120db85332b775f51d572c0773ab89",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/time_input.jpg",
+      "git_blob_sha1": "4a6028876c643fdebfeca617ad5ce91f0f471517",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/divider.jpg",
+      "git_blob_sha1": "7ab42e3d0eaa576e05e4af20253f1e9e383b06c9",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/title.jpg",
+      "git_blob_sha1": "bad14326a599d6a579382835608e08bd97e362ed",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/exception.jpg",
+      "git_blob_sha1": "0bfb7eaf3031d4bc61d7cafc145e14a184ef9cfb",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/badge.jpg",
+      "git_blob_sha1": "092172f8a1523176934f6f31cf5442e1c3fd2ca3",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/navigation.jpg",
+      "git_blob_sha1": "4e8e23e5e5723be3884ed1906750b20ca1ec2c09",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/header.jpg",
+      "git_blob_sha1": "2ec20c93329f73510ef55ec5d1b3f378d54b9ba3",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/radio.jpg",
+      "git_blob_sha1": "68c32aadaf0e2bdb4f5a44be34dd26996a02b949",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/container.jpg",
+      "git_blob_sha1": "377446ecdcc3f6275dc73ec2475134c6a87ca985",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/st.caption.png",
+      "git_blob_sha1": "737bca446524c77c88c47c18722c5a708270bbcd",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/pagination.jpg",
+      "git_blob_sha1": "583adf4c24f3365cd79877aa446558d8113bc1f9",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/page_link.jpg",
+      "git_blob_sha1": "0f5a3f7d51b792c55f2d543ba5e6a1d1baf995b9",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "streamlit/docs",
+      "commit": "7a0a34742a9fe4a879fe3641f83b8136bc5448d7",
+      "path": "public/images/api/echo.jpg",
+      "git_blob_sha1": "ec280767fd81742478d97aa2bda7ea5d98af2e23",
+      "category": "screenshots",
+      "subcategory": "web-dashboard-chat",
+      "license": "Apache-2.0",
+      "license_file": "streamlit-docs.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "img/gray-state.png",
+      "git_blob_sha1": "f290e727dfe569e681a9adf4587640cb499ce873",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "docs/config/img/assignWithDepth.png",
+      "git_blob_sha1": "d00e8eb7c9aa5cc48b0c2d1b102e57977b7b4845",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "packages/mermaid/src/docs/landing/state.png",
+      "git_blob_sha1": "2ef66ea2f1368a71013d9cc74b069f99d8445f8f",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "docs/syntax/img/zenuml-participant-annotators.png",
+      "git_blob_sha1": "13789371f62ef2b95ac2d83c3fbb554dc8bea1b5",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "docs/public/header.png",
+      "git_blob_sha1": "6db8635c9d03eb8b40b21f72bdefb07217fcf359",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "img/gray-class.png",
+      "git_blob_sha1": "cf01455f00126bdb544357b0af412e01af4cae97",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "img/gray-sequence.png",
+      "git_blob_sha1": "e4fb1e9da752872eeeabd08f9e0a6c65f4aefa57",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "docs/config/img/object.assign without depth.png",
+      "git_blob_sha1": "c87505c1c1f990915ddba0b61d378483e3736e35",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "packages/mermaid/src/docs/landing/class.png",
+      "git_blob_sha1": "5b2f663d86f967ca5d96c5fffca73b6e8efb3ad4",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "img/gray-user-journey.png",
+      "git_blob_sha1": "9f34b2bf408247449694e7e5fb246c478dc65dd1",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "packages/mermaid/src/docs/landing/sequence-diagram.png",
+      "git_blob_sha1": "8c51ac1c5d6601960112784757061943d9d6dc8c",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "docs/config/img/wrapped text.png",
+      "git_blob_sha1": "cf8dd12386e32d52b3f282ef45838920d37a70cc",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "img/gray-flow.png",
+      "git_blob_sha1": "54a926045faf325a0672725ab175de6ee4dc8898",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "packages/mermaid/src/docs/landing/flowchart.png",
+      "git_blob_sha1": "714626b70e398905987bec0c460308fa7a84471f",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "docs/img/er.png",
+      "git_blob_sha1": "21c44c257a3e0ee3e782dd5b6696602f6d9f5172",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "packages/mermaid/src/docs/landing/gantt.png",
+      "git_blob_sha1": "95c8d08a14bc4306426530921fd538b404dfc1da",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "img/gray-gantt.png",
+      "git_blob_sha1": "00f39077f1f03686f5110bfa34e8830ed9270702",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "img/gray-pie.png",
+      "git_blob_sha1": "fecda3b86a64439e7b7fd02cd857c0d2d4485e04",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "docs/syntax/img/Gantt-excluded-days-within.png",
+      "git_blob_sha1": "2283bf99d8d6ed1b721541ce1f0f8b38d6e19887",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "commit": "e28fbd9ded0a07ba9569e51be4764c1ad4daa8f6",
+      "path": "docs/syntax/img/Gantt-long-weekend-look.png",
+      "git_blob_sha1": "1b2fc8e17ef9a4adb34de9dc326d41584873292c",
+      "category": "diagrams",
+      "subcategory": "flow-architecture-timeline",
+      "license": "MIT",
+      "license_file": "mermaid-js-mermaid.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/marker_styles.png",
+      "git_blob_sha1": "0bb2791b7207c601a322836cc90daf9fded53235",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/axvspan_epoch.png",
+      "git_blob_sha1": "a43db5bff5cb784e08f0dad1c26e0daad9f70092",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/pcolormesh.png",
+      "git_blob_sha1": "0907fa31dfaef4ee9d2d46bf2607d0e54f5688d5",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/axis_options.png",
+      "git_blob_sha1": "b45b153fbb386f68127b92ce312771acbdccf303",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/violinplot_horiz_custompoints_10.png",
+      "git_blob_sha1": "c0e9285c43c622a3497366bf4b6ddbd107951b66",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/pcolor_datetime_axis.png",
+      "git_blob_sha1": "bd103b297ecd01a95ace6beba888ed141cdbff54",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/vline_hline_zorder.png",
+      "git_blob_sha1": "ac690c76edf80baab0f5d721d88ebf68b7f7119b",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/specgram_freqs_linear.png",
+      "git_blob_sha1": "ffbaea3bfdfa3d62aaddb89066756250a81a9f29",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/hist2d.png",
+      "git_blob_sha1": "07fd623e91372257541bdc02040e36e0eb85d7a0",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/test_stairs_datetime.png",
+      "git_blob_sha1": "473d8ed624e349f01775c742f3e04ea606a9724d",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/csd_freqs.png",
+      "git_blob_sha1": "ef520e234dfa49d2e059fc68873ab72f9ba04675",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/set_get_ticklabels.png",
+      "git_blob_sha1": "0d83bc7daad8b751900436669d874b931557c1a8",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/step_linestyle.png",
+      "git_blob_sha1": "58e6922252d693f524162a71b9a28a8a39e2b113",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/multivariate_visualizations.png",
+      "git_blob_sha1": "16843b0dd77565cf954f4f8f98da3623f1696bf5",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/specgram_magnitude_freqs_linear.png",
+      "git_blob_sha1": "70e5033057820f6175be4a0a95439b9b5578a8fe",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/hist_step_filled.png",
+      "git_blob_sha1": "62c71b82f314257879bf3fbaecf11ad3cb409521",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/markevery_linear_scales.png",
+      "git_blob_sha1": "8e829a587d0bccc0aceb713ad8eb272628400b09",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/marker_edges.png",
+      "git_blob_sha1": "077e213e1510f11a8a9b5b08fe5d40337cdc08d6",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/pie_frame_grid.png",
+      "git_blob_sha1": "9e120c623c40a644448e49dad693ad569af31228",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/hlines_basic.png",
+      "git_blob_sha1": "224247f1611f6e45bfb5b8b69d303b55e9e315b5",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/bivariate_cmap_shapes.png",
+      "git_blob_sha1": "a3339afa754541370107adf321f06915bafd18e5",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/arc_ellipse.png",
+      "git_blob_sha1": "64d0b901379a1093607f0bdaf82e03c0a5ebb837",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/pie_linewidth_0.png",
+      "git_blob_sha1": "be3ef834cdad739098300ffd4f7381c007706d36",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/violinplot_vert_showall.png",
+      "git_blob_sha1": "820c8ecde925838cee275ad4f86750d26a9bb203",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/eventplot.png",
+      "git_blob_sha1": "d8e6c077132ef5a2da3e421337bc432521f1ed86",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/markevery_linear_scales_nans.png",
+      "git_blob_sha1": "2eb087944ec41797f26530da0581910f6168c830",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/nonfinite_limits.png",
+      "git_blob_sha1": "aaf3c34a90f87b3ed3dc844c34b49ca9c1ce70fb",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/vlines_with_nan.png",
+      "git_blob_sha1": "bbb899c4ea1b7be35f3fb520c7b72f36fbd4f43f",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/hlines_with_nan.png",
+      "git_blob_sha1": "9f14dddfd61a345ab4ff99aa73be187f03882bb9",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/hist2d_transpose.png",
+      "git_blob_sha1": "1979567f6b24928ad65c4a13962dc432bceb5e9a",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/hist_step_horiz.png",
+      "git_blob_sha1": "c451da4dce6fa1b9d24d6da736ac031a46c28fb7",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/pie_ccw_true.png",
+      "git_blob_sha1": "711ab8d327a9bf8d4277ab13c485f3cb347708d3",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/hist_stacked_normed.png",
+      "git_blob_sha1": "a9bf4abf95f77f364df5e5c4b00842066dacd57d",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/hist_stacked_stepfilled_alpha.png",
+      "git_blob_sha1": "7350f908a21b2555546e04e535e3ebcbc70c500d",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/hist_stacked.png",
+      "git_blob_sha1": "33d9f5e8de29da55c41d1751fe159001b5f2d7fb",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/loglog.png",
+      "git_blob_sha1": "f65499fc572fb9f4be9e7ca7a1d35ef8055e8b7a",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "commit": "5d4e0518fc5dcaa320de69db61fed4f3eec5fb52",
+      "path": "lib/matplotlib/tests/baseline_images/test_axes/rc_spines.png",
+      "git_blob_sha1": "c68d6e48852efd13dcd23c05cf2aabe93c1f41d4",
+      "category": "diagrams",
+      "subcategory": "scientific-chart",
+      "license": "Matplotlib license",
+      "license_file": "matplotlib-matplotlib.LICENSE"
+    },
+    {
+      "repo": "tesseract-ocr/test",
+      "commit": "232ff181c66516116ec0e84c4963f70de15050fd",
+      "path": "testing/phototest.tif",
+      "git_blob_sha1": "adac046dba073285f945446d5ad557894da82c9b",
+      "category": "documents",
+      "subcategory": "ocr-reference",
+      "license": "Apache-2.0 repository; individual scan rights not independently verified",
+      "license_file": "tesseract-ocr-test.LICENSE"
+    },
+    {
+      "repo": "tesseract-ocr/test",
+      "commit": "232ff181c66516116ec0e84c4963f70de15050fd",
+      "path": "testing/eurotext.tif",
+      "git_blob_sha1": "92791da4d2c8b8fce78fe04ed638870fd080052f",
+      "category": "documents",
+      "subcategory": "ocr-reference",
+      "license": "Apache-2.0 repository; individual scan rights not independently verified",
+      "license_file": "tesseract-ocr-test.LICENSE"
+    },
+    {
+      "repo": "tesseract-ocr/test",
+      "commit": "232ff181c66516116ec0e84c4963f70de15050fd",
+      "path": "testing/arabic.tif",
+      "git_blob_sha1": "954a19bb0afb1edfc6c4fbdd9c531e72e264b6ea",
+      "category": "documents",
+      "subcategory": "ocr-reference",
+      "license": "Apache-2.0 repository; individual scan rights not independently verified",
+      "license_file": "tesseract-ocr-test.LICENSE"
+    },
+    {
+      "repo": "tesseract-ocr/test",
+      "commit": "232ff181c66516116ec0e84c4963f70de15050fd",
+      "path": "testing/viet.tif",
+      "git_blob_sha1": "55d7528091f347e56aeff5f081c429a11debd2bc",
+      "category": "documents",
+      "subcategory": "ocr-reference",
+      "license": "Apache-2.0 repository; individual scan rights not independently verified",
+      "license_file": "tesseract-ocr-test.LICENSE"
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.6-filebrowser-in-mainarea.png",
+      "git_blob_sha1": "d31c838de17a2fea8d918438af5e58a00b1f4c8b",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE",
+      "reserve": true
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.4-subshells.png",
+      "git_blob_sha1": "3a85839f3f7052c7003235bb092e93f73bbb9010",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE",
+      "reserve": true
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.6-shortcut-editor.png",
+      "git_blob_sha1": "d63da05ab958bf645b75b79862e6e497a88b002d",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE",
+      "reserve": true
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.2-dark-high-contrast.png",
+      "git_blob_sha1": "7d1d1a9be097937bb52a1564da8c6bc6b1ea9422",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE",
+      "reserve": true
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.2-workspaces-sidebar.png",
+      "git_blob_sha1": "146b15d158938d0ecebb1ca3529d273fa792ad72",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE",
+      "reserve": true
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.6-copy-cut-paste-in-menu.png",
+      "git_blob_sha1": "871a048db4d04fe6e472ebbdd2c835f85d9622b9",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE",
+      "reserve": true
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.6-debugger-source-in-main-panel.png",
+      "git_blob_sha1": "0303b4ee7774d04184249cd83133c085cc1dd676",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE",
+      "reserve": true
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.3-minimap.png",
+      "git_blob_sha1": "28c9508ddcf62c7dbc4d2923ca02518f070f7aa1",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE",
+      "reserve": true
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.3-kernels-sidebar.png",
+      "git_blob_sha1": "7112f4f87a7b0fd1e8d6fb4583690469192fe4c0",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE",
+      "reserve": true
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.1-merimad-diagram.png",
+      "git_blob_sha1": "e9a5035b5679cc87d526df7921876f2822abf427",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE",
+      "reserve": true
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.5-filebrowser-newfiles-breadcrumbs.png",
+      "git_blob_sha1": "6b4ed335b9bcd1020099a7546fbfea75599e1598",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE",
+      "reserve": true
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.2-recent-modal.png",
+      "git_blob_sha1": "571d8a6eca5f069328e761f89e75e91998d4dcd1",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE",
+      "reserve": true
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/find.png",
+      "git_blob_sha1": "7fb526eaa28e63be905c03b8cf7805b28b9d11e5",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE",
+      "reserve": true
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.6-paste-without-output.png",
+      "git_blob_sha1": "85f37d9711e59b1466f6e1dee4f89551f7d0add0",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE",
+      "reserve": true
+    },
+    {
+      "repo": "jupyterlab/jupyterlab",
+      "commit": "0aac7a58009c75673cc671cfa314380290121f8d",
+      "path": "docs/source/getting_started/changelog_assets/4.6-install-more-languages.png",
+      "git_blob_sha1": "4a934a16d5b31fdb1c6a69ba45c86348c11a0a62",
+      "category": "screenshots",
+      "subcategory": "notebook-application",
+      "license": "BSD-3-Clause",
+      "license_file": "jupyterlab-jupyterlab.LICENSE",
+      "reserve": true
+    }
+  ]
+}
