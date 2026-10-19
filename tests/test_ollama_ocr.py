@@ -121,6 +121,61 @@ print(json.dumps(blocked))
     assert json.loads(result.stdout) == 4
 
 
+def test_component_merge_preserves_results_and_rejects_incomparable_runs(tmp_path):
+    from benchmarks.ocr_compare import merge_runs
+    from benchmarks.suite import connect, save_stage
+
+    row = {
+        "id": "image",
+        "path": "image.png",
+        "source": {"kind": "real"},
+        "category": "documents",
+        "subcategory": "form",
+        "format": "PNG",
+        "width": 100,
+        "height": 100,
+        "split": "dev",
+        "difficulty": [],
+        "truth": "hello",
+        "expected": {"decode": "success"},
+    }
+    configs = []
+    for engine in ("tesseract", "glm-ocr"):
+        path = tmp_path / engine
+        path.mkdir()
+        config = {
+            "engines": [engine],
+            "images": [row],
+            "host": "same-host",
+            "manifest_sha256": "manifest",
+            "corrections_sha256": "corrections",
+            "threads": 2,
+            "languages": "eng",
+            "packages": {},
+            "evaluation_sha256": "evaluation",
+            "image_decode_sha256": "decode",
+        }
+        (path / "config.json").write_text(json.dumps(config))
+        db = connect(path / "results.sqlite")
+        save_stage(
+            db, "image", engine, {"status": "ok", "text": "hello", "seconds": 2, "warnings": []}
+        )
+        db.close()
+        configs.append(path)
+    result = merge_runs(configs, tmp_path / "merged")
+    assert set(result["engines"]) == {"tesseract", "glm-ocr"}
+    assert result["engines"]["glm-ocr"]["aggregate"]["all"]["all"]["quality_pass_rate"] == 1
+    assert (tmp_path / "merged/changes-tesseract-glm-ocr.jsonl").is_file()
+    with pytest.raises(ValueError, match="Duplicate"):
+        merge_runs([configs[0], configs[0]], tmp_path / "duplicate")
+    changed = json.loads((configs[1] / "config.json").read_text())
+    changed["host"] = "different-host"
+    (configs[1] / "config.json").write_text(json.dumps(changed))
+    with pytest.raises(ValueError, match="host"):
+        merge_runs(configs, tmp_path / "incomparable")
+    assert not (tmp_path / "incomparable").exists()
+
+
 def test_external_server_memory_counts_each_process_once(monkeypatch):
     from types import SimpleNamespace
     from benchmarks.resources import MemoryMonitor
@@ -166,6 +221,61 @@ def test_installed_cli_exposes_explicit_secondary_engine_and_defaults_to_tessera
     )
     assert result.exit_code == 0
     assert calls[-1][0] == "glm-ocr" and calls[-1][1]["port"] == 11435
+
+
+def test_glm_benchmark_metadata_does_not_require_optional_rapidocr(monkeypatch):
+    from importlib.metadata import PackageNotFoundError
+    from benchmarks.ocr_compare import package_version
+
+    def missing(name):
+        raise PackageNotFoundError(name)
+
+    monkeypatch.setattr("benchmarks.ocr_compare.version", missing)
+    assert package_version("rapidocr") is None
+
+
+def test_glm_run_identity_survives_json_pid_serialization(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from benchmarks import ocr_compare
+
+    dataset = tmp_path / "dataset"
+    dataset.mkdir()
+    (dataset / "manifest.json").write_text("{}")
+    output = tmp_path / "run"
+    monkeypatch.setattr(ocr_compare, "inputs", lambda path: [])
+    monkeypatch.setattr(
+        "realopen_lens.ollama_ocr.OllamaOCR",
+        lambda **kwargs: SimpleNamespace(
+            info={"digest": "a" * 64}, request=lambda path: {"models": []}
+        ),
+    )
+    monkeypatch.setattr("benchmarks.ollama_resources.server_pids", lambda pid: (42,))
+    monkeypatch.setattr(ocr_compare, "run_stage", lambda *args, **kwargs: [])
+    monkeypatch.setattr(
+        ocr_compare,
+        "report",
+        lambda *args: {"engines": {"glm-ocr": {"aggregate": {"all": {"all": {}}}}}},
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "ocr_compare",
+            "--dataset",
+            str(dataset),
+            "--output",
+            str(output),
+            "--engines",
+            "glm-ocr",
+            "--ollama-server-pid",
+            "42",
+        ],
+    )
+    ocr_compare.main()
+    original = (output / "config.json").read_bytes()
+    ocr_compare.main()
+    assert (output / "config.json").read_bytes() == original
+    assert json.loads(original)["ollama_server_pids"] == [42]
 
 
 @pytest.mark.parametrize("color", ["white", "#808080", "black"])
