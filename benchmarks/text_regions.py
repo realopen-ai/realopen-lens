@@ -1,4 +1,4 @@
-"""Tesseract-only, resumable before/after text-localization evaluation."""
+"""Experimental Tesseract text-localization comparison, with resumable per-case results."""
 
 import argparse
 from datetime import datetime, UTC

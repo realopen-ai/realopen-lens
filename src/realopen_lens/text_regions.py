@@ -1,4 +1,4 @@
-"""Bounded local ONNX text localization; no recognition or implicit downloads."""
+"""Experimental local ONNX text localization; no recognition or implicit downloads."""
 
 import math
 from importlib.resources import files

@@ -1,6 +1,12 @@
-# Text-region detection with Tesseract
+# Experimental text-region detection with Tesseract
 
-Text localization is an optional stage before Tesseract recognition. It uses the
+Both text-region gating and masking are experimental. Whole-image Tesseract is
+the supported default; the paired retrieval study found that gating costs more
+latency and memory without improving overall search quality. CLI OCR output
+includes an `experimental.text_regions` marker, and the CLI reports the selected
+experiment on stderr. Selection requires `--experimental-detector-model`.
+
+Text localization uses a stage before Tesseract recognition. It uses the
 pinned PP-OCRv6 small detector through CPU ONNX Runtime; it does not run RapidOCR's
 recognizer. GLM and Ollama are not used in this evaluation or processing path.
 
@@ -10,12 +16,15 @@ remaining masking regressions.
 
 The existing whole-image Tesseract path remains the default when no detector is
 selected. Enabling detection defaults to **gate** mode: an image without detected
-regions skips recognition, with an explicit warning that text absence has not
-been established. Otherwise, the existing OCR pipeline receives the original pixels.
+regions skips recognition only when the detector did not reduce its longest edge,
+with an explicit warning that text absence has not been established. If it reduced
+the image and found no regions, the pipeline preserves whole-image OCR and emits
+a fallback warning. Otherwise, the existing OCR pipeline receives the original pixels.
 
 **Mask** mode is experimental: it retains pixels inside expanded text regions and
 replaces the surrounding background. It preserves the original coordinate system
-and keeps nearby fragments of the same line together. It can remove real text or
+and keeps nearby fragments of the same line together. The same empty-detection
+fallback preserves source pixels, including subsequent retries. Masking can remove real text or
 introduce border artifacts, so it is not automatically selected over whole-image OCR.
 
 ## Setup and use
@@ -35,8 +44,8 @@ Tesseract language packs (`eng+fra+ara` by default).
 
 ```sh
 lens ocr data/example.png
-lens ocr data/example.png --detector-model models/text-detector/PP-OCRv6_det_small.onnx
-lens ocr data/example.png --detector-model models/text-detector/PP-OCRv6_det_small.onnx --region-mode mask
+lens ocr data/example.png --experimental-detector-model models/text-detector/PP-OCRv6_det_small.onnx
+lens ocr data/example.png --experimental-detector-model models/text-detector/PP-OCRv6_det_small.onnx --region-mode mask
 ```
 
 Results retain detector rectangles and scores, input dimensions, timing, source
@@ -85,3 +94,54 @@ Detector provenance and model checksum are in
 `src/realopen_lens/text-detector.lock.json`. Upstream references:
 [model registry](https://github.com/RapidAI/RapidOCR/blob/v3.10.0/python/rapidocr/default_models.yaml),
 [DB preprocessing and postprocessing](https://github.com/RapidAI/RapidOCR/blob/v3.10.0/python/rapidocr/ch_ppocr_det/utils.py).
+
+## Evaluate downstream retrieval
+
+The paired retrieval study uses the current OCR and ranking pipeline in both runs.
+Here, “whole” means current whole-image Tesseract; it does not mean the historical
+`--variant baseline` implementation, which uses older OCR and fusion behavior.
+
+Build the original 500-image dataset first, then add the frozen text-presence
+cases. Photo URLs, licenses, hashes, visual-review notes, and rejected candidates
+are recorded in `benchmarks/sources/presence-photos-v1.json`. The 20 selected real
+photos were reviewed at native resolution before inference. The 36 generated
+screenshots cover six layout families and small, faint, dark, high-resolution,
+and edge-positioned text. Their authored strings provide exact references.
+These are model-independent labels, not independent human annotations.
+
+The [completed retrieval study](benchmarks/2026-10-19-text-gating-retrieval.md)
+retains the original comparison and a full re-run after the empty-detection
+safeguard. Those fresh tiny-text cases then became development/regression cases;
+the final results are not an untouched-holdout validation.
+
+```sh
+uv sync --locked --extra text-regions
+uv run --no-sync python -m benchmarks.presence_dataset
+uv run --no-sync python -m benchmarks.suite --dataset data/presence-retrieval-v1 --output runs/presence-retrieval-v1/whole --variant improved --threads 2
+uv run --no-sync python -m benchmarks.suite --dataset data/presence-retrieval-v1 --output runs/presence-retrieval-v1/gate --variant improved --threads 2 --detector-model models/text-detector/PP-OCRv6_det_small.onnx
+uv run --no-sync python -m benchmarks.presence_report --whole runs/presence-retrieval-v1/whole --gate runs/presence-retrieval-v1/gate --output runs/presence-retrieval-v1/comparison
+```
+
+The builder supports `--dataset`, `--output`, and `--cache`. Explicit setup can
+download missing pinned inputs; inference runs offline. Use the network-deny
+wrapper above when reproducing on macOS. Completed stages resume only with the
+same inputs, source, dependencies, and configuration. Keep the two runs sequential
+and use new output directories after changing code or labels.
+
+Each run independently executes OCR, visual image encoding, semantic OCR passage
+encoding, both query encoders, and visual/lexical/semantic/hybrid retrieval.
+There is no reuse of old inference outputs and no inference-time cloud call.
+The paired report checks dataset, model, query, source, environment, and language
+pack identities. It retains per-image results, per-query rankings and metrics,
+changed transcripts, negative-image false text, and exact case-sensitive
+identifier preservation. Exact identifiers are diagnostic measurements, not a
+new ranking heuristic. Fresh and historical query aggregates are separate.
+Comparing a reviewed code fix against a preserved earlier run requires an explicit
+`--source-change-reason`; both source fingerprints and the reason are retained.
+This does not relax input, query, model, package, host, or resource-limit checks.
+
+Small/faint controls share templates and are in English. Their retrieval queries
+contain the authored request identifier; they test identifier-dependent search
+and do not establish broad natural-language search accuracy. COCO photo captions
+supply incomplete known-positive judgments. “Fresh” means new to this evaluation;
+it does not establish independent collection or statistical representativeness.

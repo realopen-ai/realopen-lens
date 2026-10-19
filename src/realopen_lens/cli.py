@@ -53,7 +53,7 @@ def verify_models(
 def fetch_detector(
     directory: Annotated[Path, typer.Option("--directory")] = Path("models"),
 ) -> None:
-    """Explicitly download the pinned optional text-localization model."""
+    """Explicitly download the pinned experimental text-localization model."""
     from realopen_lens.models import fetch_text_detector
 
     try:
@@ -108,10 +108,14 @@ def recognize_image(
     max_tokens: Annotated[int, typer.Option(min=1, max=8192)] = 4096,
     context: Annotated[int, typer.Option(min=1024, max=16384)] = 8192,
     detector_model: Annotated[
-        Path | None, typer.Option(help="Enable text-region detection with this local model")
+        Path | None,
+        typer.Option(
+            "--experimental-detector-model",
+            help="Opt into experimental text-region OCR using this local model",
+        ),
     ] = None,
     region_mode: Annotated[
-        str, typer.Option(help="gate whole-image OCR or mask detected regions")
+        str, typer.Option(help="Experimental detector mode: gate or mask")
     ] = "gate",
 ) -> None:
     """Read an image locally; optional GLM-OCR uses only numeric loopback HTTP."""
@@ -131,6 +135,8 @@ def recognize_image(
             detector_model=detector_model,
             region_mode=region_mode,
         )
+        if detector_model is not None:
+            typer.echo(f"Experimental text-region OCR selected ({region_mode}).", err=True)
         typer.echo(json.dumps(backend.extract(image), ensure_ascii=False, indent=2))
     except (OSError, ValueError) as error:
         typer.echo(f"Error: {error}", err=True)

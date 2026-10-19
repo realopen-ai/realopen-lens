@@ -16,13 +16,16 @@ class TesseractBackend:
 
         if self.detector is None:
             return extract(path, self.languages, self.threads)
-        return extract(
-            path,
-            self.languages,
-            self.threads,
-            detector=self.detector,
-            region_mode=self.region_mode,
-        )
+        return {
+            **extract(
+                path,
+                self.languages,
+                self.threads,
+                detector=self.detector,
+                region_mode=self.region_mode,
+            ),
+            "experimental": {"text_regions": self.region_mode},
+        }
 
     def close(self) -> None:
         pass
@@ -37,6 +40,11 @@ def create_backend(
     region_mode: str = "gate",
     **glm_options: Any,
 ):
+    """Default to whole-image Tesseract; detector selection opts into an experiment."""
+    if region_mode not in {"gate", "mask"}:
+        raise ValueError("Experimental region mode must be 'gate' or 'mask'")
+    if detector_model is None and region_mode != "gate":
+        raise ValueError("Region mode requires --experimental-detector-model")
     if engine == "tesseract":
         detector = None
         if detector_model is not None:
