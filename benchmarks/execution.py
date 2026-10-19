@@ -5,6 +5,7 @@ import os
 import signal
 import sqlite3
 import subprocess
+import sys
 from collections.abc import Callable
 from pathlib import Path
 from time import monotonic, sleep
@@ -14,7 +15,7 @@ import psutil
 
 def stop_tree(process: subprocess.Popen) -> None:
     """Kill only this job's child tree, then reap its direct child."""
-    if os.name != "nt":
+    if sys.platform != "win32":
         # run_stage creates a new session, so this group contains only this job.
         try:
             os.killpg(process.pid, signal.SIGKILL)
