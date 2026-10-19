@@ -325,3 +325,14 @@ those local environment files before using the editable install.
 - [Tesseract language data](https://tesseract-ocr.github.io/tessdoc/Data-Files.html).
   This benchmark uses your installed packs; report their provenance when sharing
   OCR results, since they may differ from the planned `tessdata_fast` distribution.
+
+For an optional local alternative to Tesseract, see the
+[OCR engine comparison guide](ocr-comparison.md).
+
+Current OCR development evaluates [text-region detection with Tesseract](text-regions.md).
+The [completed comparison](benchmarks/2026-10-19-tesseract-text-regions.md) covers
+whole-image OCR, gating and experimental masking; it does not run GLM.
+
+The [paired retrieval study](benchmarks/2026-10-19-text-gating-retrieval.md)
+adds fresh text-presence controls and follows gating through the complete search
+pipeline, including exact identifier diagnostics.

@@ -5,13 +5,14 @@ import hashlib
 import json
 import os
 import platform
+import re
 import sqlite3
 import shutil
 import sys
 from time import perf_counter
 from collections import Counter, defaultdict
 from datetime import UTC, datetime
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any
 
@@ -235,6 +236,7 @@ def query_items(rows: list[dict]) -> list[dict]:
                         "subcategory": row["subcategory"],
                         "split": row["split"],
                         "relevant": relevant,
+                        **({"corpus": row["corpus"]} if "corpus" in row else {}),
                         "judgment": (
                             "Published caption or source/visually authored known positive; "
                             "translations not independently reviewed"
@@ -283,6 +285,14 @@ def quality_status(quality: dict) -> str:
     return "pass" if checks and all(checks) else "fail"
 
 
+def identifier_preservation(identifiers: list[str], text: str) -> dict:
+    """Exact, case-sensitive identifier matches; token recall can hide punctuation loss."""
+    return {
+        identifier: bool(re.search(r"(?<!\w)" + re.escape(identifier) + r"(?!\w)", text))
+        for identifier in identifiers
+    }
+
+
 def report(output: Path, config: dict) -> dict:
     db = connect(output / "results.sqlite")
     rows = config["images"]
@@ -321,6 +331,12 @@ def report(output: Path, config: dict) -> dict:
         quality_verdict = (
             ("pass" if rejected else "fail") if expected_reject else quality_status(quality)
         )
+        if row.get("negative_text"):
+            quality_verdict = (
+                "pass"
+                if stages["ocr"]["status"] == "ok" and not stages["ocr"].get("text", "").strip()
+                else "fail"
+            )
         if quality_verdict == "fail" and status == "ok":
             status = "degraded"
         if failures and not rejected:
@@ -331,6 +347,9 @@ def report(output: Path, config: dict) -> dict:
             "status": status,
             "quality_status": quality_verdict,
             "quality": quality,
+            "identifiers": identifier_preservation(
+                row.get("identifiers", []), stages["ocr"].get("text", "")
+            ),
             "stages": stages,
             "responsible_stages": failures or (["ocr"] if quality_verdict == "fail" else []),
             "resolution": (
@@ -460,6 +479,7 @@ def retrieval_report(db: sqlite3.Connection, config: dict, output: Path) -> dict
                 query["category"] + ":" + query["split"],
                 "language:" + query["language"],
                 "kind:" + query["kind"],
+                *(["corpus:" + query["corpus"]] if "corpus" in query else []),
             ):
                 grouped[name + "/" + group].append(score)
     index.close()
@@ -518,7 +538,14 @@ def main() -> None:
     parser.add_argument("--image-timeout", type=float, default=90)
     parser.add_argument("--startup-timeout", type=float, default=120)
     parser.add_argument("--retry-errors", action="store_true")
+    parser.add_argument(
+        "--detector-model",
+        type=Path,
+        help="Experimental Tesseract gating; whole-image is the default",
+    )
     args = parser.parse_args()
+    if args.detector_model is not None and args.variant != "improved":
+        raise ValueError("Text gating requires the current improved pipeline")
     manifest = args.dataset / "manifest.json"
     rows = json.loads(manifest.read_text())["images"]
     if args.image_timeout <= 0 or args.startup_timeout <= 0:
@@ -536,7 +563,11 @@ def main() -> None:
         "dataset": str(args.dataset.resolve()),
         "manifest_sha256": digest(manifest),
         "images": rows,
-        "queries": query_items(rows),
+        "queries": [
+            q
+            for q in query_items(rows)
+            if q["id"] not in set(json.loads(manifest.read_text()).get("excluded_queries", []))
+        ],
         "engine_root": str(args.engine_root.resolve()),
         "engine_sha256": source_hash(args.engine_root),
         "variant": args.variant,
@@ -561,6 +592,25 @@ def main() -> None:
             for name in ["numpy", "Pillow", "onnxruntime", "tokenizers", "psutil", "realopen-lens"]
         },
     }
+    if args.detector_model is not None:
+        from realopen_lens.text_regions import detector_spec
+
+        spec = detector_spec()
+        if (
+            args.detector_model.stat().st_size != spec["size"]
+            or digest(args.detector_model) != spec["sha256"]
+        ):
+            raise ValueError("Text detector integrity check failed")
+        identity["text_detector"] = {
+            "path": str(args.detector_model.resolve()),
+            "sha256": spec["sha256"],
+            "mode": "gate",
+        }
+    try:
+        identity["packages"]["opencv-python-headless"] = version("opencv-python-headless")
+    except PackageNotFoundError:
+        if args.detector_model is not None:
+            raise ValueError("Install the text-regions extra to evaluate gating") from None
     args.output.mkdir(parents=True, exist_ok=True)
     config_path = args.output / "config.json"
     if config_path.exists() and json.loads(config_path.read_text()) != identity:

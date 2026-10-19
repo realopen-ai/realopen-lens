@@ -23,7 +23,7 @@ def fetch_models(
     directory: Annotated[Path, typer.Option("--directory")] = Path("models"),
     precision: Annotated[str, typer.Option()] = "int8",
 ) -> None:
-    """Download pinned model artifacts. This is the only command that uses the network."""
+    """Explicitly download pinned ONNX model artifacts."""
     from realopen_lens.models import fetch
 
     try:
@@ -47,6 +47,20 @@ def verify_models(
         typer.echo(f"Error: {error}", err=True)
         raise typer.Exit(1) from error
     typer.echo("All selected model files verified.")
+
+
+@models_app.command("fetch-text-detector")
+def fetch_detector(
+    directory: Annotated[Path, typer.Option("--directory")] = Path("models"),
+) -> None:
+    """Explicitly download the pinned experimental text-localization model."""
+    from realopen_lens.models import fetch_text_detector
+
+    try:
+        typer.echo(str(fetch_text_detector(directory)))
+    except (OSError, ValueError) as error:
+        typer.echo(f"Error: {error}", err=True)
+        raise typer.Exit(1) from error
 
 
 @app.command()
@@ -78,6 +92,61 @@ def doctor() -> None:
     typer.echo(json.dumps(result, indent=2))
     if not executable:
         raise typer.Exit(1)
+
+
+@app.command("ocr")
+def recognize_image(
+    image: Annotated[Path, typer.Argument(exists=True, dir_okay=False)],
+    engine: Annotated[str, typer.Option(help="tesseract (default) or glm-ocr")] = "tesseract",
+    languages: Annotated[str, typer.Option()] = "eng+fra+ara",
+    threads: Annotated[int, typer.Option(min=1, max=32)] = 2,
+    model: Annotated[
+        str, typer.Option(help="Explicitly installed local Ollama model")
+    ] = "glm-ocr:q8_0",
+    ollama_port: Annotated[int, typer.Option(min=1, max=65535)] = 11434,
+    timeout: Annotated[float, typer.Option(min=1, max=300)] = 90,
+    max_tokens: Annotated[int, typer.Option(min=1, max=8192)] = 4096,
+    context: Annotated[int, typer.Option(min=1024, max=16384)] = 8192,
+    detector_model: Annotated[
+        Path | None,
+        typer.Option(
+            "--experimental-detector-model",
+            help="Opt into experimental text-region OCR using this local model",
+        ),
+    ] = None,
+    region_mode: Annotated[
+        str, typer.Option(help="Experimental detector mode: gate or mask")
+    ] = "gate",
+) -> None:
+    """Read an image locally; optional GLM-OCR uses only numeric loopback HTTP."""
+    from realopen_lens.ocr_backends import create_backend
+
+    backend = None
+    try:
+        backend = create_backend(
+            engine,
+            languages=languages,
+            threads=threads,
+            model=model,
+            port=ollama_port,
+            timeout=timeout,
+            max_tokens=max_tokens,
+            context=context,
+            detector_model=detector_model,
+            region_mode=region_mode,
+        )
+        if detector_model is not None:
+            typer.echo(f"Experimental text-region OCR selected ({region_mode}).", err=True)
+        typer.echo(json.dumps(backend.extract(image), ensure_ascii=False, indent=2))
+    except (OSError, ValueError) as error:
+        typer.echo(f"Error: {error}", err=True)
+        raise typer.Exit(1) from error
+    finally:
+        if backend is not None:
+            try:
+                backend.close()
+            except (OSError, ValueError) as error:
+                typer.echo(f"OCR cleanup warning: {error}", err=True)
 
 
 if __name__ == "__main__":

@@ -59,7 +59,12 @@ def main() -> None:
     root = Path(config["models"])
     threads = config["threads"]
     encoder: VisionEncoder | TextEncoder | None = None
+    detector = None
     start = perf_counter()
+    if stage == "ocr" and config.get("text_detector"):
+        from realopen_lens.text_regions import TextRegionDetector
+
+        detector = TextRegionDetector(Path(config["text_detector"]["path"]), threads)
     if stage == "vision":
         encoder = VisionEncoder(artifact_path(root, "siglip2", "vision_int8"), threads)
     if stage in ("semantic", "visual_queries", "semantic_queries"):
@@ -103,7 +108,11 @@ def main() -> None:
                         from realopen_lens.ocr import extract
 
                         data = extract(
-                            Path(config["dataset"]) / row["path"], config["languages"], threads
+                            Path(config["dataset"]) / row["path"],
+                            config["languages"],
+                            threads,
+                            detector=detector,
+                            region_mode="gate",
                         )
                 elif stage == "vision":
                     assert isinstance(encoder, VisionEncoder)

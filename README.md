@@ -86,6 +86,12 @@ inference with bounded resource use.
 See [the architecture document](docs/architecture.md) for model choices, resource
 profiles, privacy requirements, and evaluation methodology.
 
+Whole-image Tesseract is the default OCR path.
+[Text-region gating and masking](docs/text-regions.md) are experimental and require
+explicit selection; the retrieval study did not establish an overall search benefit.
+The earlier [OCR engine experiments](docs/ocr-comparison.md) remain documented;
+current pipeline evaluation uses Tesseract only.
+
 ## Roadmap
 
 - [ ] Validate multilingual inference, OCR quality, and memory use on 8 GB hardware.
@@ -113,3 +119,7 @@ for commands and setup.
 
 The [500-image hardening report](docs/benchmarks/2026-10-19-pipeline-hardening.md)
 includes before/after results, failure analysis, resource costs and remaining limitations.
+
+The [text-gating retrieval study](docs/benchmarks/2026-10-19-text-gating-retrieval.md)
+evaluates downstream search and exact identifiers on the historical corpus plus
+fresh text-presence and small/faint-text cases.

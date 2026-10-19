@@ -70,3 +70,30 @@ def fetch(root: Path, precision: str, progress: Callable[[str], None] = print) -
             os.replace(temporary, path)
         finally:
             temporary.unlink(missing_ok=True)
+
+
+def fetch_text_detector(root: Path) -> Path:
+    """Explicitly fetch one pinned detector, with bounded size and atomic publication."""
+    from realopen_lens.text_regions import detector_spec
+
+    spec = detector_spec()
+    path = root / "text-detector" / spec["name"]
+    if path.is_file() and path.stat().st_size == spec["size"] and digest(path) == spec["sha256"]:
+        return path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(".onnx.part")
+    try:
+        request = urllib.request.Request(spec["url"], headers={"User-Agent": "realopen-lens/0.1"})
+        with urllib.request.urlopen(request, timeout=60) as response, temporary.open("wb") as out:
+            remaining = spec["size"]
+            while block := response.read(min(1024 * 1024, remaining + 1)):
+                remaining -= len(block)
+                if remaining < 0:
+                    raise ValueError("Text detector download exceeded pinned size")
+                out.write(block)
+        if temporary.stat().st_size != spec["size"] or digest(temporary) != spec["sha256"]:
+            raise ValueError("Text detector download failed integrity check")
+        os.replace(temporary, path)
+        return path
+    finally:
+        temporary.unlink(missing_ok=True)

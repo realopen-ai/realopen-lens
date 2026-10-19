@@ -19,6 +19,9 @@ dependencies = [
 [project.scripts]
 lens = "realopen_lens.cli:app"
 
+[project.optional-dependencies]
+text-regions = ["opencv-python-headless>=4.13,<6"]
+
 [dependency-groups]
 dev = [
   "psutil>=7,<8",
@@ -28,6 +31,9 @@ dev = [
   "ruff>=0.12,<1",
   "mypy>=1.17,<2",
   "types-psutil>=7,<8",
+]
+ocr-eval = [
+    "rapidocr[rtl]==3.10.0",
 ]
 
 [tool.hatch.build.targets.wheel]

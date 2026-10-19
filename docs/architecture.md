@@ -54,9 +54,13 @@ hardware acceleration require measured quality and performance checks; neither
 is assumed to be faster on every platform. Training and export tools remain
 optional dependencies outside the normal inference installation.
 
-Tesseract screenshot accuracy is an early validation risk. Evaluate RapidOCR as
-an alternative if the benchmark justifies replacement. Add FAISS only when
-measured collection size and latency justify an additional search backend.
+Whole-image Tesseract remains the default OCR path.
+[Text-region gating and masking](text-regions.md) are experimental, explicitly selected
+paths. Their measured latency, memory cost, and recall risks do not justify promotion.
+The RapidOCR and GLM-OCR comparisons remain [documented experiments](ocr-comparison.md).
+Current pipeline evaluation uses Tesseract only. Promotion requires measured
+quality and resource results. Add FAISS only when measured collection size and
+latency justify an additional search backend.
 
 ## Indexing and search
 
