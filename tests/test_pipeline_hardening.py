@@ -3,6 +3,9 @@
 import subprocess
 
 
+import numpy as np
+
+
 import pytest
 
 
@@ -13,6 +16,13 @@ from realopen_lens.inference import image_rgb
 
 
 from realopen_lens.ocr import extract, parse_tsv
+
+
+from realopen_lens.retrieval import (
+    lexical_index,
+    rank_lexical,
+    vector_scores,
+)
 
 
 @pytest.mark.parametrize("mode", ["RGBA", "P"])
@@ -31,6 +41,13 @@ def test_transparent_screenshot_border_is_white_not_black(tmp_path, mode):
         assert actual.getpixel((5, 5)) == (35, 35, 35)
         assert not actual.info
     assert path.read_bytes() == original
+
+
+def test_retrieval_rejects_misaligned_and_nonfinite_vectors():
+    with pytest.raises(ValueError, match="identifiers"):
+        vector_scores(np.ones((2, 1)), np.ones(1), ["only-one"])
+    with pytest.raises(ValueError, match="finite"):
+        vector_scores(np.array([[np.nan]]), np.ones(1), ["a"])
 
 
 def test_tsv_keeps_reading_order_confidence_and_word_boxes():
@@ -165,6 +182,46 @@ def test_oversized_encoded_file_is_rejected_before_decode(tmp_path):
         stream.truncate(64 * 1024 * 1024 + 1)
     with pytest.raises(ValueError, match="encoded size"):
         image_rgb(path)
+
+
+def test_confident_observed_alternatives_support_code_search_without_changing_transcript(
+    tmp_path, monkeypatch
+):
+    path = tmp_path / "code.png"
+    Image.new("RGB", (50, 50), "white").save(path)
+    monkeypatch.setattr("realopen_lens.ocr.shutil.which", lambda _: "test-tesseract")
+    monkeypatch.setattr("realopen_lens.ocr._environment", lambda *args: {"version": "test"})
+    calls = []
+
+    def recognize(image, *args):
+        calls.append(1)
+        words = (
+            [{"text": "divide_al1", "confidence": 95, "box": [1, 1, 10, 10]}]
+            if len(calls) == 1
+            else [
+                {"text": "divide_all", "confidence": 75, "box": [1, 1, 10, 10]},
+                {"text": "weak_guess", "confidence": 10, "box": [1, 15, 10, 10]},
+            ]
+        )
+        return {
+            "text": " ".join(w["text"] for w in words),
+            "words": words,
+            "confidence": sum(w["confidence"] for w in words) / len(words),
+            "psm": args[-2],
+            "seconds": 0,
+            "stderr": "",
+        }
+
+    monkeypatch.setattr("realopen_lens.ocr._recognize", recognize)
+    result = extract(path)
+    assert result["text"] == "divide_al1"
+    assert result["alternate_texts"] == ["divide_all"]
+    database = lexical_index([{"image_id": "code", **result}])
+    try:
+        assert rank_lexical(database, "divide_all") == ["code"]
+        assert rank_lexical(database, "weak_guess") == []
+    finally:
+        database.close()
 
 
 def test_unsupported_content_is_rejected_even_with_an_allowed_extension(tmp_path):
