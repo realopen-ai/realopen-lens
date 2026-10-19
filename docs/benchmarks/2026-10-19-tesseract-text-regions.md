@@ -1,5 +1,10 @@
 # Tesseract with text-region detection — 19 October 2026
 
+This is the earlier OCR-only experiment. Both gating and masking are now
+classified as experimental; whole-image Tesseract remains the default. See the
+[subsequent retrieval study](2026-10-19-text-gating-retrieval.md) for the decision,
+downscaling fallback, and measured search/resource tradeoffs.
+
 All recognition in this experiment uses Tesseract. No GLM, Ollama or alternate
 recognizer was evaluated. The ONNX model performs localization only.
 

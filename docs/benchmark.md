@@ -332,3 +332,7 @@ For an optional local alternative to Tesseract, see the
 Current OCR development evaluates [text-region detection with Tesseract](text-regions.md).
 The [completed comparison](benchmarks/2026-10-19-tesseract-text-regions.md) covers
 whole-image OCR, gating and experimental masking; it does not run GLM.
+
+The [paired retrieval study](benchmarks/2026-10-19-text-gating-retrieval.md)
+adds fresh text-presence controls and follows gating through the complete search
+pipeline, including exact identifier diagnostics.
