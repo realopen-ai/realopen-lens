@@ -8,7 +8,8 @@ import psutil
 
 
 class MemoryMonitor:
-    def __init__(self) -> None:
+    def __init__(self, external_pids: tuple[int, ...] = ()) -> None:
+        self.external_pids = external_pids
         self.phase = "startup"
         self.peaks: dict[str, int] = defaultdict(int)
         self.samples = 0
@@ -24,7 +25,15 @@ class MemoryMonitor:
         except (psutil.AccessDenied, OSError):
             self.access_errors += 1
             processes = [parent]
-        for process in processes:
+        for pid in self.external_pids:
+            try:
+                external = psutil.Process(pid)
+                processes.extend([external, *external.children(recursive=True)])
+            except psutil.NoSuchProcess:
+                pass
+            except (psutil.AccessDenied, OSError):
+                self.access_errors += 1
+        for process in {p.pid: p for p in processes}.values():
             try:
                 total += process.memory_info().rss
             except psutil.NoSuchProcess:
