@@ -1,0 +1,183 @@
+"""Evaluate reviewed queries against an immutable production collection generation."""
+
+import argparse
+from datetime import UTC, datetime
+from importlib.metadata import version
+import json
+from pathlib import Path
+import platform
+import sqlite3
+import sys
+import shutil
+import realopen_lens
+from time import perf_counter
+
+from benchmarks.datasets.downloads import digest
+from benchmarks.datasets.photos import save_json
+from benchmarks.datasets.relevance import load
+from benchmarks.metrics.collection import evaluate
+from benchmarks.runtime.collections import snapshot
+from benchmarks.reporting.collections import export
+from benchmarks.runtime.identity import source_hash
+from benchmarks.runtime.resources import MemoryMonitor, write_resources
+from realopen_lens.models.manager import registry, verify
+from realopen_lens.retrieval.search import search_collection
+from realopen_lens.runtime.offline import enforce
+
+
+def run(args):
+    corpus, bundle = load(args.corpus, args.judgments)
+    state = snapshot(args.index_dir, args.collection, corpus)
+    verify(args.models, "int8")
+    root = Path(__file__).resolve().parents[2]
+    source_root = root / "src/realopen_lens"
+    installed_root = Path(realopen_lens.__file__).parent
+    if source_hash(source_root) != source_hash(installed_root):
+        raise ValueError("Installed engine differs from source; reinstall realopen-lens first")
+    identity = {
+        "version": 1,
+        "snapshot": state,
+        "index_dir": str(args.index_dir.resolve()),
+        "collection": args.collection,
+        "corpus_sha256": digest(args.corpus),
+        "judgments_sha256": digest(args.judgments),
+        "models": str(args.models.resolve()),
+        "model_registry": registry(),
+        "threads": args.threads,
+        "search_limit": 50,
+        "candidate_feature_schema": 1,
+        "engine_sha256": source_hash(source_root),
+        "harness_sha256": source_hash(root / "benchmarks"),
+        "host": {"system": platform.system(), "machine": platform.machine(), "python": sys.version},
+        "packages": {
+            key: version(key) for key in ("numpy", "onnxruntime", "tokenizers", "Pillow", "psutil")
+        },
+    }
+    args.output.mkdir(parents=True, exist_ok=True)
+    config = args.output / "config.json"
+    if config.exists() and json.loads(config.read_text()) != identity:
+        raise ValueError("Resume identity changed; use a new output directory")
+    save_json(config, identity)
+    save_json(args.output / "corpus.json", corpus)
+    save_json(args.output / "judgments.json", bundle)
+    for source, name in ((source_root, "engine-source"), (root / "benchmarks", "harness-source")):
+        if not (args.output / name).exists():
+            shutil.copytree(
+                source, args.output / name, ignore=shutil.ignore_patterns("__pycache__")
+            )
+    db = sqlite3.connect(args.output / "results.sqlite")
+    try:
+        db.execute(
+            "CREATE TABLE IF NOT EXISTS queries (query_id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
+        )
+        db.execute(
+            "CREATE TABLE IF NOT EXISTS attempts (query_id TEXT NOT NULL, "
+            "attempt INTEGER NOT NULL, payload TEXT NOT NULL, PRIMARY KEY(query_id, attempt))"
+        )
+        done = {
+            key
+            for key, payload in db.execute("SELECT query_id,payload FROM queries")
+            if not args.retry_errors or json.loads(payload)["status"] != "error"
+        }
+        for query in bundle["queries"]:
+            if query["id"] in done:
+                continue
+            # Refuse a moving target rather than mixing generations or source inventories.
+            if snapshot(args.index_dir, args.collection, corpus, verify_files=False) != state:
+                raise ValueError("Collection changed during evaluation")
+            if (
+                source_hash(source_root) != identity["engine_sha256"]
+                or source_hash(root / "benchmarks") != identity["harness_sha256"]
+            ):
+                raise ValueError("Source changed during evaluation")
+            memory = MemoryMonitor()
+            memory.phase = "hybrid_query"
+            started = perf_counter()
+            record = {
+                "query_id": query["id"],
+                "query": query,
+                "timestamp": datetime.now(UTC).isoformat(),
+            }
+            try:
+                with memory:
+                    trace: dict = {}
+                    results = search_collection(
+                        query["text"],
+                        collection=args.collection,
+                        index_dir=args.index_dir,
+                        models=args.models,
+                        limit=50,
+                        threads=args.threads,
+                        trace=trace,
+                    )
+                    if (
+                        trace["generation"] != state["generation"]
+                        or trace["searchable_images"] != state["unique_images"]
+                    ):
+                        raise ValueError("Search observed a changed snapshot")
+                    if [r.image_id for r in results] != trace["rankings"]["hybrid"]:
+                        raise ValueError("Candidate trace differs from returned ranking")
+                    labels = {r["image_sha256"]: r["grade"] for r in query["judgments"]}
+                    positives = {key for key, value in labels.items() if value > 0}
+                    record.update(
+                        status="ok",
+                        trace=trace,
+                        metrics={
+                            mode: evaluate(ranking, labels)
+                            for mode, ranking in trace["rankings"].items()
+                        },
+                        pool_recall=len({r["image_id"] for r in trace["candidates"]} & positives)
+                        / len(positives),
+                        missed_pool_positives=sorted(
+                            positives - {r["image_id"] for r in trace["candidates"]}
+                        ),
+                        missed_hybrid_top50_positives=sorted(
+                            positives - set(trace["rankings"]["hybrid"])
+                        ),
+                    )
+            except Exception as error:
+                record.update(
+                    status="error", error_type=type(error).__name__, error=str(error)[:2000]
+                )
+            record.update(
+                seconds=perf_counter() - started,
+                peak_tree_rss_mib=max(memory.peaks.values(), default=0) / 2**20,
+                memory_samples=memory.samples,
+                memory_access_errors=memory.access_errors,
+            )
+            with db:
+                payload = json.dumps(record, ensure_ascii=False)
+                attempt = db.execute(
+                    "SELECT COALESCE(MAX(attempt),0)+1 FROM attempts WHERE query_id=?",
+                    (query["id"],),
+                ).fetchone()[0]
+                db.execute("INSERT INTO attempts VALUES (?, ?, ?)", (query["id"], attempt, payload))
+                db.execute("INSERT OR REPLACE INTO queries VALUES (?, ?)", (query["id"], payload))
+            write_resources(args.output, memory)
+            print(f"{query['id']}: {record['status']} ({record['seconds']:.2f}s)", flush=True)
+        if snapshot(args.index_dir, args.collection, corpus) != state:
+            raise ValueError("Collection changed during evaluation")
+        summary = export(args.output, db, corpus, bundle, identity)
+        if summary["failed_queries"]:
+            raise ValueError(f"{summary['failed_queries']} queries failed; see retained records")
+    finally:
+        db.close()
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--index-dir", type=Path, required=True)
+    parser.add_argument("--collection", default="retrieval-evaluation")
+    parser.add_argument("--corpus", type=Path, required=True)
+    parser.add_argument("--judgments", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--models", type=Path, default=Path("models"))
+    parser.add_argument("--threads", type=int, choices=range(1, 9), default=2)
+    parser.add_argument("--retry-errors", action="store_true")
+    args = parser.parse_args()
+    enforce()
+    run(args)
+
+
+if __name__ == "__main__":
+    main()
