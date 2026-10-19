@@ -1,23 +1,21 @@
 """Local Tesseract OCR with bounded retries and explicit low-quality diagnostics."""
 
+import io
+from contextlib import ExitStack
 import math
-
-
+import os
 import re
-
-
+import shutil
 import subprocess
-
-
 from functools import lru_cache
-
-
 from pathlib import Path
-
-
+from time import monotonic
 from typing import Any
 
+import numpy as np
+from PIL import Image, ImageOps
 
+from realopen_lens.inference import image_rgb
 from realopen_lens.models import digest
 
 
@@ -79,3 +77,309 @@ def parse_tsv(text: str) -> dict[str, Any]:
         "words": words,
         "confidence": sum(w["confidence"] for w in words) / len(words) if words else None,
     }
+
+
+def _recognize(
+    image: Image.Image, executable: str, languages: str, threads: int, psm: int, timeout: float
+) -> dict[str, Any]:
+    payload = io.BytesIO()
+    image.save(payload, format="PNG")
+    start = monotonic()
+    result = subprocess.run(
+        [executable, "stdin", "stdout", "-l", languages, "--oem", "1", "--psm", str(psm), "tsv"],
+        input=payload.getvalue(),
+        capture_output=True,
+        timeout=timeout,
+        env={**os.environ, "OMP_THREAD_LIMIT": str(threads)},
+    )
+    if result.returncode:
+        raise ValueError(
+            f"Tesseract failed ({result.returncode}): "
+            f'{result.stderr.decode(errors="replace")[:500]}'
+        )
+    if len(result.stdout) > 8 * 1024 * 1024:
+        raise ValueError("Tesseract output exceeded 8 MiB")
+    return {
+        **parse_tsv(result.stdout.decode("utf-8")),
+        "psm": psm,
+        "ocr_size": list(image.size),
+        "seconds": monotonic() - start,
+        "stderr": result.stderr.decode(errors="replace")[:1000],
+    }
+
+
+def _quality(result: dict[str, Any]) -> float:
+    # Prefer the amount of readable evidence, rather than rewarding one perfect word.
+    return sum(len(word["text"]) * max(0, word["confidence"] - 20) for word in result["words"])
+
+
+def _layout_incomplete(image: Image.Image, words: list[dict[str, Any]]) -> bool:
+    """Notice substantial ink below the recognized text, as in boxed diagrams."""
+    if not words:
+        return True
+    bottom = max(word["box"][1] + word["box"][3] for word in words)
+    if bottom >= image.height * 0.75:
+        return False
+    pixels = np.asarray(image)
+    ink_below = np.count_nonzero(pixels[min(image.height, bottom + 10) :] < 160)
+    return bool(ink_below > image.width * image.height * 0.002)
+
+
+def _remove_rules(image: Image.Image) -> tuple[Image.Image, bool]:
+    """Remove only narrow, long ruling lines from an OCR fallback copy."""
+    pixels = np.array(image)
+    dark = pixels < 160
+    changed = False
+    for axis, threshold in ((1, 0.6), (0, 0.25)):
+        positions = np.flatnonzero(dark.mean(axis=axis) > threshold)
+        groups = np.split(positions, np.flatnonzero(np.diff(positions) > 1) + 1)
+        for group in groups:
+            if not 1 <= len(group) <= 5:
+                continue
+            start, stop = max(0, int(group[0]) - 1), int(group[-1]) + 2
+            if axis == 1:
+                pixels[start:stop, :] = 255
+            else:
+                pixels[:, start:stop] = 255
+            changed = True
+    return Image.fromarray(pixels), changed
+
+
+def _orientation(image: Image.Image, executable: str, threads: int, timeout: float) -> dict:
+    environment = _environment(executable, "osd")
+    payload = io.BytesIO()
+    image.save(payload, format="PNG")
+    result = subprocess.run(
+        [executable, "stdin", "stdout", "-l", "osd", "--psm", "0"],
+        input=payload.getvalue(),
+        capture_output=True,
+        timeout=timeout,
+        env={**os.environ, "OMP_THREAD_LIMIT": str(threads)},
+    )
+    text = result.stdout.decode(errors="replace")
+    angle = re.search(r"Rotate: (\d+)", text)
+    confidence = re.search(r"Orientation confidence: ([\d.]+)", text)
+    return {
+        "rotation": int(angle[1]) if angle else 0,
+        "confidence": float(confidence[1]) if confidence else 0,
+        "stderr": result.stderr.decode(errors="replace")[:1000],
+        "language_pack_sha256": environment["language_pack_sha256"],
+    }
+
+
+def _gray(image: Image.Image) -> tuple[Image.Image, bool]:
+    gray = ImageOps.autocontrast(ImageOps.grayscale(image))
+    inverted = float(np.median(np.asarray(gray))) < 128
+    if inverted:
+        gray = ImageOps.invert(gray)
+    return gray, inverted
+
+
+def _source_region(path: Path, size: tuple[int, int]) -> tuple[int, int, int, int]:
+    full = (0, 0, *size)
+    with Image.open(path) as source:
+        if "A" not in source.getbands():
+            return full
+        oriented = ImageOps.exif_transpose(source)
+        try:
+            alpha = oriented.getchannel("A")
+            try:
+                mask = alpha.point([0] * 128 + [255] * 128)
+                bbox = mask.getbbox()
+                mask.close()
+            finally:
+                alpha.close()
+        finally:
+            oriented.close()
+    # Treat only a substantial central opaque region as padding removal. Keep
+    # a full-image attempt as well: translucent margin content is not discarded.
+    if bbox and (bbox[2] - bbox[0]) * (bbox[3] - bbox[1]) >= size[0] * size[1] * 0.5:
+        return bbox
+    return full
+
+
+def extract(
+    path: Path, languages: str = "eng+fra+ara", threads: int = 2, timeout: float = 30
+) -> dict[str, Any]:
+    if not 1 <= threads <= 32 or timeout <= 0:
+        raise ValueError("OCR requires 1–32 threads and a positive timeout")
+    executable = shutil.which("tesseract")
+    if executable is None:
+        raise ValueError("Tesseract 5 is required for OCR")
+    environment = _environment(executable, languages)
+    start = monotonic()
+    attempts: list[dict[str, Any]] = []
+    failed_attempts: list[dict[str, Any]] = []
+    warnings = []
+    with ExitStack() as buffers:
+
+        def keep(image: Image.Image) -> Image.Image:
+            buffers.callback(image.close)
+            return image
+
+        with image_rgb(path) as source:
+            original_size = source.size
+            region = _source_region(path, original_size)
+            full_region = (0, 0, *original_size)
+            rgb = keep(source.copy())
+            rgb.thumbnail((2400, 2400))
+            working = keep(source.crop(region)) if region != full_region else rgb
+            working.thumbnail((2400, 2400))
+        with Image.open(path) as source:
+            if getattr(source, "n_frames", 1) > 1:
+                warnings.append("Only first frame/page processed")
+
+        def attempt(
+            image: Image.Image,
+            psm: int,
+            label: str,
+            source_region: tuple,
+            required: bool = False,
+            **metadata: Any,
+        ) -> dict | None:
+            remaining = timeout - (monotonic() - start)
+            if remaining <= 0 or len(attempts) >= 4:
+                if required:
+                    raise subprocess.TimeoutExpired("OCR budget", timeout)
+                warnings.append("OCR fallback budget exhausted")
+                return None
+            try:
+                result = _recognize(image, executable, languages, threads, psm, min(15, remaining))
+                result.update(input=label, source_region=list(source_region), **metadata)
+                attempts.append(result)
+                return result
+            except (subprocess.TimeoutExpired, ValueError) as error:
+                if required:
+                    raise
+                warnings.append(f"OCR fallback failed: {type(error).__name__}")
+                failed_attempts.append(
+                    {
+                        "psm": psm,
+                        "input": label,
+                        "error_type": type(error).__name__,
+                        "error": str(error)[:500],
+                    }
+                )
+                return None
+
+        first = attempt(rgb, 3, "rgb", full_region, required=True)
+        assert first is not None
+        work_result = first
+        cropped = region != full_region
+        if cropped:
+            work_result = attempt(working, 3, "opaque-region-rgb", region) or first
+        gray, inverted = _gray(working)
+        keep(gray)
+        incomplete = _layout_incomplete(gray, work_result["words"])
+        if (
+            cropped
+            or inverted
+            or incomplete
+            or len(work_result["words"]) < 3
+            or (work_result["confidence"] or 0) < 55
+        ):
+            cleaned, removed = (
+                _remove_rules(gray) if incomplete and not inverted else (gray.copy(), False)
+            )
+            keep(cleaned)
+            attempt(cleaned, 11, "grayscale-sparse", region, rules_removed=removed)
+
+        best = max(attempts, key=_quality)
+        if max(region[2] - region[0], region[3] - region[1]) > 3000 and len(best["words"]) >= 8:
+            with image_rgb(path) as source:
+                large = keep(source.crop(region))
+            large.thumbnail((3200, 3200))
+            large_gray, _ = _gray(large)
+            keep(large_gray)
+            attempt(large_gray, 11, "high-resolution-grayscale", region)
+
+        orientation = None
+        best = max(attempts, key=_quality)
+        remaining = timeout - (monotonic() - start)
+        if (
+            len(best["words"]) >= 8
+            and (best["confidence"] or 0) < 55
+            and remaining > 2
+            and len(attempts) < 4
+        ):
+            try:
+                with image_rgb(path) as source:
+                    orientation_source = keep(source.crop(tuple(best["source_region"])))
+                orientation_source.thumbnail(tuple(best.get("ocr_size", gray.size)))
+                orientation = _orientation(
+                    orientation_source, executable, threads, min(3, remaining)
+                )
+                if orientation["rotation"] in (90, 180, 270) and orientation["confidence"] >= 2:
+                    orientation_gray, _ = _gray(orientation_source)
+                    keep(orientation_gray)
+                    rotated = keep(
+                        orientation_gray.rotate(
+                            -orientation["rotation"], expand=True, fillcolor=255
+                        )
+                    )
+                    candidate = attempt(
+                        rotated,
+                        3,
+                        "orientation",
+                        tuple(best["source_region"]),
+                        rotation=orientation["rotation"],
+                    )
+                    if candidate is not None and _quality(candidate) <= _quality(best) * 1.25:
+                        attempts.remove(candidate)
+                        failed_attempts.append(
+                            {
+                                "stage": "orientation",
+                                "rotation": orientation["rotation"],
+                                "reason": "No substantial gain in readable evidence",
+                                "text": candidate["text"],
+                            }
+                        )
+            except (subprocess.TimeoutExpired, ValueError) as error:
+                failed_attempts.append(
+                    {
+                        "stage": "orientation",
+                        "error_type": type(error).__name__,
+                        "error": str(error)[:500],
+                    }
+                )
+        selected = max(attempts, key=_quality)
+        if not selected["words"]:
+            warnings.append("Empty OCR output; text absence has not been established")
+        elif (selected["confidence"] or 0) < 55:
+            warnings.append("Low OCR confidence; extracted text may be unusable")
+        # Preserve observed, confidence-filtered alternatives for code/keyword
+        # lookup. They are not presented or scored as the canonical transcript.
+        alternatives = list(
+            dict.fromkeys(
+                " ".join(word["text"] for word in candidate["words"] if word["confidence"] >= 70)
+                for candidate in attempts
+                if candidate is not selected
+            )
+        )
+        return {
+            **environment,
+            "text": selected["text"],
+            "words": selected["words"],
+            "confidence": selected["confidence"],
+            "warnings": warnings,
+            "original_size": list(original_size),
+            "ocr_size": selected.get("ocr_size", list(gray.size)),
+            "source_region": selected["source_region"],
+            "selected_psm": selected["psm"],
+            "rotation": selected.get("rotation", 0),
+            "orientation": orientation,
+            "preprocessing": {
+                "alpha_background": "white",
+                "rgb_primary": True,
+                "grayscale_fallback": True,
+                "inverted": inverted,
+                "layout_fallback_requested": incomplete,
+                "opaque_region": list(region),
+            },
+            "alternate_texts": [text for text in alternatives if text],
+            "attempts": [
+                {key: value for key, value in candidate.items() if key != "words"}
+                for candidate in attempts
+            ],
+            "failed_attempts": failed_attempts,
+        }

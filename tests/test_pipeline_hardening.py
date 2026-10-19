@@ -1,5 +1,8 @@
 """Regression cases for observed preprocessing, OCR, fusion, and resume failures."""
 
+import subprocess
+
+
 import pytest
 
 
@@ -9,7 +12,7 @@ from PIL import Image
 from realopen_lens.inference import image_rgb
 
 
-from realopen_lens.ocr import parse_tsv
+from realopen_lens.ocr import extract, parse_tsv
 
 
 @pytest.mark.parametrize("mode", ["RGBA", "P"])
@@ -43,6 +46,54 @@ def test_tsv_keeps_reading_order_confidence_and_word_boxes():
     assert result["confidence"] == 86
 
 
+def test_failed_ocr_fallback_keeps_first_result_and_reports_warning(tmp_path, monkeypatch):
+    path = tmp_path / "sparse.png"
+    Image.new("RGB", (50, 50), "white").save(path)
+    monkeypatch.setattr("realopen_lens.ocr.shutil.which", lambda _: "test-tesseract")
+    monkeypatch.setattr("realopen_lens.ocr._environment", lambda *args: {"version": "test"})
+    calls = []
+
+    def recognize(*args):
+        calls.append(args)
+        if len(calls) > 1:
+            raise subprocess.TimeoutExpired("test-tesseract", 1)
+        return {
+            "text": "one",
+            "words": [{"text": "one", "confidence": 40, "box": [0, 0, 1, 1]}],
+            "confidence": 40,
+            "psm": 3,
+            "seconds": 0,
+            "stderr": "",
+        }
+
+    monkeypatch.setattr("realopen_lens.ocr._recognize", recognize)
+    result = extract(path)
+    assert result["text"] == "one"
+    assert len(calls) == 2
+    assert any("fallback failed" in warning for warning in result["warnings"])
+
+
+def test_diagram_layout_checks_detect_missing_lower_labels_without_numpy_scalars():
+    import json
+    from realopen_lens.ocr import _layout_incomplete, _remove_rules
+    from PIL import ImageDraw
+
+    image = Image.new("L", (300, 200), 255)
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((10, 90, 290, 150), outline=0, width=2)
+    draw.rectangle((30, 110, 70, 120), fill=0)
+    incomplete = _layout_incomplete(image, [{"box": [10, 10, 100, 20]}])
+    assert incomplete is True
+    json.dumps({"incomplete": incomplete})
+    cleaned, changed = _remove_rules(image)
+    assert changed
+    assert cleaned.getpixel((50, 90)) == 255
+    assert cleaned.getpixel((50, 115)) == 0
+    assert (
+        _layout_incomplete(Image.new("L", (300, 200), 255), [{"box": [10, 10, 100, 20]}]) is False
+    )
+
+
 def test_tsv_rejects_nonfinite_confidence_instead_of_serializing_nan():
     header = (
         "level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\t"
@@ -65,6 +116,47 @@ def test_relative_corpus_paths_and_invalid_limits(tmp_path, monkeypatch):
     assert scan(Path("images"), 1) == ["good.png"]
     with pytest.raises(ValueError, match="positive"):
         scan(Path("images"), 0)
+
+
+@pytest.mark.parametrize("improves", [True, False])
+def test_orientation_is_verified_and_boxes_describe_the_selected_input(
+    tmp_path, monkeypatch, improves
+):
+    path = tmp_path / "rotated.png"
+    Image.new("RGB", (100, 200), "white").save(path)
+    monkeypatch.setattr("realopen_lens.ocr.shutil.which", lambda _: "test-tesseract")
+    monkeypatch.setattr("realopen_lens.ocr._environment", lambda *args: {"version": "test"})
+    monkeypatch.setattr(
+        "realopen_lens.ocr._orientation", lambda *args: {"rotation": 90, "confidence": 8}
+    )
+    calls = []
+
+    def recognize(image, *args):
+        calls.append(image.size)
+        confidence = 95 if len(calls) == 3 and improves else 20 if len(calls) == 3 else 30
+        words = [
+            {
+                "text": "recovered" if confidence == 95 else "x",
+                "confidence": confidence,
+                "box": [1, 1, 5, 5],
+            }
+            for _ in range(8)
+        ]
+        return {
+            "text": " ".join(w["text"] for w in words),
+            "words": words,
+            "confidence": confidence,
+            "psm": args[-2],
+            "ocr_size": list(image.size),
+            "seconds": 0,
+            "stderr": "",
+        }
+
+    monkeypatch.setattr("realopen_lens.ocr._recognize", recognize)
+    result = extract(path)
+    assert calls == [(100, 200), (100, 200), (200, 100)]
+    assert result["rotation"] == (90 if improves else 0)
+    assert result["ocr_size"] == ([200, 100] if improves else [100, 200])
 
 
 def test_oversized_encoded_file_is_rejected_before_decode(tmp_path):
