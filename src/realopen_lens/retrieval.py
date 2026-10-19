@@ -1,22 +1,11 @@
 """Exact vector search, OCR keyword retrieval, and image-level fusion."""
 
 import math
-
-
 import re
-
-
 import sqlite3
-
-
 import unicodedata
-
-
 from typing import Any
-
-
 from collections import defaultdict
-
 
 import numpy as np
 
@@ -135,3 +124,122 @@ def _tokens(text: str) -> set[str]:
 
 
 _STOPWORDS = _tokens(" ".join(_STOPWORDS))
+
+
+def lexical_evidence(
+    query: str, text: str, statistics: tuple[int, dict[str, int]] | None = None
+) -> float:
+    """Demand substantive token coverage or an exact code identifier/quoted phrase."""
+    query = " ".join(unicodedata.normalize("NFKC", query).split())
+    text = " ".join(unicodedata.normalize("NFKC", text).split())
+    wanted = _tokens(query) - _STOPWORDS
+    if not wanted:
+        return 0.0
+    actual = _tokens(text)
+    coverage = len(wanted & actual) / len(wanted)
+    identifiers = re.findall(r"\b[\w]+(?:[_./:\\-][\w]+)+\b", query)
+    identifiers += re.findall(r"\b[A-Za-z]*[a-z][A-Z]\w*\b", query)
+    identifiers += re.findall(r"\b(?=\w*[A-Za-z])(?=\w*\d)\w+\b", query)
+    normalized = text.casefold()
+    exact_identifier = any(
+        re.search(r"(?<!\w)" + re.escape(item.casefold()) + r"(?!\w)", normalized)
+        for item in identifiers
+    )
+    phrases = re.findall(r'"([^"\n]{2,})"', query)
+    if exact_identifier or any(
+        re.search(r"(?<!\w)" + re.escape(phrase.casefold()) + r"(?!\w)", normalized)
+        for phrase in phrases
+    ):
+        return 1.4
+    if statistics is not None:
+        total, frequencies = statistics
+        searchable = {term for term in wanted if frequencies.get(term, 0) > 0}
+        matched = searchable & actual
+        if len(matched) < 2:
+            return 0.0
+        weights = {term: 1 + math.log((total + 1) / (frequencies[term] + 1)) for term in searchable}
+        coverage = sum(weights[term] for term in matched) / sum(weights.values())
+        if any(frequencies[term] <= max(2, total * 0.01) for term in matched):
+            return max(0.8, coverage)
+        # Common administrative vocabulary is weak text evidence, even if it
+        # covers most of a photo caption's indexable words.
+        return coverage * 0.5 if coverage >= 0.6 else 0.0
+    if len(wanted) < 2 or coverage < 0.6:
+        return 0.0
+    return coverage
+
+
+def hybrid_rank(
+    visual_vectors: np.ndarray,
+    visual_query: np.ndarray,
+    image_ids: list[str],
+    passage_vectors: np.ndarray,
+    semantic_query: np.ndarray,
+    passage_ids: list[str],
+    query: str,
+    ocr_records: list[dict[str, Any]],
+    limit: int = 50,
+    semantic_floor: float = 0.83,
+    semantic_margin: float = 0.04,
+    lexical_candidates: list[str] | None = None,
+    lexical_statistics: tuple[int, dict[str, int]] | None = None,
+) -> list[str]:
+    """Score-preserving fusion with one bounded OCR contribution per image.
+
+    Weak OCR evidence leaves visual ordering unchanged. Lexical and semantic OCR
+    are correlated observations of the same content and must not get two votes.
+    Semantic thresholds are experimental defaults tied to the pinned E5 export;
+    reports must validate them on held-out data before model changes.
+    """
+    if limit < 1:
+        raise ValueError("Retrieval limit must be positive")
+    visual = vector_scores(visual_vectors, visual_query, image_ids)
+    semantic = (
+        vector_scores(passage_vectors, semantic_query, passage_ids) if len(passage_ids) else {}
+    )
+    background = float(np.median(list(semantic.values()))) if semantic else 0
+    texts = {row["image_id"]: row["text"] for row in ocr_records}
+    alternatives = {row["image_id"]: row.get("alternate_texts", []) for row in ocr_records}
+    if lexical_candidates is None or lexical_statistics is None:
+        database = lexical_index(ocr_records)
+        try:
+            if lexical_candidates is None:
+                lexical_candidates = rank_lexical(database, query)
+            if lexical_statistics is None:
+                lexical_statistics = lexical_frequencies(database, query)
+        finally:
+            database.close()
+    lexical_ids = set(lexical_candidates[:50])
+    candidates = set(sorted(visual, key=lambda key: (-visual[key], key))[: max(50, limit)])
+    candidates.update(sorted(semantic, key=lambda key: (-semantic[key], key))[:50])
+    candidates.update(lexical_ids)
+    combined = {}
+    for image_id in candidates & visual.keys():
+        score = visual[image_id]
+        lexical = (
+            lexical_evidence(query, texts.get(image_id, ""), lexical_statistics)
+            if image_id in lexical_ids
+            else 0
+        )
+        if image_id in lexical_ids:
+            lexical = max(
+                lexical,
+                max(
+                    (
+                        0.75 * lexical_evidence(query, text, lexical_statistics)
+                        for text in alternatives.get(image_id, [])
+                    ),
+                    default=0,
+                ),
+            )
+        similarity = semantic.get(image_id, 0)
+        strength = max(
+            0,
+            min(
+                1,
+                (similarity - semantic_floor) / 0.06,
+                (similarity - background - semantic_margin) / 0.06,
+            ),
+        )
+        combined[image_id] = score + 0.16 * max(lexical, strength)
+    return sorted(combined, key=lambda key: (-combined[key], key))[:limit]

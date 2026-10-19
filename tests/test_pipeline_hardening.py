@@ -19,6 +19,8 @@ from realopen_lens.ocr import extract, parse_tsv
 
 
 from realopen_lens.retrieval import (
+    hybrid_rank,
+    lexical_evidence,
     lexical_index,
     rank_lexical,
     vector_scores,
@@ -41,6 +43,55 @@ def test_transparent_screenshot_border_is_white_not_black(tmp_path, mode):
         assert actual.getpixel((5, 5)) == (35, 35, 35)
         assert not actual.info
     assert path.read_bytes() == original
+
+
+def test_code_identifiers_are_preserved_and_not_split_into_generic_words():
+    database = lexical_index(
+        [
+            {"image_id": "exact", "text": "divide_all connection_error"},
+            {"image_id": "generic", "text": "divide all connection error"},
+        ]
+    )
+    try:
+        assert rank_lexical(database, "divide_all") == ["exact"]
+        assert rank_lexical(database, "connection_error") == ["exact"]
+        assert lexical_evidence("divide_all", "we divide all numbers") == 0
+        assert lexical_evidence("divide_all", "call divide_all now") > 1
+    finally:
+        database.close()
+
+
+def test_weak_ocr_does_not_bury_the_best_visual_result():
+    # Previously, ANY two rank-50 votes beat one rank-1 visual vote.
+    ids = ["photo"] + [f"ocr-{i}" for i in range(60)]
+    visual = np.array([[0.2]] + [[0.1]] * 60, dtype=np.float32)
+    passages = np.full((60, 1), 0.79, dtype=np.float32)
+    ranking = hybrid_rank(
+        visual,
+        np.array([1]),
+        ids,
+        passages,
+        np.array([1]),
+        ids[1:],
+        "a dog playing on the beach",
+        [{"image_id": key, "text": "server logs connection failed"} for key in ids[1:]],
+    )
+    assert ranking[0] == "photo"
+
+
+def test_correlated_ocr_channels_get_one_bounded_contribution():
+    ranking = hybrid_rank(
+        np.array([[0.18], [0.01]]),
+        np.array([1]),
+        ["photo", "text"],
+        np.array([[0.99], [0.7]]),
+        np.array([1]),
+        ["text", "unrelated"],
+        "database connection",
+        [{"image_id": "text", "text": "database connection"}],
+    )
+    # One max(lexical, semantic) boost .16 leaves .18 visual ahead of .01+.16.
+    assert ranking == ["photo", "text"]
 
 
 def test_retrieval_rejects_misaligned_and_nonfinite_vectors():
@@ -135,6 +186,15 @@ def test_relative_corpus_paths_and_invalid_limits(tmp_path, monkeypatch):
         scan(Path("images"), 0)
 
 
+def test_literal_text_matching_handles_camelcase_normalization_and_boundaries():
+    assert lexical_evidence("ModuleNotFoundError", "ModuleNotFoundError: psycopg") > 1
+    assert lexical_evidence("ModuleNotFoundError", "OtherModuleNotFoundErrorExtra") == 0
+    assert lexical_evidence("ｄｉｖｉｄｅ＿ａｌｌ", "call divide_all now") > 1
+    assert lexical_evidence('"AI"', "AI tools") > 1
+    assert lexical_evidence('"AI"', "chair") == 0
+    assert lexical_evidence('"connection refused"', "connection\nrefused") > 1
+
+
 @pytest.mark.parametrize("improves", [True, False])
 def test_orientation_is_verified_and_boxes_describe_the_selected_input(
     tmp_path, monkeypatch, improves
@@ -220,6 +280,28 @@ def test_confident_observed_alternatives_support_code_search_without_changing_tr
     try:
         assert rank_lexical(database, "divide_all") == ["code"]
         assert rank_lexical(database, "weak_guess") == []
+    finally:
+        database.close()
+
+
+def test_common_form_vocabulary_cannot_outvote_a_photo_but_rare_terms_help():
+    from realopen_lens.retrieval import lexical_frequencies
+
+    records = [
+        {"image_id": str(i), "text": "person above head address tax form"} for i in range(100)
+    ]
+    records.append({"image_id": "alarm", "text": "Set an alarm for 08:45"})
+    database = lexical_index(records)
+    try:
+        query = "A person holding an umbrella above their head"
+        evidence = lexical_evidence(query, records[0]["text"], lexical_frequencies(database, query))
+        assert evidence <= 0.5
+        query = "Set an alarm using a time input control"
+        assert (
+            lexical_evidence(query, records[-1]["text"], lexical_frequencies(database, query))
+            >= 0.8
+        )
+        assert rank_lexical(database, "áddress")
     finally:
         database.close()
 
