@@ -8,8 +8,8 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from benchmarks.ocr_metrics import distance
-from benchmarks.suite import connect, load_vectors, save_stage
+from benchmarks.metrics.ocr import distance
+from benchmarks.storage.results import connect, load_vectors, save_stage
 from realopen_lens.encoders.onnx import image_rgb
 from realopen_lens.ocr.tesseract import extract, parse_tsv
 from realopen_lens.retrieval.ranking import (

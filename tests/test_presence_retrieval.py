@@ -6,7 +6,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from benchmarks.suite import connect, identifier_preservation, report, save_stage
+from benchmarks.storage.results import connect, save_stage
+from benchmarks.metrics.quality import identifier_preservation
+from benchmarks.reporting.images import report
 
 
 def test_identifiers_require_exact_case_and_punctuation_and_word_boundaries():
@@ -49,7 +51,7 @@ def test_negative_empty_output_only_passes_when_ocr_succeeded(tmp_path, status, 
 
 @pytest.mark.parametrize("gated", [False, True])
 def test_worker_loads_detector_once_and_keeps_item_failures_durable(tmp_path, monkeypatch, gated):
-    from benchmarks import suite_worker
+    from benchmarks.runtime import suite_worker as suite_worker
     from realopen_lens.ocr import tesseract as ocr, regions as text_regions
 
     initialized, calls = [], []
@@ -102,7 +104,7 @@ def test_worker_loads_detector_once_and_keeps_item_failures_durable(tmp_path, mo
     "different", ["engine_sha256", "runner_sha256", "worker_limits", "variant", "images"]
 )
 def test_presence_comparison_rejects_different_pipeline_identities(tmp_path, different):
-    from benchmarks.presence_report import evaluate
+    from benchmarks.reporting.presence import evaluate
 
     config = {
         "engine_sha256": "engine",
@@ -124,7 +126,7 @@ def test_presence_comparison_rejects_different_pipeline_identities(tmp_path, dif
 
 
 def test_allowing_documented_source_change_does_not_allow_different_limits(tmp_path):
-    from benchmarks.presence_report import evaluate
+    from benchmarks.reporting.presence import evaluate
 
     config = {
         "engine_sha256": "engine",

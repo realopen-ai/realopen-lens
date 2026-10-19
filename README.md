@@ -145,6 +145,11 @@ Benchmark tools run from the checkout with `python -m benchmarks`; they are not
 included in the application wheel. See the [benchmark guide](docs/benchmark.md)
 for commands and setup.
 
+Benchmark implementations are grouped into `datasets/`, `metrics/`, `runtime/`,
+`storage/`, `reporting/`, and `experiments/`. Existing top-level command modules
+remain as thin compatibility entry points. Pinned sources and OCR reference
+assets retain their original locations.
+
 The [500-image hardening report](docs/benchmarks/2026-10-19-pipeline-hardening.md)
 includes before/after results, failure analysis, resource costs and remaining limitations.
 

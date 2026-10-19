@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from benchmarks.retrieval_metrics import metrics
+from benchmarks.metrics.retrieval import metrics
 from realopen_lens.retrieval.ranking import fuse, lexical_index, rank_lexical, rank_vectors
 
 

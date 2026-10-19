@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from benchmarks.judgments import queries
+from benchmarks.datasets.judgments import queries
 from realopen_lens.indexing.scanner import scan
 
 

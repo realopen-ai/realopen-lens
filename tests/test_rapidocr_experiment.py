@@ -7,8 +7,8 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from benchmarks.ocr_compare import record
-from benchmarks.rapidocr_engine import RapidEngine, parse_output
+from benchmarks.metrics.records import record
+from benchmarks.experiments.rapidocr_engine import RapidEngine, parse_output
 
 
 def test_line_polygons_and_confidence_are_preserved_without_fabricating_word_boxes():
@@ -49,7 +49,7 @@ def test_warmup_recognition_only_does_not_disable_detection_on_real_images(tmp_p
         "ch_ppocr_mobile_v2.0_cls_mobile.onnx",
     ]
     monkeypatch.setattr(
-        "benchmarks.rapidocr_engine.model_info",
+        "benchmarks.experiments.rapidocr_engine.model_info",
         lambda: {"artifacts": {n: {"path": n} for n in names}},
     )
     path = tmp_path / "alpha.png"
@@ -73,8 +73,8 @@ def test_execution_failure_cannot_be_scored_as_successful_empty_ocr():
 
 def test_worker_keeps_completed_heartbeat_between_items_and_can_resume(tmp_path, monkeypatch):
     import json
-    from benchmarks.ocr_compare import worker
-    from benchmarks.suite import connect
+    from benchmarks.experiments.ocr_compare import worker
+    from benchmarks.storage.results import connect
 
     monkeypatch.setattr("realopen_lens.runtime.offline.enforce", lambda: None)
     monkeypatch.setattr(

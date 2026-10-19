@@ -6,6 +6,12 @@ The benchmark tools and annotations live under `benchmarks/`; application code
 lives under `src/realopen_lens/`. Images, model weights, and run artifacts remain
 in ignored local directories.
 
+See [harness organization](benchmark.md#harness-organization) for the implementation
+packages. The commands below remain supported compatibility entry points. Moving
+harness files changes its source fingerprint: start a new run directory after
+upgrading, or use the preserved original checkout to resume a historical run.
+Reference assets, evaluation rules and retained result formats are unchanged.
+
 ## Prepare the collection
 
 Install the development environment and pinned models using the

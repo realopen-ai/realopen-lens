@@ -4,8 +4,8 @@ import json
 
 import pytest
 
-from benchmarks.dataset import annotation_matches
-from benchmarks.rescore import rescore
+from benchmarks.datasets.metadata import annotation_matches
+from benchmarks.reporting.rescore import rescore
 
 
 def test_annotations_require_repository_and_exact_source_path():

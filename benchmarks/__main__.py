@@ -15,7 +15,7 @@ def fixture(
     font: Annotated[Path | None, typer.Option()] = None,
 ) -> None:
     """Generate multilingual text images for smoke testing, not quality evaluation."""
-    from benchmarks.fixtures import create
+    from benchmarks.datasets.fixtures import create
 
     try:
         create(output, font)
@@ -45,7 +45,7 @@ def run(
     ] = "user",
 ) -> None:
     """Run sequential local inference stages and write private JSON/Markdown reports."""
-    from benchmarks.runner import run as run_benchmark
+    from benchmarks.experiments.baseline import run as run_benchmark
     from realopen_lens.runtime.offline import enforce
 
     enforce()

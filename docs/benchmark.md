@@ -14,6 +14,35 @@ imports benchmark tooling. These tools are excluded from the application wheel
 and require a repository checkout with development dependencies installed.
 Run the commands below from the repository root.
 
+## Harness organization
+
+```text
+benchmarks/
+├── datasets/       # Downloads, deterministic generators, manifests and judgments
+├── metrics/        # OCR/retrieval metrics, quality verdicts and statistics
+├── runtime/        # Workers, process supervision, source identity and memory sampling
+├── storage/        # Resumable stage results, vectors and attempt history
+├── reporting/      # Image/query reports, comparisons, rescoring and validated merges
+├── experiments/    # Small/full suites, OCR comparisons and text-region studies
+├── sources/        # Frozen provenance, licenses and reference corrections
+├── ocr_assets/     # Reviewed OCR transcripts and asset manifest
+├── paths.py        # Stable source-metadata locations
+└── __main__.py     # Fixture and small-benchmark CLI
+```
+
+Published commands such as `python -m benchmarks.suite`, `benchmarks.dataset`,
+and `benchmarks.compare` remain available through thin top-level entry points.
+New implementation code imports shared helpers from the packages above, rather
+than importing utilities from an experiment command. The legacy `worker` entry
+point also remains available to preserved-baseline loading.
+
+The reorganization leaves evaluation criteria, dataset seeds, provenance identifiers,
+annotations and result schemas unchanged. Source fingerprints include relative
+Python paths and contents, so older interrupted runs cannot resume with the moved
+harness. Use a new output directory, or restore the original complete source
+checkout to resume an older run. Existing reports and evidence remain intact.
+Only benchmark code moved; application indexing fingerprints are unaffected.
+
 ## Setup
 
 Use Python 3.12 and [uv](https://docs.astral.sh/uv/). From the repository root:

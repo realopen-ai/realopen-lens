@@ -122,8 +122,8 @@ print(json.dumps(blocked))
 
 
 def test_component_merge_preserves_results_and_rejects_incomparable_runs(tmp_path):
-    from benchmarks.ocr_compare import merge_runs
-    from benchmarks.suite import connect, save_stage
+    from benchmarks.reporting.ocr import merge_runs
+    from benchmarks.storage.results import connect, save_stage
 
     row = {
         "id": "image",
@@ -178,7 +178,7 @@ def test_component_merge_preserves_results_and_rejects_incomparable_runs(tmp_pat
 
 def test_external_server_memory_counts_each_process_once(monkeypatch):
     from types import SimpleNamespace
-    from benchmarks.resources import MemoryMonitor
+    from benchmarks.runtime.resources import MemoryMonitor
 
     class Process:
         def __init__(self, pid=None):
@@ -190,7 +190,7 @@ def test_external_server_memory_counts_each_process_once(monkeypatch):
         def memory_info(self):
             return SimpleNamespace(rss=self.pid * 100)
 
-    monkeypatch.setattr("benchmarks.resources.psutil.Process", Process)
+    monkeypatch.setattr("benchmarks.runtime.resources.psutil.Process", Process)
     monitor = MemoryMonitor(external_pids=(2,))
     monitor._sample()
     assert monitor.peaks["startup"] == 600
@@ -225,18 +225,18 @@ def test_installed_cli_exposes_explicit_secondary_engine_and_defaults_to_tessera
 
 def test_glm_benchmark_metadata_does_not_require_optional_rapidocr(monkeypatch):
     from importlib.metadata import PackageNotFoundError
-    from benchmarks.ocr_compare import package_version
+    from benchmarks.runtime.identity import package_version
 
     def missing(name):
         raise PackageNotFoundError(name)
 
-    monkeypatch.setattr("benchmarks.ocr_compare.version", missing)
+    monkeypatch.setattr("benchmarks.runtime.identity.version", missing)
     assert package_version("rapidocr") is None
 
 
 def test_glm_run_identity_survives_json_pid_serialization(tmp_path, monkeypatch):
     from types import SimpleNamespace
-    from benchmarks import ocr_compare
+    from benchmarks.experiments import ocr_compare as ocr_compare
 
     dataset = tmp_path / "dataset"
     dataset.mkdir()
@@ -249,7 +249,7 @@ def test_glm_run_identity_survives_json_pid_serialization(tmp_path, monkeypatch)
             info={"digest": "a" * 64}, request=lambda path: {"models": []}
         ),
     )
-    monkeypatch.setattr("benchmarks.ollama_resources.server_pids", lambda pid: (42,))
+    monkeypatch.setattr("benchmarks.runtime.ollama.server_pids", lambda pid: (42,))
     monkeypatch.setattr(ocr_compare, "run_stage", lambda *args, **kwargs: [])
     monkeypatch.setattr(
         ocr_compare,

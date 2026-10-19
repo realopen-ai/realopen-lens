@@ -6,14 +6,13 @@ from importlib.metadata import distribution, version
 from pathlib import Path
 from time import perf_counter
 from typing import Any
-
 import numpy as np
 from PIL import Image
-
 from realopen_lens.encoders.onnx import image_rgb
 from realopen_lens.models.manager import digest
+from benchmarks.paths import SOURCES
 
-LOCK = Path(__file__).parent / "sources" / "rapidocr.lock.json"
+LOCK = SOURCES / "rapidocr.lock.json"
 
 
 def model_info() -> dict:
