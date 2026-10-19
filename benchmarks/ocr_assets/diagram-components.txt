@@ -1,0 +1,63 @@
+UI
+[Container: JavaScript and Angular]
+Single-page app that provides Internet banking functionality to customers via their web browser.
+Statement API
+[Component: Spring MVC]
+API endpoint for access to PDF statements.
+Sign In API
+[Component: Spring MVC]
+API endpoint for customer sign in.
+Accounts Summary API
+[Component: Spring MVC]
+API endpoint for bank accounts summary information.
+Email Component
+[Component: Spring Bean]
+Sends e-mails to users.
+Statement Component
+[Component: Spring Bean]
+Provides access to PDF statements.
+Core Banking System Adapter
+[Component: Spring Bean]
+A Java wrapper around the API provided by the Core Banking System.
+Security Component
+[Component: Spring Bean]
+Provides functionality related to signing in, changing passwords, etc.
+Statement Store
+[Container: Amazon Web Services S3 Bucket]
+Bank account statements rendered as PDF files.
+Database
+[Container: MySQL Database Schema]
+User account information, access logs, etc.
+Amazon Web Services Simple Email Service
+[Software System]
+Cloud-based email service provider.
+Core Banking System
+[Software System]
+Handles core banking functions including customer information, bank account management, transactions, etc.
+Requests statements from
+[JSON/HTTP]
+Makes sign in requests to
+[JSON/HTTP]
+Requests a list of bank accounts from
+[JSON/HTTP]
+Sends e-mails to customers using
+[AWS SES API/HTTP]
+Requests statements from
+Validates authentication token using
+Validates credentials using
+Validates authentication token using
+Requests lists of bank accounts from
+Sends emails using
+Requests statement information from
+Makes API requests to
+[XML/HTTPS]
+Reads from and writes to
+[AWS S3 API/HTTP]
+Reads from and writes to
+[MySQL protocol]
+Backend
+[Container]
+Internet Banking System
+[Software System]
+Component View: Internet Banking System - Backend
+The component diagram for the Internet Banking System Backend | Simon Brown | c4model.com | License: CC BY 4.0

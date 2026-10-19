@@ -46,7 +46,7 @@ plugin framework or speculative implementations.
 | UI | React, TypeScript, Vite |
 | CLI and development tooling | Typer, `pyproject.toml`, uv |
 | Optional training dependencies | scikit-learn and PyTorch |
-| Quality checks | pytest, Ruff, type checking, native OS CI |
+| Quality checks | pytest, Black, Flake8, Ruff, type checking, native OS CI |
 
 Pin model revisions, tokenizer files, preprocessing, ONNX exports, and checksums.
 Validate exports against reference outputs before distribution. Quantization and
@@ -73,7 +73,12 @@ writes without returning mismatched records.
 
 Search retrieves candidates independently through visual similarity, lexical
 OCR matching, and semantic OCR similarity. Aggregate passage matches into image
-results before reciprocal rank fusion. Apply filters consistently with the
+results before fusion. Preserve similarity scores and keep one bounded OCR
+contribution per image, so correlated lexical and semantic signals do not
+automatically outweigh strong visual matches. Weak OCR evidence leaves visual
+ordering unchanged. Fixed gates are versioned with their model export and
+validated against held-out data; equal-vote reciprocal rank fusion remains a
+historical benchmark baseline. Apply filters consistently with the
 candidate search so filtered queries do not silently lose relevant candidates.
 An optional learned reranker reorders the resulting pool.
 

@@ -1,0 +1,56 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "realopen-lens"
+version = "0.1.0"
+description = "Private, offline image search: initial inference benchmark"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "numpy>=2.2,<3",
+  "onnxruntime>=1.22,<2",
+  "Pillow>=11.3,<13",
+  "tokenizers>=0.21,<0.23",
+  "typer>=0.16,<1",
+]
+
+[project.scripts]
+lens = "realopen_lens.cli:app"
+
+[dependency-groups]
+dev = [
+  "psutil>=7,<8",
+  "black>=25.1,<27",
+  "flake8>=7.3,<8",
+  "pytest>=8.4,<10",
+  "ruff>=0.12,<1",
+  "mypy>=1.17,<2",
+  "types-psutil>=7,<8",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/realopen_lens"]
+
+[tool.black]
+target-version = ["py312"]
+line-length = 100
+extend-exclude = '/(alembic/versions)/'
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.mypy]
+python_version = "3.12"
+check_untyped_defs = true
+ignore_missing_imports = true

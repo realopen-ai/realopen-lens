@@ -1,0 +1,95 @@
+[
+  {
+    "image_id": "terminal/traceback.png",
+    "category": "terminal",
+    "url": "https://raw.githubusercontent.com/Textualize/rich/9d8f9a372cc5916fd4781fec207ced7ddac2f08f/imgs/traceback.png",
+    "source": "https://github.com/Textualize/rich",
+    "license_note": "MIT",
+    "sha256": "e125bdcaae65152ab4f4abd2ef56ce6995031b583af2f175cfd6f450c2541107",
+    "language": "en",
+    "reference_resource": "terminal-traceback.txt"
+  },
+  {
+    "image_id": "terminal/logging.png",
+    "category": "terminal",
+    "url": "https://raw.githubusercontent.com/Textualize/rich/9d8f9a372cc5916fd4781fec207ced7ddac2f08f/imgs/logging.png",
+    "source": "https://github.com/Textualize/rich",
+    "license_note": "MIT",
+    "sha256": "8ed54337f14607951cce1e879a31f40d4c0c7cb5c43defa0b549513c4efe0d51",
+    "language": "en",
+    "reference_resource": "terminal-logging.txt"
+  },
+  {
+    "image_id": "terminal/log.png",
+    "category": "terminal",
+    "url": "https://raw.githubusercontent.com/Textualize/rich/9d8f9a372cc5916fd4781fec207ced7ddac2f08f/imgs/log.png",
+    "source": "https://github.com/Textualize/rich",
+    "license_note": "MIT",
+    "sha256": "68cf3b05488f8e00e1f2be72b1eaeb6edb34f4d9c24f41615fced3ed3bf71e61",
+    "language": "en",
+    "reference_resource": "terminal-log.txt"
+  },
+  {
+    "image_id": "document/phototest.tif",
+    "category": "document",
+    "url": "https://raw.githubusercontent.com/tesseract-ocr/test/232ff181c66516116ec0e84c4963f70de15050fd/testing/phototest.tif",
+    "source": "https://github.com/tesseract-ocr/test",
+    "license_note": "Upstream Tesseract test-data provenance",
+    "sha256": "d2241a1eb6d6cd2eb6544b8e228c2862c852b7467d16ed636caa32179b780692",
+    "language": "en",
+    "reference_url": "https://raw.githubusercontent.com/tesseract-ocr/test/232ff181c66516116ec0e84c4963f70de15050fd/testing/phototest.txt",
+    "reference_sha256": "76ef157baeb6ab275b7d90f310477a8060d5822aea2b2e05d480f459b016a6ed"
+  },
+  {
+    "image_id": "document/8071_093.3B.tif",
+    "category": "document",
+    "url": "https://raw.githubusercontent.com/tesseract-ocr/test/232ff181c66516116ec0e84c4963f70de15050fd/testing/8071_093.3B.tif",
+    "source": "https://github.com/tesseract-ocr/test",
+    "license_note": "Upstream Tesseract test-data provenance",
+    "sha256": "d4f01cba19c99f8894d94a6d43eb8ed8013f8cf17fc08af9346bb9fb3697d452",
+    "language": "en",
+    "reference_url": "https://raw.githubusercontent.com/tesseract-ocr/test/232ff181c66516116ec0e84c4963f70de15050fd/testing/8071_093.3B.txt",
+    "reference_sha256": "29f290e47012a809f5139c796493b3c693e44e009dd8fb3dafe15420e8b4c7d5"
+  },
+  {
+    "image_id": "document/8087_054.3B.tif",
+    "category": "document",
+    "url": "https://raw.githubusercontent.com/tesseract-ocr/test/232ff181c66516116ec0e84c4963f70de15050fd/testing/8087_054.3B.tif",
+    "source": "https://github.com/tesseract-ocr/test",
+    "license_note": "Upstream Tesseract test-data provenance",
+    "sha256": "dab6db0f4c32296f313c7f1e7e139b13d7c69be65c64d6016f85ea67ebca9102",
+    "language": "en",
+    "reference_url": "https://raw.githubusercontent.com/tesseract-ocr/test/232ff181c66516116ec0e84c4963f70de15050fd/testing/8087_054.3B.txt",
+    "reference_sha256": "9965c66f974f85c25e51041b47aceed287dd2302abd64d7e969af674dca83edb"
+  },
+  {
+    "image_id": "diagram/SystemContext.png",
+    "category": "diagram",
+    "url": "https://c4model.com/images/examples/SystemContext.png",
+    "source": "https://c4model.com/diagrams/system-context",
+    "license_note": "CC BY 4.0; Simon Brown / C4 model",
+    "sha256": "7ad1e8928211e999b08079bcc1c52f4bc3eb86b1616ed21f253d669c996e4eb9",
+    "language": "en",
+    "reference_resource": "diagram-context.txt"
+  },
+  {
+    "image_id": "diagram/Containers.png",
+    "category": "diagram",
+    "url": "https://c4model.com/images/examples/Containers.png",
+    "source": "https://c4model.com/diagrams/container",
+    "license_note": "CC BY 4.0; Simon Brown / C4 model",
+    "sha256": "56ba3243f58eb63b84e7a146520da8c0e49fff66f754e5a880dd15b6df772e68",
+    "language": "en",
+    "reference_resource": "diagram-containers.txt"
+  },
+  {
+    "image_id": "diagram/Components.png",
+    "category": "diagram",
+    "url": "https://c4model.com/images/examples/Components.png",
+    "source": "https://c4model.com/diagrams/component",
+    "license_note": "CC BY 4.0; Simon Brown / C4 model",
+    "sha256": "cef01dbbd1e1ab92e61d06a5be5bab848bf14b914e20b814a8319a0c1e86bd07",
+    "language": "en",
+    "reference_resource": "diagram-components.txt"
+  }
+]

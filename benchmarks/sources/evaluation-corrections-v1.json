@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "reason": "Post-run visual audit; unchanged inference and rankings; identical corrections to both runs.",
+  "images": [
+    {
+      "id": "diagrams/mermaid-js-mermaid/83bfac3b1c-header.png",
+      "expected_key_phrases": [
+        "This is a header"
+      ],
+      "key_phrases": [],
+      "reason": "Basename collision with Streamlit header.png; Mermaid source is a diagram collage."
+    },
+    {
+      "id": "challenging/low-resolution/040.png",
+      "expected_key_phrases": [
+        "This is a header"
+      ],
+      "key_phrases": [],
+      "reason": "Inherited invalid reference from Mermaid parent."
+    },
+    {
+      "id": "screenshots/jupyterlab-jupyterlab/34ca6fbad0-4.2-delete-shortcut.png",
+      "expected_key_phrases": [
+        "Keyboard Shortcuts",
+        "Remove Shortcut"
+      ],
+      "key_phrases": [
+        "Keyboard Shortcuts",
+        "Delete Keybinding"
+      ],
+      "reason": "Original context menu visibly reads Delete Keybinding."
+    }
+  ],
+  "exclude_queries": [
+    {
+      "id": "diagrams/mermaid-js-mermaid/83bfac3b1c-header.png::q0",
+      "reason": "Query describes unrelated screenshot; invalid known-positive judgment."
+    }
+  ]
+}

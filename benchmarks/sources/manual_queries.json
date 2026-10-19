@@ -1,0 +1,180 @@
+[
+  {
+    "basename": "metric.jpg",
+    "query": "A dashboard showing temperature, wind speed and humidity",
+    "key_phrases": [
+      "Temperature",
+      "Humidity"
+    ],
+    "repo": "streamlit/docs",
+    "source_path": "public/images/api/metric.jpg"
+  },
+  {
+    "basename": "checkbox.jpg",
+    "query": "The checkbox to rebuild the model each time",
+    "key_phrases": [
+      "Rebuild model each time"
+    ],
+    "repo": "streamlit/docs",
+    "source_path": "public/images/api/checkbox.jpg"
+  },
+  {
+    "basename": "radio.jpg",
+    "query": "Classify an image as a dog, cat or goldfish",
+    "key_phrases": [
+      "Classify image",
+      "Goldfish"
+    ],
+    "repo": "streamlit/docs",
+    "source_path": "public/images/api/radio.jpg"
+  },
+  {
+    "basename": "slider.jpg",
+    "query": "A slider for picking a number from zero to one hundred",
+    "key_phrases": [
+      "Pick a number"
+    ],
+    "repo": "streamlit/docs",
+    "source_path": "public/images/api/slider.jpg"
+  },
+  {
+    "basename": "select_slider.jpg",
+    "query": "Choose the dominant color in an image between red and violet",
+    "key_phrases": [
+      "Dominant color in image",
+      "violet"
+    ],
+    "repo": "streamlit/docs",
+    "source_path": "public/images/api/select_slider.jpg"
+  },
+  {
+    "basename": "title.jpg",
+    "query": "Examples of different title sizes",
+    "key_phrases": [
+      "This is a title"
+    ],
+    "repo": "streamlit/docs",
+    "source_path": "public/images/api/title.jpg"
+  },
+  {
+    "basename": "menu_button.jpg",
+    "query": "The export menu with CSV, JSON and PDF options",
+    "key_phrases": [
+      "Export",
+      "CSV",
+      "JSON",
+      "PDF"
+    ],
+    "repo": "streamlit/docs",
+    "source_path": "public/images/api/menu_button.jpg"
+  },
+  {
+    "basename": "badge.jpg",
+    "query": "Status badges for success and items needing review",
+    "key_phrases": [
+      "Success",
+      "Needs review"
+    ],
+    "repo": "streamlit/docs",
+    "source_path": "public/images/api/badge.jpg"
+  },
+  {
+    "basename": "navigation.jpg",
+    "query": "The account navigation menu with a log out action",
+    "key_phrases": [
+      "Your account",
+      "Log out"
+    ],
+    "repo": "streamlit/docs",
+    "source_path": "public/images/api/navigation.jpg"
+  },
+  {
+    "basename": "pills.jpg",
+    "query": "Selectable tags for sports, AI and politics",
+    "key_phrases": [
+      "Sports",
+      "Politics"
+    ],
+    "repo": "streamlit/docs",
+    "source_path": "public/images/api/pills.jpg"
+  },
+  {
+    "basename": "time_input.jpg",
+    "query": "Set an alarm using a time input control",
+    "key_phrases": [
+      "Set an alarm for"
+    ],
+    "repo": "streamlit/docs",
+    "source_path": "public/images/api/time_input.jpg"
+  },
+  {
+    "basename": "11-08-low-memory.png",
+    "query": "The IDE warning that it is running low on memory",
+    "key_phrases": [
+      "Low memory"
+    ],
+    "repo": "JabRef/jabref",
+    "source_path": "docs/getting-into-the-code/guidelines-for-setting-up-a-local-workspace/11-08-low-memory.png"
+  },
+  {
+    "basename": "12-05-download-jdk-dialog.png",
+    "query": "The download JDK dialog for Eclipse Temurin",
+    "key_phrases": [
+      "Download JDK",
+      "Eclipse Temurin"
+    ],
+    "repo": "JabRef/jabref",
+    "source_path": "docs/getting-into-the-code/guidelines-for-setting-up-a-local-workspace/12-05-download-jdk-dialog.png"
+  },
+  {
+    "basename": "calcinline.png",
+    "query": "A calculator application with orange operation buttons",
+    "repo": "Textualize/textual",
+    "source_path": "docs/blog/images/calcinline.png"
+  },
+  {
+    "basename": "weather.png",
+    "query": "A terminal dashboard with several weather graphs",
+    "repo": "Textualize/textual",
+    "source_path": "docs/blog/images/textual-plotext/weather.png"
+  },
+  {
+    "basename": "4.2-delete-shortcut.png",
+    "query": "Jupyter keyboard shortcuts and the remove shortcut action",
+    "key_phrases": [
+      "Keyboard Shortcuts",
+      "Delete Keybinding"
+    ],
+    "repo": "jupyterlab/jupyterlab",
+    "source_path": "docs/source/getting_started/changelog_assets/4.2-delete-shortcut.png"
+  },
+  {
+    "basename": "4.3-dialogs.png",
+    "query": "A server connection error dialog next to a restart kernel dialog",
+    "key_phrases": [
+      "Server Connection Error",
+      "Restart Kernel"
+    ],
+    "repo": "jupyterlab/jupyterlab",
+    "source_path": "docs/source/getting_started/changelog_assets/4.3-dialogs.png"
+  },
+  {
+    "basename": "4.2-recent-sidebar.png",
+    "query": "The recently closed documents sidebar with notebook and README files",
+    "key_phrases": [
+      "RECENTLY CLOSED",
+      "README.md"
+    ],
+    "repo": "jupyterlab/jupyterlab",
+    "source_path": "docs/source/getting_started/changelog_assets/4.2-recent-sidebar.png"
+  },
+  {
+    "basename": "4.6-open-in-terminal.png",
+    "query": "The file browser context menu action to open in terminal",
+    "key_phrases": [
+      "Open in Terminal"
+    ],
+    "repo": "jupyterlab/jupyterlab",
+    "source_path": "docs/source/getting_started/changelog_assets/4.6-open-in-terminal.png"
+  }
+]

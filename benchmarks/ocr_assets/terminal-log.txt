@@ -1,0 +1,21 @@
+bash
+(console) willmcgugan@mbp:~$ python test_log.py
+[13:27:47] Hello from <console width=103 ColorSystem.TRUECOLOR> ! test_log.py:16
+[ test_log.py:17
+{
+'id': '1',
+'jsonrpc': '2.0',
+'method': 'sum',
+'params': [None, 1, 2, 4, False, True],
+},
+{'jsonrpc': '2.0', 'method': 'notify_hello', 'params': [7]},
+{'id': '2', 'jsonrpc': '2.0', 'method': 'subtract', 'params': [42, 23]},
+]
+locals
+context = {'foo': 'bar'}
+enabled = False
+movies = [
+'Deadpool',
+'Rise of the Skywalker',
+]
+(console) willmcgugan@mbp:~$
