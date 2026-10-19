@@ -1,0 +1,1248 @@
+{
+  "version": 1,
+  "scope": "60 intents (88 distinct images) inspected before retrieval evaluation, including 12 seeded fresh-photo targets and multi-positive report/workflow queries. Same-split negatives describe distinct inspected required content; ambiguous intent pairs remain unjudged. Agent review and translations, without independent human/native-speaker review or exhaustive corpus judgments. Legacy targets were used in prior pipeline development; new-scale targets are reported separately.",
+  "intents": [
+    {
+      "id": "photos-00",
+      "image_id": "photos/COCO_val2014_000000000636.jpg",
+      "image_sha256": "eaf70647dba7ad4f64c0e7646485e536c4bd1c0eb4e1476ec5e747bd6d6cf093",
+      "category": "photos",
+      "texts": {
+        "en": "Photograph of a white toilet seat with the lid raised and a visible hole below.",
+        "fr": "Photo d’un siège de toilettes blanc avec le couvercle relevé et un trou visible en dessous.",
+        "ar": "صورة لمقعد مرحاض أبيض بغطاء مرفوع وفتحة ظاهرة في الأسفل."
+      },
+      "evidence": "Photograph of a white toilet seat with the lid raised and a visible hole below.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "photos-01",
+      "image_id": "photos/COCO_val2014_000000004972.jpg",
+      "image_sha256": "3357434d4d457f91281aafa0e713efbdb2317b8ccba983b80b8275e35b8b8ba0",
+      "category": "photos",
+      "texts": {
+        "en": "Black and white photograph of an armored person sitting beside a horse.",
+        "fr": "Photo en noir et blanc d’une personne en armure assise à côté d’un cheval.",
+        "ar": "صورة بالأبيض والأسود لشخص يرتدي درعا ويجلس بجانب حصان."
+      },
+      "evidence": "Black and white photograph of an armored person sitting beside a horse.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "photos-02",
+      "image_id": "photos/COCO_val2014_000000019888.jpg",
+      "image_sha256": "c396521808bfde59b56d14b48c6e41a42f51f761b24432fac297e4867582cf18",
+      "category": "photos",
+      "texts": {
+        "en": "Photograph of a bed with a gray patterned duvet beside a large window.",
+        "fr": "Photo d’un lit avec une couette grise à motifs près d’une grande fenêtre.",
+        "ar": "صورة لسرير بلحاف رمادي مزخرف بجانب نافذة كبيرة."
+      },
+      "evidence": "Photograph of a bed with a gray patterned duvet beside a large window.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "photos-03",
+      "image_id": "photos/COCO_val2014_000000021198.jpg",
+      "image_sha256": "09380150b1421da0ffebe66670266bc9856311babf8058aa8283218dbbb624d0",
+      "category": "photos",
+      "texts": {
+        "en": "Fisheye photograph of a dining table with people beside a bright window.",
+        "fr": "Photo au grand angle d’une table avec des personnes près d’une fenêtre lumineuse.",
+        "ar": "صورة بعدسة واسعة لطاولة طعام مع أشخاص بجانب نافذة مضيئة."
+      },
+      "evidence": "Fisheye photograph of a dining table with people beside a bright window.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "photos-04",
+      "image_id": "photos/COCO_val2014_000000021284.jpg",
+      "image_sha256": "90a1de9bd77da9cc94b3264b6dd937ef2cf992fa4c514098a41727b2816df1f1",
+      "category": "photos",
+      "texts": {
+        "en": "Photograph of a surfer in a yellow shirt inside a breaking ocean wave.",
+        "fr": "Photo d’un surfeur en maillot jaune dans une vague qui déferle.",
+        "ar": "صورة لراكب أمواج بقميص أصفر داخل موجة بحرية متكسرة."
+      },
+      "evidence": "Photograph of a surfer in a yellow shirt inside a breaking ocean wave.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "photos-05",
+      "image_id": "photos/COCO_val2014_000000024343.jpg",
+      "image_sha256": "36e1a6d10c0468362f4c61b856de8c868f7d1d657ad6b45c383afe18d544dca1",
+      "category": "photos",
+      "texts": {
+        "en": "Photograph of two helmeted motorcyclists stopped together on a street.",
+        "fr": "Photo de deux motards casqués arrêtés ensemble dans une rue.",
+        "ar": "صورة لسائقي دراجتين ناريتين يرتديان خوذتين ومتوقفين معا في شارع."
+      },
+      "evidence": "Photograph of two helmeted motorcyclists stopped together on a street.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "photos-06",
+      "image_id": "photos/COCO_val2014_000000027620.jpg",
+      "image_sha256": "035a452ad79eb267a669fad48b220b1bf7d2e3500a5d736a195dc007df01bbfe",
+      "category": "photos",
+      "texts": {
+        "en": "Photograph of a laptop on a glass desk beside headphones and a gray office chair.",
+        "fr": "Photo d’un ordinateur portable sur un bureau en verre avec un casque et une chaise grise.",
+        "ar": "صورة لحاسوب محمول على مكتب زجاجي بجانب سماعات وكرسي مكتبي رمادي."
+      },
+      "evidence": "Photograph of a laptop on a glass desk beside headphones and a gray office chair.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "photos-07",
+      "image_id": "photos/COCO_val2014_000000030667.jpg",
+      "image_sha256": "eec965e56631b55d74374cceb543bfa2f02e7c2f5e9f4c72f1b2647866a357f2",
+      "category": "photos",
+      "texts": {
+        "en": "Photograph of a brown dog lying between seated people’s legs.",
+        "fr": "Photo d’un chien brun couché entre les jambes de personnes assises.",
+        "ar": "صورة لكلب بني مستلق بين أرجل أشخاص جالسين."
+      },
+      "evidence": "Photograph of a brown dog lying between seated people’s legs.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "photos-08",
+      "image_id": "photos/COCO_val2014_000000038210.jpg",
+      "image_sha256": "0317a0094f357ea07c293ee9c32e58a87e5e0a5438c6d9c09250266df1249a00",
+      "category": "photos",
+      "texts": {
+        "en": "Photograph of a cross-country skier wearing bib 32 on a snowy forest trail.",
+        "fr": "Photo d’un skieur de fond portant le dossard 32 sur un sentier forestier enneigé.",
+        "ar": "صورة لمتزلج تزلج ريفي يرتدي الرقم 32 على مسار ثلجي في الغابة."
+      },
+      "evidence": "Photograph of a cross-country skier wearing bib 32 on a snowy forest trail.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "photos-09",
+      "image_id": "photos/COCO_val2014_000000041867.jpg",
+      "image_sha256": "759f79c45cea90b9130c58727e141594bab413709b267c87148d4f058cd2bdad",
+      "category": "photos",
+      "texts": {
+        "en": "Photograph of a brown bird with a yellow eye patch and an open beak on grass.",
+        "fr": "Photo d’un oiseau brun au contour des yeux jaune et au bec ouvert dans l’herbe.",
+        "ar": "صورة لطائر بني ببقعة صفراء حول العين ومنقار مفتوح على العشب."
+      },
+      "evidence": "Photograph of a brown bird with a yellow eye patch and an open beak on grass.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "photos-10",
+      "image_id": "photos/COCO_val2014_000000044112.jpg",
+      "image_sha256": "d3f6c1c5a5b94c44e33134c659b32ac352a67b6a77cc566bd45ccb3c2bcf3b7d",
+      "category": "photos",
+      "texts": {
+        "en": "Photograph of an open refrigerator filled with jars and bottles.",
+        "fr": "Photo d’un réfrigérateur ouvert rempli de bocaux et de bouteilles.",
+        "ar": "صورة لثلاجة مفتوحة مليئة بالمرطبانات والزجاجات."
+      },
+      "evidence": "Photograph of an open refrigerator filled with jars and bottles.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "photos-11",
+      "image_id": "photos/COCO_val2014_000000048905.jpg",
+      "image_sha256": "00c417f6b122d999ff719fed6c7f35362884cc40f98bb4359a58918c963d9d08",
+      "category": "photos",
+      "texts": {
+        "en": "Photograph of a kitchen island with a sink, wooden cabinets, and a stainless steel refrigerator.",
+        "fr": "Photo d’un îlot de cuisine avec évier, placards en bois et réfrigérateur en inox.",
+        "ar": "صورة لجزيرة مطبخ بحوض وخزائن خشبية وثلاجة من الفولاذ المقاوم للصدأ."
+      },
+      "evidence": "Photograph of a kitchen island with a sink, wooden cabinets, and a stainless steel refrigerator.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "screenshots-00",
+      "image_id": "screenshots/JabRef-jabref/0df3ea4eb7-panel-step.png",
+      "image_sha256": "6df05495f04a877c52b1fd0dc2be80505435bb5cab18529c83fe29573c224db0",
+      "category": "screenshots",
+      "texts": {
+        "en": "Application screenshot instructing the user to click Save to save changes in fulltext indexing settings.",
+        "fr": "Capture d’application demandant de cliquer sur Save pour enregistrer les réglages d’indexation du texte.",
+        "ar": "لقطة شاشة لتطبيق يطلب النقر على Save لحفظ تغييرات إعدادات فهرسة النص الكامل."
+      },
+      "evidence": "Application screenshot instructing the user to click Save to save changes in fulltext indexing settings.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "screenshots-01",
+      "image_id": "screenshots/JabRef-jabref/9e075dcb51-11-08-low-memory.png",
+      "image_sha256": "cbcd5262d603c810875fa28ced256ddefc2f8070e2011ccd91c346ce774a9c55",
+      "category": "screenshots",
+      "texts": {
+        "en": "IDE screenshot showing a Low memory warning and Prepare memory report.",
+        "fr": "Capture d’un IDE affichant l’alerte Low memory et Prepare memory report.",
+        "ar": "لقطة شاشة لبيئة تطوير تعرض تحذير Low memory وخيار Prepare memory report."
+      },
+      "evidence": "IDE screenshot showing a Low memory warning and Prepare memory report.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "screenshots-02",
+      "image_id": "screenshots/Textualize-rich/3097132582-columns.png",
+      "image_sha256": "5add7e8c4b16ac3e7e227bf17737d845e1aaa63187feb4808e4bc0b05d310e93",
+      "category": "screenshots",
+      "texts": {
+        "en": "Terminal screenshot with JSON above columns of people’s names and countries.",
+        "fr": "Capture de terminal avec du JSON au-dessus de colonnes de noms de personnes et de pays.",
+        "ar": "لقطة شاشة لطرفية تعرض JSON فوق أعمدة بأسماء أشخاص وبلدان."
+      },
+      "evidence": "Terminal screenshot with JSON above columns of people’s names and countries.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "screenshots-03",
+      "image_id": "screenshots/Textualize-rich/cbb9e77cb1-tree.png",
+      "image_sha256": "76242485aec1263b67d9edeaaba65009e38da897b0344001983673e8ae1b2d6d",
+      "category": "screenshots",
+      "texts": {
+        "en": "Terminal screenshot displaying a Rich Tree with Renderables, Syntax, Markdown, and Containers.",
+        "fr": "Capture de terminal montrant Rich Tree avec Renderables, Syntax, Markdown et Containers.",
+        "ar": "لقطة شاشة لطرفية تعرض Rich Tree مع Renderables وSyntax وMarkdown وContainers."
+      },
+      "evidence": "Terminal screenshot displaying a Rich Tree with Renderables, Syntax, Markdown, and Containers.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "screenshots-04",
+      "image_id": "screenshots/Textualize-textual/6faa06560f-gridinfo-1.png",
+      "image_sha256": "8c55bab323e07274390106033f1667dccfd51691a3321be457f28552c6e505a8",
+      "category": "screenshots",
+      "texts": {
+        "en": "Terminal dashboard titled Grid Information with Grid Currency and Grid Size sections.",
+        "fr": "Tableau de bord de terminal intitulé Grid Information avec Grid Currency et Grid Size.",
+        "ar": "لوحة معلومات في طرفية بعنوان Grid Information وبقسمي Grid Currency وGrid Size."
+      },
+      "evidence": "Terminal dashboard titled Grid Information with Grid Currency and Grid Size sections.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "screenshots-05",
+      "image_id": "screenshots/jupyterlab-jupyterlab/056c9022c9-4.5-media-support.png",
+      "image_sha256": "7c7a79af766f7fce45b422ea1c5152eb37ed3e4654dea00d93c4212d0cc107ad",
+      "category": "screenshots",
+      "texts": {
+        "en": "JupyterLab screenshot playing road_drive.mp4 with a winding road through a forest.",
+        "fr": "Capture de JupyterLab lisant road_drive.mp4 avec une route sinueuse dans une forêt.",
+        "ar": "لقطة شاشة لجوبتر لاب تشغل road_drive.mp4 وتعرض طريقا متعرجا في غابة."
+      },
+      "evidence": "JupyterLab screenshot playing road_drive.mp4 with a winding road through a forest.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "screenshots-06",
+      "image_id": "screenshots/jupyterlab-jupyterlab/47a455434c-4.6-kernel-sources-filter.png",
+      "image_sha256": "d36e0f716b911eb14d94ce3f9a25b51dda2c3a58591b02ebcbe4e289025cc3b9",
+      "category": "screenshots",
+      "texts": {
+        "en": "Screenshot of KERNEL SOURCES filtered by stat, listing jedi, prompt_toolkit, and pstats.",
+        "fr": "Capture de KERNEL SOURCES filtré par stat avec jedi, prompt_toolkit et pstats.",
+        "ar": "لقطة شاشة لقائمة KERNEL SOURCES بعد تصفيتها بكلمة stat وتضم jedi وprompt_toolkit وpstats."
+      },
+      "evidence": "Screenshot of KERNEL SOURCES filtered by stat, listing jedi, prompt_toolkit, and pstats.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "screenshots-07",
+      "image_id": "screenshots/jupyterlab-jupyterlab/de83cbb4e2-4.5-debugger-console.png",
+      "image_sha256": "7e2c244a661e4294bd02ebfb3feddea510625276ef61fc7efdac1d48d6aec57b",
+      "category": "screenshots",
+      "texts": {
+        "en": "JupyterLab screenshot debugging a factorial function beside CALLSTACK and BREAKPOINTS.",
+        "fr": "Capture de JupyterLab déboguant une fonction factorielle avec CALLSTACK et BREAKPOINTS.",
+        "ar": "لقطة شاشة لجوبتر لاب أثناء تنقيح دالة المضروب بجوار CALLSTACK وBREAKPOINTS."
+      },
+      "evidence": "JupyterLab screenshot debugging a factorial function beside CALLSTACK and BREAKPOINTS.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "screenshots-08",
+      "image_id": "screenshots/streamlit-docs/59872279d9-select_slider.jpg",
+      "image_sha256": "9d6559351367e3d2518bdac15578d167197fad48f0dfe087290affd495124900",
+      "category": "screenshots",
+      "texts": {
+        "en": "Interface screenshot of a Dominant color in image slider selecting blue between red and violet.",
+        "fr": "Capture d’interface avec un curseur Dominant color in image sélectionnant blue entre red et violet.",
+        "ar": "لقطة شاشة لواجهة فيها منزلق Dominant color in image يحدد blue بين red وviolet."
+      },
+      "evidence": "Interface screenshot of a Dominant color in image slider selecting blue between red and violet.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "screenshots-09",
+      "image_id": "screenshots/streamlit-docs/99cbd082f1-slider.jpg",
+      "image_sha256": "797101f6c3d8b2bb090e43ff8af7eea3832a36c3013020d6735d2854950af063",
+      "category": "screenshots",
+      "texts": {
+        "en": "Interface screenshot of a Pick a number slider set to 42 on a zero to one hundred scale.",
+        "fr": "Capture d’interface avec un curseur Pick a number réglé sur 42 entre zéro et cent.",
+        "ar": "لقطة شاشة لواجهة فيها منزلق Pick a number مضبوط على 42 بين صفر ومئة."
+      },
+      "evidence": "Interface screenshot of a Pick a number slider set to 42 on a zero to one hundred scale.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "documents-00",
+      "image_id": "documents/pdf-forms/f1040-page1.png",
+      "image_sha256": "9941b2d43cbcdaa118b97f9523071562ff7d105073c2a16a2eb585ce4fa62be5",
+      "category": "documents",
+      "texts": {
+        "en": "IRS Form 1040 titled U.S. Individual Income Tax Return.",
+        "fr": "Document du formulaire IRS 1040 intitulé U.S. Individual Income Tax Return.",
+        "ar": "وثيقة نموذج مصلحة الضرائب 1040 بعنوان U.S. Individual Income Tax Return."
+      },
+      "evidence": "IRS Form 1040 titled U.S. Individual Income Tax Return.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "documents-01",
+      "image_id": "documents/pdf-forms/f1065-page1.png",
+      "image_sha256": "3dc64f2a50194b779fb6145d2e486e3e878660855eba8160bca89de108ceafce",
+      "category": "documents",
+      "texts": {
+        "en": "IRS Form 1065 titled U.S. Return of Partnership Income.",
+        "fr": "Formulaire IRS 1065 intitulé U.S. Return of Partnership Income.",
+        "ar": "نموذج مصلحة الضرائب 1065 بعنوان U.S. Return of Partnership Income."
+      },
+      "evidence": "IRS Form 1065 titled U.S. Return of Partnership Income.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "documents-02",
+      "image_id": "documents/pdf-forms/f1099msc-page2.png",
+      "image_sha256": "23cbad36a51fe78c937ce7518518c7b53744ef7c9d8af2cad61e6514ecf3371d",
+      "category": "documents",
+      "texts": {
+        "en": "Red IRS Form 1099-MISC titled Miscellaneous Information.",
+        "fr": "Formulaire IRS 1099-MISC rouge intitulé Miscellaneous Information.",
+        "ar": "نموذج مصلحة الضرائب 1099-MISC باللون الأحمر بعنوان Miscellaneous Information."
+      },
+      "evidence": "Red IRS Form 1099-MISC titled Miscellaneous Information.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "documents-03",
+      "image_id": "documents/pdf-forms/f1099nec-page2.png",
+      "image_sha256": "5c5efe956c770e45cab85d3ae139bb1f2a895e18a267f81a2b9b45dd33b35f1e",
+      "category": "documents",
+      "texts": {
+        "en": "Red IRS Form 1099-NEC titled Nonemployee Compensation.",
+        "fr": "Formulaire IRS 1099-NEC rouge intitulé Nonemployee Compensation.",
+        "ar": "نموذج مصلحة الضرائب 1099-NEC باللون الأحمر بعنوان Nonemployee Compensation."
+      },
+      "evidence": "Red IRS Form 1099-NEC titled Nonemployee Compensation.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "documents-04",
+      "image_id": "documents/pdf-forms/f1120-page1.png",
+      "image_sha256": "4a4731fdd125f0391cb7d9857c2a4216fb41001ceec024fbd3a19c134107d07a",
+      "category": "documents",
+      "texts": {
+        "en": "IRS Form 1120 titled U.S. Corporation Income Tax Return.",
+        "fr": "Formulaire IRS 1120 intitulé U.S. Corporation Income Tax Return.",
+        "ar": "نموذج مصلحة الضرائب 1120 بعنوان U.S. Corporation Income Tax Return."
+      },
+      "evidence": "IRS Form 1120 titled U.S. Corporation Income Tax Return.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "documents-05",
+      "image_id": "documents/pdf-forms/f2553-page1.png",
+      "image_sha256": "cb143680d8be477de694f9d14790bd596e62b28da4201d2292a03b4198dd20ce",
+      "category": "documents",
+      "texts": {
+        "en": "IRS Form 2553 titled Election by a Small Business Corporation.",
+        "fr": "Formulaire IRS 2553 intitulé Election by a Small Business Corporation.",
+        "ar": "نموذج مصلحة الضرائب 2553 بعنوان Election by a Small Business Corporation."
+      },
+      "evidence": "IRS Form 2553 titled Election by a Small Business Corporation.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "documents-06",
+      "image_id": "documents/pdf-forms/f2848-page1.png",
+      "image_sha256": "034c4e989231d019d9fa7d9211513c188fe51f60cbad5f7d5ffeffb88fec82cf",
+      "category": "documents",
+      "texts": {
+        "en": "IRS Form 2848 titled Power of Attorney and Declaration of Representative.",
+        "fr": "Formulaire IRS 2848 intitulé Power of Attorney and Declaration of Representative.",
+        "ar": "نموذج مصلحة الضرائب 2848 بعنوان Power of Attorney and Declaration of Representative."
+      },
+      "evidence": "IRS Form 2848 titled Power of Attorney and Declaration of Representative.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "documents-07",
+      "image_id": "documents/pdf-forms/f4506t-page1.png",
+      "image_sha256": "35ce503f4ff3cfe372681013fd15b606a7ff566d238eb00937310a35b3d8a8cb",
+      "category": "documents",
+      "texts": {
+        "en": "IRS Form 4506-T titled Request for Transcript of Tax Return.",
+        "fr": "Formulaire IRS 4506-T intitulé Request for Transcript of Tax Return.",
+        "ar": "نموذج مصلحة الضرائب 4506-T بعنوان Request for Transcript of Tax Return."
+      },
+      "evidence": "IRS Form 4506-T titled Request for Transcript of Tax Return.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "documents-08",
+      "image_id": "documents/pdf-forms/f4868-page1.png",
+      "image_sha256": "19bc398456f1e1ed510a69b1921c397d43545e24abe1726007dccc95015a4d4b",
+      "category": "documents",
+      "texts": {
+        "en": "IRS Form 4868 for an automatic extension of time to file an individual income tax return.",
+        "fr": "Formulaire IRS 4868 pour une prolongation automatique du délai de déclaration de revenus.",
+        "ar": "نموذج مصلحة الضرائب 4868 لتمديد مهلة تقديم إقرار ضريبة الدخل الفردي تلقائيا."
+      },
+      "evidence": "IRS Form 4868 for an automatic extension of time to file an individual income tax return.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "documents-09",
+      "image_id": "documents/pdf-forms/f8822-page1.png",
+      "image_sha256": "00a97aa7dd3ecb68d8d5c3b420dae76d21502f4883bb54c01b7f0aa281980b83",
+      "category": "documents",
+      "texts": {
+        "en": "IRS Form 8822 titled Change of Address.",
+        "fr": "Formulaire IRS 8822 intitulé Change of Address.",
+        "ar": "نموذج مصلحة الضرائب 8822 بعنوان Change of Address."
+      },
+      "evidence": "IRS Form 8822 titled Change of Address.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "documents-10",
+      "image_id": "documents/pdf-forms/f8962-page1.png",
+      "image_sha256": "20ba3cd1007ed4d48e3cbe5ef09ea327693b64d6136a374c2f77734c5eda9c4b",
+      "category": "documents",
+      "texts": {
+        "en": "IRS Form 8962 titled Premium Tax Credit.",
+        "fr": "Formulaire IRS 8962 intitulé Premium Tax Credit.",
+        "ar": "نموذج مصلحة الضرائب 8962 بعنوان Premium Tax Credit."
+      },
+      "evidence": "IRS Form 8962 titled Premium Tax Credit.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "documents-11",
+      "image_id": "documents/pdf-forms/f940-page1.png",
+      "image_sha256": "e4f432e3c6bd6197b8596c2a4e443f2f5e5dda85bd43d9e8154bba5cccbd9db5",
+      "category": "documents",
+      "texts": {
+        "en": "IRS Form 940 for Employer’s Annual Federal Unemployment Tax Return.",
+        "fr": "Formulaire IRS 940 pour la déclaration annuelle de l’employeur de la taxe fédérale sur le chômage.",
+        "ar": "نموذج مصلحة الضرائب 940 لإقرار صاحب العمل السنوي لضريبة البطالة الفيدرالية."
+      },
+      "evidence": "IRS Form 940 for Employer’s Annual Federal Unemployment Tax Return.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "diagrams-00",
+      "image_id": "diagrams/c4/Components.png",
+      "image_sha256": "cef01dbbd1e1ab92e61d06a5be5bab848bf14b914e20b814a8319a0c1e86bd07",
+      "category": "diagrams",
+      "texts": {
+        "en": "Software component architecture diagram of an Internet Banking System with Statement API, Sign In API, and Database.",
+        "fr": "Diagramme d’architecture des composants d’un système bancaire avec Statement API, Sign In API et Database.",
+        "ar": "مخطط معمارية مكونات نظام مصرفي عبر الإنترنت يتضمن Statement API وSign In API وDatabase."
+      },
+      "evidence": "Software component architecture diagram of an Internet Banking System with Statement API, Sign In API, and Database.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "diagrams-01",
+      "image_id": "diagrams/matplotlib-matplotlib/13fbde2c47-marker_edges.png",
+      "image_sha256": "cc2b34bf8d484c7a87b6abb52c6fbde04592c0e056bf7000419c1cb82a5e44d4",
+      "category": "diagrams",
+      "texts": {
+        "en": "Scatter plot with diagonal rows of yellow circular markers outlined in different colors.",
+        "fr": "Nuage de points avec des rangées diagonales de cercles jaunes bordés de différentes couleurs.",
+        "ar": "مخطط نقاط بصفوف قطرية من علامات دائرية صفراء بحدود متعددة الألوان."
+      },
+      "evidence": "Scatter plot with diagonal rows of yellow circular markers outlined in different colors.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "diagrams-02",
+      "image_id": "diagrams/matplotlib-matplotlib/2b480157c9-hlines_with_nan.png",
+      "image_sha256": "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a",
+      "category": "diagrams",
+      "texts": {
+        "en": "Three vertically stacked plots of horizontal line segments colored green, red, and black.",
+        "fr": "Trois graphiques empilés de segments horizontaux verts, rouges et noirs.",
+        "ar": "ثلاثة رسوم بيانية مكدسة عموديا لقطع خطوط أفقية باللون الأخضر والأحمر والأسود."
+      },
+      "evidence": "Three vertically stacked plots of horizontal line segments colored green, red, and black.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "diagrams-03",
+      "image_id": "diagrams/matplotlib-matplotlib/3efa65ee58-vline_hline_zorder.png",
+      "image_sha256": "f960a1087c34178ad8457f0b06830a129728830b3aecd7a537594cefbfba38fe",
+      "category": "diagrams",
+      "texts": {
+        "en": "Plot titled axvline and axhline zorder test with thick blue diagonal and colored crossing lines.",
+        "fr": "Graphique intitulé axvline and axhline zorder test avec une diagonale bleue épaisse et des lignes colorées.",
+        "ar": "رسم بعنوان axvline and axhline zorder test بخط قطري أزرق عريض وخطوط ملونة متقاطعة."
+      },
+      "evidence": "Plot titled axvline and axhline zorder test with thick blue diagonal and colored crossing lines.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "diagrams-04",
+      "image_id": "diagrams/matplotlib-matplotlib/84cbc3a3ef-set_get_ticklabels.png",
+      "image_sha256": "4980d66d7e797360e204bdc260b65794509afde3c74d70ed304e0c948e834d7a",
+      "category": "diagrams",
+      "texts": {
+        "en": "Two stacked blue line plots comparing normal tick labels and set_x/yticklabels.",
+        "fr": "Deux graphiques linéaires bleus superposés comparant normal et set_x/yticklabels.",
+        "ar": "رسمان خطيان أزرقان مكدسان يقارنان normal مع set_x/yticklabels."
+      },
+      "evidence": "Two stacked blue line plots comparing normal tick labels and set_x/yticklabels.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "diagrams-05",
+      "image_id": "diagrams/matplotlib-matplotlib/9d33383eff-violinplot_horiz_custompoints_10.png",
+      "image_sha256": "3981080008c5486b627b280f690d4392fcafecd3d18030c755209d9af522e328",
+      "category": "diagrams",
+      "texts": {
+        "en": "Horizontal violin plot with four light blue distributions.",
+        "fr": "Diagramme en violon horizontal avec quatre distributions bleu clair.",
+        "ar": "مخطط كمان أفقي بأربعة توزيعات باللون الأزرق الفاتح."
+      },
+      "evidence": "Horizontal violin plot with four light blue distributions.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "diagrams-06",
+      "image_id": "diagrams/matplotlib-matplotlib/be0b039bdb-csd_freqs.png",
+      "image_sha256": "295c4eb05a7d0b7044f6ba0e9778cf4354f740cd17144bc0d3f3a2bcae3c63e3",
+      "category": "diagrams",
+      "texts": {
+        "en": "Three stacked blue frequency spectrum plots with sharp peaks and dotted grid lines.",
+        "fr": "Trois spectres de fréquence bleus superposés avec des pics étroits et une grille pointillée.",
+        "ar": "ثلاثة رسوم لطيف التردد باللون الأزرق مع قمم حادة وخطوط شبكة منقطة."
+      },
+      "evidence": "Three stacked blue frequency spectrum plots with sharp peaks and dotted grid lines.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "diagrams-07",
+      "image_id": "diagrams/matplotlib-matplotlib/de85ab5be8-specgram_magnitude_freqs_linear.png",
+      "image_sha256": "1974223666eb35c1bb9de001065bdfaad2a1497707dfc1d98feaa3e21c49d0b5",
+      "category": "diagrams",
+      "texts": {
+        "en": "Three stacked spectrogram heatmaps with horizontal green stripes and a bright vertical band.",
+        "fr": "Trois spectrogrammes superposés avec des bandes vertes horizontales et une bande verticale lumineuse.",
+        "ar": "ثلاث خرائط طيفية مكدسة بخطوط خضراء أفقية وشريط عمودي ساطع."
+      },
+      "evidence": "Three stacked spectrogram heatmaps with horizontal green stripes and a bright vertical band.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "diagrams-08",
+      "image_id": "diagrams/mermaid-js-mermaid/0e8511d0d4-gray-user-journey.png",
+      "image_sha256": "025793e7147a5d932674afc9fe0d31a312356301929d3c1bb95ea79a7923653f",
+      "category": "diagrams",
+      "texts": {
+        "en": "User journey diagram titled My working day with Cat, Me, Go to work, and Make tea.",
+        "fr": "Diagramme de parcours intitulé My working day avec Cat, Me, Go to work et Make tea.",
+        "ar": "مخطط رحلة مستخدم بعنوان My working day يتضمن Cat وMe وGo to work وMake tea."
+      },
+      "evidence": "User journey diagram titled My working day with Cat, Me, Go to work, and Make tea.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "diagrams-09",
+      "image_id": "diagrams/mermaid-js-mermaid/7a838b1b72-gray-gantt.png",
+      "image_sha256": "f559ef865d10e9a186eefc88efa88f67d9ccfc7e81d6f2e8ae5b216757c0f8a2",
+      "category": "diagrams",
+      "texts": {
+        "en": "Gantt diagram with Completed, Active, and Parallel 1 through Parallel 4 tasks.",
+        "fr": "Diagramme de Gantt avec Completed, Active et les tâches Parallel 1 à Parallel 4.",
+        "ar": "مخطط جانت بمهام Completed وActive وParallel 1 إلى Parallel 4."
+      },
+      "evidence": "Gantt diagram with Completed, Active, and Parallel 1 through Parallel 4 tasks.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "diagrams-10",
+      "image_id": "diagrams/mermaid-js-mermaid/8beee2c850-gantt.png",
+      "image_sha256": "6e8e138b2df4618ad9b623cbd9878b5fc134da455ae65572b42cfa40d08ec3e8",
+      "category": "diagrams",
+      "texts": {
+        "en": "Gantt chart titled Plan for Project ABC with planning, design, and implementation tasks.",
+        "fr": "Diagramme de Gantt intitulé Plan for Project ABC avec planification, conception et mise en œuvre.",
+        "ar": "مخطط جانت بعنوان Plan for Project ABC بمهام التخطيط والتصميم والتنفيذ."
+      },
+      "evidence": "Gantt chart titled Plan for Project ABC with planning, design, and implementation tasks.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "diagrams-11",
+      "image_id": "diagrams/mermaid-js-mermaid/a7b1012ab7-gray-state.png",
+      "image_sha256": "2fddd9e6757c279cd0c2575772e4027b5cf1e3e95fa15f0e104ef40db407f0b7",
+      "category": "diagrams",
+      "texts": {
+        "en": "State diagram with Still, Moving, and Crash connected by purple arrows.",
+        "fr": "Diagramme d’états avec Still, Moving et Crash reliés par des flèches violettes.",
+        "ar": "مخطط حالات يربط Still وMoving وCrash بأسهم بنفسجية."
+      },
+      "evidence": "State diagram with Still, Moving, and Crash connected by purple arrows.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "operations-reports",
+      "image_ids": [
+        "documents/synthetic/report-060.png",
+        "documents/synthetic/report-061.jpg",
+        "documents/synthetic/report-062.webp",
+        "documents/synthetic/report-063.tif",
+        "documents/synthetic/report-064.bmp",
+        "documents/synthetic/report-065.png",
+        "documents/synthetic/report-066.jpg",
+        "documents/synthetic/report-067.webp",
+        "documents/synthetic/report-068.tif",
+        "documents/synthetic/report-069.bmp",
+        "documents/synthetic/report-070.png",
+        "documents/synthetic/report-071.jpg",
+        "documents/synthetic/report-072.webp",
+        "documents/synthetic/report-073.tif",
+        "documents/synthetic/report-074.bmp",
+        "documents/synthetic/report-075.png",
+        "documents/synthetic/report-076.jpg",
+        "documents/synthetic/report-077.webp",
+        "documents/synthetic/report-078.tif",
+        "documents/synthetic/report-079.bmp"
+      ],
+      "category": "documents",
+      "texts": {
+        "en": "Operations capacity reports listing customer, date, quantity, and section percentages.",
+        "fr": "Rapports de capacité opérationnelle indiquant le client, la date, la quantité et les pourcentages par section.",
+        "ar": "تقارير القدرة التشغيلية التي تسرد العميل والتاريخ والكمية والنسب المئوية لكل قسم."
+      },
+      "evidence": "Operations capacity reports listing customer, date, quantity, and section percentages.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false,
+        "correction": "Full-resolution image and source generator show numeric sections 1–9, not A–H. Removed the unsupported letter constraint without changing relevance grades or ranking."
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "service-workflows",
+      "image_ids": [
+        "diagrams/synthetic/architecture-005.png",
+        "diagrams/synthetic/architecture-006.jpg",
+        "diagrams/synthetic/architecture-007.webp",
+        "diagrams/synthetic/architecture-008.tif",
+        "diagrams/synthetic/architecture-009.bmp",
+        "diagrams/synthetic/flowchart-000.png",
+        "diagrams/synthetic/flowchart-001.jpg",
+        "diagrams/synthetic/flowchart-002.webp",
+        "diagrams/synthetic/flowchart-003.tif",
+        "diagrams/synthetic/flowchart-004.bmp"
+      ],
+      "category": "diagrams",
+      "texts": {
+        "en": "Service workflow diagrams showing Input queue, Validation service, Database, and Monitoring boxes.",
+        "fr": "Diagrammes de flux de service avec des cases Input queue, Validation service, Database et Monitoring.",
+        "ar": "مخططات سير عمل خدمة تحتوي على مربعات Input queue وValidation service وDatabase وMonitoring."
+      },
+      "evidence": "Service workflow diagrams showing Input queue, Validation service, Database, and Monitoring boxes.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      },
+      "source_exposure": "legacy-benchmark"
+    },
+    {
+      "id": "fresh-00",
+      "image_id": "photos/COCO_val2014_000000511136.jpg",
+      "image_sha256": "8be91636cd8f9f08e307c7a8cb5d5993fdb4143b1e7e5e411485f71c6077f333",
+      "category": "photos",
+      "source_exposure": "new-scale",
+      "texts": {
+        "en": "Photograph of a person on a ladder holding a patio umbrella above a wooden deck.",
+        "fr": "Photo d’une personne sur une échelle tenant un parasol au-dessus d’une terrasse en bois.",
+        "ar": "صورة لشخص على سلم يحمل مظلة فناء فوق شرفة خشبية."
+      },
+      "evidence": "Photograph of a person on a ladder holding a patio umbrella above a wooden deck.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      }
+    },
+    {
+      "id": "fresh-01",
+      "image_id": "photos/COCO_val2014_000000290221.jpg",
+      "image_sha256": "1206582376dddb51160cd34c26490a3c39c9c03e173796ae94e9f22b750d0e7f",
+      "category": "photos",
+      "source_exposure": "new-scale",
+      "texts": {
+        "en": "Photograph of a snowboarder in a black and green suit using a kite on snow.",
+        "fr": "Photo d’un snowboardeur en combinaison noire et verte utilisant une aile de kite sur la neige.",
+        "ar": "صورة لمتزلج على لوح ثلجي ببدلة سوداء وخضراء يستخدم طائرة ورقية على الثلج."
+      },
+      "evidence": "Photograph of a snowboarder in a black and green suit using a kite on snow.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      }
+    },
+    {
+      "id": "fresh-02",
+      "image_id": "photos/COCO_val2014_000000490008.jpg",
+      "image_sha256": "baef715773461c5c20e3a6f98ed6dd07167b2ced59242888e209f88c4a3ea5da",
+      "category": "photos",
+      "source_exposure": "new-scale",
+      "texts": {
+        "en": "Night photograph of a bus displaying 51 LESLIE and TO EGLINTON STN with bright blue lights.",
+        "fr": "Photo de nuit d’un bus affichant 51 LESLIE et TO EGLINTON STN avec des lumières bleues.",
+        "ar": "صورة ليلية لحافلة تعرض 51 LESLIE وTO EGLINTON STN بأضواء زرقاء ساطعة."
+      },
+      "evidence": "Night photograph of a bus displaying 51 LESLIE and TO EGLINTON STN with bright blue lights.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      }
+    },
+    {
+      "id": "fresh-03",
+      "image_id": "photos/COCO_val2014_000000415015.jpg",
+      "image_sha256": "00a9c84ff96a4ff6948ebebb5a360d93b1be5cd2cdd205ef7a18ad9568dbc9d1",
+      "category": "photos",
+      "source_exposure": "new-scale",
+      "texts": {
+        "en": "Photograph of dried flowers in a glass vase beside a glass-block window.",
+        "fr": "Photo de fleurs séchées dans un vase en verre près d’une fenêtre en briques de verre.",
+        "ar": "صورة لأزهار مجففة في مزهرية زجاجية بجانب نافذة من الطوب الزجاجي."
+      },
+      "evidence": "Photograph of dried flowers in a glass vase beside a glass-block window.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      }
+    },
+    {
+      "id": "fresh-04",
+      "image_id": "photos/COCO_val2014_000000461758.jpg",
+      "image_sha256": "b8691a92feee6d299c5aa237dbaf372a40c43c0f3a327e268f5a0d47d8177094",
+      "category": "photos",
+      "source_exposure": "new-scale",
+      "texts": {
+        "en": "Photograph of groceries with green onions, eggs, bananas, oranges, and a juice carton.",
+        "fr": "Photo de courses avec des oignons verts, des œufs, des bananes, des oranges et une brique de jus.",
+        "ar": "صورة لمشتريات تضم البصل الأخضر والبيض والموز والبرتقال وعلبة عصير."
+      },
+      "evidence": "Photograph of groceries with green onions, eggs, bananas, oranges, and a juice carton.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      }
+    },
+    {
+      "id": "fresh-05",
+      "image_id": "photos/COCO_val2014_000000321014.jpg",
+      "image_sha256": "15ef7137f95183387b88f5ab13f0117d8c249a11dec174cb998978b217a19d00",
+      "category": "photos",
+      "source_exposure": "new-scale",
+      "texts": {
+        "en": "Black and white photograph of a cat on the floor with knives arranged around it.",
+        "fr": "Photo en noir et blanc d’un chat au sol avec des couteaux disposés autour de lui.",
+        "ar": "صورة بالأبيض والأسود لقطة على الأرض تحيط بها سكاكين مرتبة."
+      },
+      "evidence": "Black and white photograph of a cat on the floor with knives arranged around it.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      }
+    },
+    {
+      "id": "fresh-06",
+      "image_id": "photos/COCO_val2014_000000228306.jpg",
+      "image_sha256": "61246bcf676d35480345e543b7dd07dd54f04fc9bc3c31bf39620349b7c8b8e7",
+      "category": "photos",
+      "source_exposure": "new-scale",
+      "texts": {
+        "en": "Photograph of a red London bus displaying D8 Stratford International.",
+        "fr": "Photo d’un bus londonien rouge affichant D8 Stratford International.",
+        "ar": "صورة لحافلة لندن حمراء تعرض D8 Stratford International."
+      },
+      "evidence": "Photograph of a red London bus displaying D8 Stratford International.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      }
+    },
+    {
+      "id": "fresh-07",
+      "image_id": "photos/COCO_val2014_000000479613.jpg",
+      "image_sha256": "5361425d6e992b85054bb0490a4bd744f1b2c4ca4ab197e265fd5e37d3023bcb",
+      "category": "photos",
+      "source_exposure": "new-scale",
+      "texts": {
+        "en": "Photograph of men at a pub table with newspapers, beer glasses, and a plate of bread.",
+        "fr": "Photo d’hommes à une table de pub avec des journaux, des verres de bière et une assiette de pain.",
+        "ar": "صورة لرجال حول طاولة في حانة عليها صحف وكؤوس بيرة وطبق خبز."
+      },
+      "evidence": "Photograph of men at a pub table with newspapers, beer glasses, and a plate of bread.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      }
+    },
+    {
+      "id": "fresh-08",
+      "image_id": "photos/COCO_val2014_000000471342.jpg",
+      "image_sha256": "aeac4a481864ccb3a570a75f5b131e500bb45ef1ba90a2015dd00c6a5af9f585",
+      "category": "photos",
+      "source_exposure": "new-scale",
+      "texts": {
+        "en": "Photograph of a pan of rice topped with large broccoli florets.",
+        "fr": "Photo d’une poêle de riz garnie de gros bouquets de brocoli.",
+        "ar": "صورة لمقلاة أرز تعلوها زهرات بروكلي كبيرة."
+      },
+      "evidence": "Photograph of a pan of rice topped with large broccoli florets.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      }
+    },
+    {
+      "id": "fresh-09",
+      "image_id": "photos/COCO_val2014_000000327771.jpg",
+      "image_sha256": "7c2cd71f2f2ff12839c797466e4ee2f44822f2e5bb497862f5f989a28aa2aeb9",
+      "category": "photos",
+      "source_exposure": "new-scale",
+      "texts": {
+        "en": "Photograph of a bed with colorful branch-patterned pillows and a wooden storage bench holding logs.",
+        "fr": "Photo d’un lit aux oreillers à motifs de branches colorées avec un coffre en bois contenant des bûches.",
+        "ar": "صورة لسرير بوسائد ذات نقوش أغصان ملونة ومقعد تخزين خشبي يحتوي على حطب."
+      },
+      "evidence": "Photograph of a bed with colorful branch-patterned pillows and a wooden storage bench holding logs.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      }
+    },
+    {
+      "id": "fresh-10",
+      "image_id": "photos/COCO_val2014_000000239198.jpg",
+      "image_sha256": "ec64fd79183e2e2eefeac5b835aa5c824e77b0d1b8dc6f360b63fd210ef79aa1",
+      "category": "photos",
+      "source_exposure": "new-scale",
+      "texts": {
+        "en": "Photograph of a black and white calf standing in a shallow stream by trees.",
+        "fr": "Photo d’un veau noir et blanc debout dans un ruisseau peu profond près des arbres.",
+        "ar": "صورة لعجل أسود وأبيض يقف في جدول ضحل بجوار الأشجار."
+      },
+      "evidence": "Photograph of a black and white calf standing in a shallow stream by trees.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      }
+    },
+    {
+      "id": "fresh-11",
+      "image_id": "photos/COCO_val2014_000000488278.jpg",
+      "image_sha256": "e7656030686a953819ebd7b478741717faceead00e6a8628f84f48ec04e19cfd",
+      "category": "photos",
+      "source_exposure": "new-scale",
+      "texts": {
+        "en": "Photograph of a China Airlines jumbo jet with a pink flower on its tail at an airport.",
+        "fr": "Photo d’un gros-porteur de China Airlines avec une fleur rose sur la queue dans un aéroport.",
+        "ar": "صورة لطائرة جامبو تابعة لشركة China Airlines بذيل يحمل زهرة وردية في مطار."
+      },
+      "evidence": "Photograph of a China Airlines jumbo jet with a pink flower on its tail at an airport.",
+      "review": {
+        "status": "reviewed",
+        "reviewer": "Codex",
+        "method": "Agent visual inspection of original-image contact sheets; query translations authored and checked by the same agent",
+        "date": "2026-10-20",
+        "independent_human_review": false
+      }
+    }
+  ],
+  "unjudged_intent_pairs": [
+    [
+      "photos-02",
+      "fresh-09"
+    ],
+    [
+      "photos-03",
+      "fresh-07"
+    ]
+  ],
+  "revision": 2
+}

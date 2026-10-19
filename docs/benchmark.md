@@ -3,6 +3,9 @@
 For the larger, resumable per-image suite, see the
 [500-image benchmark guide](large-benchmark.md).
 
+For evaluation through production saved collections, see the
+[saved-collection retrieval guide](retrieval-evaluation.md).
+
 This harness tests local CPU inference and retrieval independently of the
 [persistent collection workflow](collections.md). It does not train a model or
 establish production hardware support.

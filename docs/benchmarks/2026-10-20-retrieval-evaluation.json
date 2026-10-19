@@ -1,0 +1,918 @@
+{
+  "date": "2026-10-20",
+  "status": "authoritative_revision_2",
+  "judgments_revision": 2,
+  "scope": "Production saved-collection baseline; no learned reranker trained",
+  "corpus_sha256": "0234ac2c46a2d2a62f073e982392770add291ce642fd08ed43c85e7896b2526c",
+  "judgments_sha256": "1541edf1e9a36d439055fcad6b7e2d81b007cc06778363d04e7c05b3a3d39af1",
+  "images": 2000,
+  "categories": {
+    "challenging": 47,
+    "diagrams": 79,
+    "documents": 99,
+    "photos": 1657,
+    "screenshots": 118
+  },
+  "splits": {
+    "train": {
+      "images": 1226,
+      "queries": 108,
+      "intent_families": 36,
+      "judged_positive_duplicate_components": 16
+    },
+    "validation": {
+      "images": 346,
+      "queries": 30,
+      "intent_families": 10,
+      "judged_positive_duplicate_components": 7
+    },
+    "test": {
+      "images": 428,
+      "queries": 42,
+      "intent_families": 14,
+      "judged_positive_duplicate_components": 11
+    }
+  },
+  "code_fingerprints": {
+    "engine_sha256": "91455a3686405daf67f64a5d9e40f556253cdde96a3cc890d0ec8db29121f91b",
+    "harness_sha256": "e7959103c0443f5192ea6a250e9a738c7ed68a18f5898f49b000fcb8fd69998e",
+    "generation_manifest_sha256": "ed59067c20f97a5db9f235ad9e537989485ef4c2a7e5d2f8f6804abea17752bb"
+  },
+  "query_languages": {
+    "en": 60,
+    "fr": 60,
+    "ar": 60
+  },
+  "query_exposure": {
+    "legacy-benchmark": 144,
+    "new-scale": 36
+  },
+  "explicit_judgments": 5952,
+  "positive_judgments": 264,
+  "index": {
+    "initial_pass": {
+      "job_id": "84d56afdd3144e949339c24f148fd5a6",
+      "status": "completed",
+      "collection": "retrieval-evaluation",
+      "files": 923,
+      "images": 923,
+      "reused_images": 0,
+      "failed_files": 0,
+      "removed_files": 0,
+      "generation": "dd0af17508ec40f689b4d092d619da55",
+      "seconds": 708.0669614999788,
+      "degraded_files": 0,
+      "degraded_images": 0,
+      "reused_stages": {
+        "metadata": 0,
+        "ocr": 0,
+        "vision": 0,
+        "semantic": 0
+      }
+    },
+    "final_refresh": {
+      "job_id": "1d74ab604b624a8aa23c4423e5924c43",
+      "status": "completed",
+      "collection": "retrieval-evaluation",
+      "files": 2000,
+      "images": 2000,
+      "reused_images": 923,
+      "failed_files": 0,
+      "removed_files": 0,
+      "generation": "5d66a8133f664d1a9256ec28bc7b8df3",
+      "seconds": 798.6292256659362,
+      "degraded_files": 0,
+      "degraded_images": 0,
+      "reused_stages": {
+        "metadata": 923,
+        "ocr": 923,
+        "vision": 923,
+        "semantic": 923
+      }
+    },
+    "combined_index_seconds": 1506.696187165915,
+    "final_refresh_resources": {
+      "seconds": 798.8999919160269,
+      "exit_code": 0,
+      "peak_tree_rss_mib": 627.1875,
+      "samples": 23989,
+      "access_errors": 0,
+      "interval_ms": 20,
+      "scope": "Final production index refresh and its descendants; initial index excluded"
+    }
+  },
+  "environment": {
+    "host": {
+      "system": "Darwin",
+      "machine": "arm64",
+      "python": "3.12.11 (main, Aug 18 2025, 19:02:39) [Clang 20.1.4 ]"
+    },
+    "ram_gib": 16.0,
+    "packages": {
+      "numpy": "2.5.4",
+      "onnxruntime": "1.31.0",
+      "tokenizers": "0.22.2",
+      "Pillow": "12.3.0",
+      "psutil": "7.2.2"
+    },
+    "models": {
+      "siglip2": {
+        "repo": "onnx-community/siglip2-base-patch16-224-ONNX",
+        "revision": "ba1f3b0843f24bc5417d38e19c37b287d719b2f4"
+      },
+      "e5": {
+        "repo": "Xenova/multilingual-e5-small",
+        "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78"
+      }
+    },
+    "threads": 2,
+    "provider": "CPUExecutionProvider",
+    "precision": "int8",
+    "tesseract": {
+      "version": "tesseract 5.5.2",
+      "language_pack_sha256": {
+        "eng": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+        "fra": "ced037562e8c80c13122dece28dd477d399af80911a28791a66a63ac1e3445ca",
+        "ara": "e3206d3dc87fd50c24a0fb9f01838615911d25168f4e64415244b67d2bb3e729"
+      }
+    }
+  },
+  "host_pressure_observation": {
+    "observation": "One read during the document-query latency investigation",
+    "available_ram_gib": 4.07,
+    "swap_used_gib": 8.34,
+    "other_cpu_workloads_observed": true,
+    "thermal_warning": "None reported by pmset",
+    "causal_attribution": "Not established; slow requests were transient. Timing includes busy-host effects."
+  },
+  "processed_queries": 180,
+  "successful_queries": 180,
+  "failed_queries": 0,
+  "aggregate": {
+    "hybrid/all": {
+      "candidate_recall_at_50": 0.9377777777777778,
+      "mrr_at_10": 0.6087169312169313,
+      "ndcg_at_10": 0.6574194267264605,
+      "judged_fraction_at_10": 0.24222222222222223,
+      "known_positives": 1.4666666666666666,
+      "queries": 180
+    },
+    "hybrid/exposure:legacy-benchmark": {
+      "candidate_recall_at_50": 0.9361111111111112,
+      "mrr_at_10": 0.6402281746031746,
+      "ndcg_at_10": 0.6861940943608351,
+      "judged_fraction_at_10": 0.28402777777777777,
+      "known_positives": 1.5833333333333333,
+      "queries": 144
+    },
+    "hybrid/exposure:new-scale": {
+      "candidate_recall_at_50": 0.9444444444444444,
+      "mrr_at_10": 0.4826719576719577,
+      "ndcg_at_10": 0.5423207561889617,
+      "judged_fraction_at_10": 0.07500000000000001,
+      "known_positives": 1.0,
+      "queries": 36
+    },
+    "hybrid/kind:diagrams": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.6363553113553113,
+      "ndcg_at_10": 0.7056893650675635,
+      "judged_fraction_at_10": 0.22307692307692312,
+      "known_positives": 1.6923076923076923,
+      "queries": 39
+    },
+    "hybrid/kind:documents": {
+      "candidate_recall_at_50": 0.9692307692307691,
+      "mrr_at_10": 0.8235042735042735,
+      "ndcg_at_10": 0.8505066459172017,
+      "judged_fraction_at_10": 0.6384615384615384,
+      "known_positives": 2.4615384615384617,
+      "queries": 39
+    },
+    "hybrid/kind:photos": {
+      "candidate_recall_at_50": 0.8611111111111112,
+      "mrr_at_10": 0.4191137566137566,
+      "ndcg_at_10": 0.4767831597996013,
+      "judged_fraction_at_10": 0.06666666666666668,
+      "known_positives": 1.0,
+      "queries": 72
+    },
+    "hybrid/kind:screenshots": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.7486111111111111,
+      "ndcg_at_10": 0.7771821625595243,
+      "judged_fraction_at_10": 0.17333333333333334,
+      "known_positives": 1.0,
+      "queries": 30
+    },
+    "hybrid/language:ar": {
+      "candidate_recall_at_50": 0.8916666666666667,
+      "mrr_at_10": 0.5259920634920635,
+      "ndcg_at_10": 0.5695340336396004,
+      "judged_fraction_at_10": 0.21,
+      "known_positives": 1.4666666666666666,
+      "queries": 60
+    },
+    "hybrid/language:en": {
+      "candidate_recall_at_50": 0.9633333333333333,
+      "mrr_at_10": 0.7105753968253967,
+      "ndcg_at_10": 0.7539552223756303,
+      "judged_fraction_at_10": 0.28,
+      "known_positives": 1.4666666666666666,
+      "queries": 60
+    },
+    "hybrid/language:fr": {
+      "candidate_recall_at_50": 0.9583333333333334,
+      "mrr_at_10": 0.5895833333333333,
+      "ndcg_at_10": 0.6487690241641505,
+      "judged_fraction_at_10": 0.2366666666666667,
+      "known_positives": 1.4666666666666666,
+      "queries": 60
+    },
+    "hybrid/split:test": {
+      "candidate_recall_at_50": 0.8761904761904761,
+      "mrr_at_10": 0.6674603174603175,
+      "ndcg_at_10": 0.6945225826448054,
+      "judged_fraction_at_10": 0.21666666666666665,
+      "known_positives": 3.0,
+      "queries": 42
+    },
+    "hybrid/split:train": {
+      "candidate_recall_at_50": 0.9537037037037037,
+      "mrr_at_10": 0.6254850088183422,
+      "ndcg_at_10": 0.6825200899936683,
+      "judged_fraction_at_10": 0.29907407407407405,
+      "known_positives": 1.0,
+      "queries": 108
+    },
+    "hybrid/split:validation": {
+      "candidate_recall_at_50": 0.9666666666666667,
+      "mrr_at_10": 0.4661111111111111,
+      "ndcg_at_10": 0.515112620678829,
+      "judged_fraction_at_10": 0.07333333333333333,
+      "known_positives": 1.0,
+      "queries": 30
+    },
+    "lexical/all": {
+      "candidate_recall_at_50": 0.49166666666666664,
+      "mrr_at_10": 0.41814814814814816,
+      "ndcg_at_10": 0.4335496160079522,
+      "judged_fraction_at_10": 0.21592592592592594,
+      "known_positives": 1.4666666666666666,
+      "queries": 180
+    },
+    "lexical/exposure:legacy-benchmark": {
+      "candidate_recall_at_50": 0.5868055555555556,
+      "mrr_at_10": 0.5085648148148149,
+      "ndcg_at_10": 0.5244524188932318,
+      "judged_fraction_at_10": 0.2525462962962963,
+      "known_positives": 1.5833333333333333,
+      "queries": 144
+    },
+    "lexical/exposure:new-scale": {
+      "candidate_recall_at_50": 0.1111111111111111,
+      "mrr_at_10": 0.05648148148148148,
+      "ndcg_at_10": 0.0699384044668333,
+      "judged_fraction_at_10": 0.06944444444444445,
+      "known_positives": 1.0,
+      "queries": 36
+    },
+    "lexical/kind:diagrams": {
+      "candidate_recall_at_50": 0.5384615384615384,
+      "mrr_at_10": 0.5213675213675213,
+      "ndcg_at_10": 0.5144994506229625,
+      "judged_fraction_at_10": 0.1717948717948718,
+      "known_positives": 1.6923076923076923,
+      "queries": 39
+    },
+    "lexical/kind:documents": {
+      "candidate_recall_at_50": 0.9358974358974359,
+      "mrr_at_10": 0.7666666666666666,
+      "ndcg_at_10": 0.8129916230386528,
+      "judged_fraction_at_10": 0.5905982905982906,
+      "known_positives": 2.4615384615384617,
+      "queries": 39
+    },
+    "lexical/kind:photos": {
+      "candidate_recall_at_50": 0.05555555555555555,
+      "mrr_at_10": 0.02824074074074074,
+      "ndcg_at_10": 0.03496920223341665,
+      "judged_fraction_at_10": 0.04583333333333334,
+      "known_positives": 1.0,
+      "queries": 72
+    },
+    "lexical/kind:screenshots": {
+      "candidate_recall_at_50": 0.9,
+      "mrr_at_10": 0.7666666666666667,
+      "ndcg_at_10": 0.7916332149274132,
+      "judged_fraction_at_10": 0.19444444444444448,
+      "known_positives": 1.0,
+      "queries": 30
+    },
+    "lexical/language:ar": {
+      "candidate_recall_at_50": 0.5,
+      "mrr_at_10": 0.4513888888888889,
+      "ndcg_at_10": 0.4612606054645385,
+      "judged_fraction_at_10": 0.23777777777777778,
+      "known_positives": 1.4666666666666666,
+      "queries": 60
+    },
+    "lexical/language:en": {
+      "candidate_recall_at_50": 0.5,
+      "mrr_at_10": 0.4325,
+      "ndcg_at_10": 0.4456694242178177,
+      "judged_fraction_at_10": 0.26666666666666666,
+      "known_positives": 1.4666666666666666,
+      "queries": 60
+    },
+    "lexical/language:fr": {
+      "candidate_recall_at_50": 0.475,
+      "mrr_at_10": 0.3705555555555556,
+      "ndcg_at_10": 0.3937188183415003,
+      "judged_fraction_at_10": 0.14333333333333334,
+      "known_positives": 1.4666666666666666,
+      "queries": 60
+    },
+    "lexical/split:test": {
+      "candidate_recall_at_50": 0.4642857142857143,
+      "mrr_at_10": 0.4166666666666667,
+      "ndcg_at_10": 0.41650715069750355,
+      "judged_fraction_at_10": 0.19206349206349205,
+      "known_positives": 3.0,
+      "queries": 42
+    },
+    "lexical/split:train": {
+      "candidate_recall_at_50": 0.5185185185185185,
+      "mrr_at_10": 0.4388888888888889,
+      "ndcg_at_10": 0.45859118510490965,
+      "judged_fraction_at_10": 0.2611111111111111,
+      "known_positives": 1.0,
+      "queries": 108
+    },
+    "lexical/split:validation": {
+      "candidate_recall_at_50": 0.43333333333333335,
+      "mrr_at_10": 0.34555555555555556,
+      "ndcg_at_10": 0.3672594186935333,
+      "judged_fraction_at_10": 0.08666666666666667,
+      "known_positives": 1.0,
+      "queries": 30
+    },
+    "semantic/all": {
+      "candidate_recall_at_50": 0.38277777777777783,
+      "mrr_at_10": 0.2791269841269841,
+      "ndcg_at_10": 0.2890082024271876,
+      "judged_fraction_at_10": 0.10333333333333335,
+      "known_positives": 1.4666666666666666,
+      "queries": 180
+    },
+    "semantic/exposure:legacy-benchmark": {
+      "candidate_recall_at_50": 0.47847222222222224,
+      "mrr_at_10": 0.34890873015873014,
+      "ndcg_at_10": 0.3612602530339845,
+      "judged_fraction_at_10": 0.12708333333333333,
+      "known_positives": 1.5833333333333333,
+      "queries": 144
+    },
+    "semantic/exposure:new-scale": {
+      "candidate_recall_at_50": 0.0,
+      "mrr_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "judged_fraction_at_10": 0.008333333333333335,
+      "known_positives": 1.0,
+      "queries": 36
+    },
+    "semantic/kind:diagrams": {
+      "candidate_recall_at_50": 0.41282051282051285,
+      "mrr_at_10": 0.29786324786324786,
+      "ndcg_at_10": 0.2936361445135246,
+      "judged_fraction_at_10": 0.06923076923076923,
+      "known_positives": 1.6923076923076923,
+      "queries": 39
+    },
+    "semantic/kind:documents": {
+      "candidate_recall_at_50": 0.7897435897435897,
+      "mrr_at_10": 0.6348595848595848,
+      "ndcg_at_10": 0.664969680661779,
+      "judged_fraction_at_10": 0.3564102564102564,
+      "known_positives": 2.4615384615384617,
+      "queries": 39
+    },
+    "semantic/kind:photos": {
+      "candidate_recall_at_50": 0.027777777777777776,
+      "mrr_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "judged_fraction_at_10": 0.0041666666666666675,
+      "known_positives": 1.0,
+      "queries": 72
+    },
+    "semantic/kind:screenshots": {
+      "candidate_recall_at_50": 0.6666666666666666,
+      "mrr_at_10": 0.46222222222222226,
+      "ndcg_at_10": 0.4878616418352312,
+      "judged_fraction_at_10": 0.05666666666666667,
+      "known_positives": 1.0,
+      "queries": 30
+    },
+    "semantic/language:ar": {
+      "candidate_recall_at_50": 0.26833333333333337,
+      "mrr_at_10": 0.11543650793650793,
+      "ndcg_at_10": 0.13444522187171926,
+      "judged_fraction_at_10": 0.02666666666666667,
+      "known_positives": 1.4666666666666666,
+      "queries": 60
+    },
+    "semantic/language:en": {
+      "candidate_recall_at_50": 0.4791666666666667,
+      "mrr_at_10": 0.41583333333333333,
+      "ndcg_at_10": 0.4210002494458613,
+      "judged_fraction_at_10": 0.18833333333333335,
+      "known_positives": 1.4666666666666666,
+      "queries": 60
+    },
+    "semantic/language:fr": {
+      "candidate_recall_at_50": 0.4008333333333333,
+      "mrr_at_10": 0.3061111111111111,
+      "ndcg_at_10": 0.31157913596398235,
+      "judged_fraction_at_10": 0.095,
+      "known_positives": 1.4666666666666666,
+      "queries": 60
+    },
+    "semantic/split:test": {
+      "candidate_recall_at_50": 0.30714285714285716,
+      "mrr_at_10": 0.25873015873015875,
+      "ndcg_at_10": 0.25175391815587733,
+      "judged_fraction_at_10": 0.08095238095238096,
+      "known_positives": 3.0,
+      "queries": 42
+    },
+    "semantic/split:train": {
+      "candidate_recall_at_50": 0.46296296296296297,
+      "mrr_at_10": 0.32755731922398584,
+      "ndcg_at_10": 0.34673899883654563,
+      "judged_fraction_at_10": 0.13518518518518519,
+      "known_positives": 1.0,
+      "queries": 108
+    },
+    "semantic/split:validation": {
+      "candidate_recall_at_50": 0.2,
+      "mrr_at_10": 0.13333333333333333,
+      "ndcg_at_10": 0.13333333333333333,
+      "judged_fraction_at_10": 0.020000000000000004,
+      "known_positives": 1.0,
+      "queries": 30
+    },
+    "visual/all": {
+      "candidate_recall_at_50": 0.8680555555555556,
+      "mrr_at_10": 0.485978835978836,
+      "ndcg_at_10": 0.5301217008636532,
+      "judged_fraction_at_10": 0.19,
+      "known_positives": 1.4666666666666666,
+      "queries": 180
+    },
+    "visual/exposure:legacy-benchmark": {
+      "candidate_recall_at_50": 0.8489583333333334,
+      "mrr_at_10": 0.4774195326278659,
+      "ndcg_at_10": 0.5184830630968673,
+      "judged_fraction_at_10": 0.21875,
+      "known_positives": 1.5833333333333333,
+      "queries": 144
+    },
+    "visual/exposure:new-scale": {
+      "candidate_recall_at_50": 0.9444444444444444,
+      "mrr_at_10": 0.520216049382716,
+      "ndcg_at_10": 0.5766762519307967,
+      "judged_fraction_at_10": 0.07500000000000001,
+      "known_positives": 1.0,
+      "queries": 36
+    },
+    "visual/kind:diagrams": {
+      "candidate_recall_at_50": 0.8102564102564103,
+      "mrr_at_10": 0.5444444444444445,
+      "ndcg_at_10": 0.5765166063428157,
+      "judged_fraction_at_10": 0.18717948717948718,
+      "known_positives": 1.6923076923076923,
+      "queries": 39
+    },
+    "visual/kind:documents": {
+      "candidate_recall_at_50": 0.8884615384615384,
+      "mrr_at_10": 0.39145299145299145,
+      "ndcg_at_10": 0.4604362086208012,
+      "judged_fraction_at_10": 0.4666666666666667,
+      "known_positives": 2.4615384615384617,
+      "queries": 39
+    },
+    "visual/kind:photos": {
+      "candidate_recall_at_50": 0.8611111111111112,
+      "mrr_at_10": 0.5021384479717813,
+      "ndcg_at_10": 0.5449085328767034,
+      "judged_fraction_at_10": 0.06805555555555556,
+      "known_positives": 1.0,
+      "queries": 72
+    },
+    "visual/kind:screenshots": {
+      "candidate_recall_at_50": 0.9333333333333333,
+      "mrr_at_10": 0.4940740740740741,
+      "ndcg_at_10": 0.5249110668251291,
+      "judged_fraction_at_10": 0.12666666666666668,
+      "known_positives": 1.0,
+      "queries": 30
+    },
+    "visual/language:ar": {
+      "candidate_recall_at_50": 0.8216666666666667,
+      "mrr_at_10": 0.3936772486772487,
+      "ndcg_at_10": 0.44841589488042105,
+      "judged_fraction_at_10": 0.17666666666666667,
+      "known_positives": 1.4666666666666666,
+      "queries": 60
+    },
+    "visual/language:en": {
+      "candidate_recall_at_50": 0.9308333333333334,
+      "mrr_at_10": 0.5666666666666667,
+      "ndcg_at_10": 0.6131762814882461,
+      "judged_fraction_at_10": 0.24166666666666667,
+      "known_positives": 1.4666666666666666,
+      "queries": 60
+    },
+    "visual/language:fr": {
+      "candidate_recall_at_50": 0.8516666666666667,
+      "mrr_at_10": 0.4975925925925926,
+      "ndcg_at_10": 0.5287729262222923,
+      "judged_fraction_at_10": 0.15166666666666667,
+      "known_positives": 1.4666666666666666,
+      "queries": 60
+    },
+    "visual/split:test": {
+      "candidate_recall_at_50": 0.8630952380952381,
+      "mrr_at_10": 0.6833333333333333,
+      "ndcg_at_10": 0.6806285648712644,
+      "judged_fraction_at_10": 0.1761904761904762,
+      "known_positives": 3.0,
+      "queries": 42
+    },
+    "visual/split:train": {
+      "candidate_recall_at_50": 0.8888888888888888,
+      "mrr_at_10": 0.45591563786008227,
+      "ndcg_at_10": 0.5184335599615263,
+      "judged_fraction_at_10": 0.23148148148148148,
+      "known_positives": 1.0,
+      "queries": 108
+    },
+    "visual/split:validation": {
+      "candidate_recall_at_50": 0.8,
+      "mrr_at_10": 0.3179100529100529,
+      "ndcg_at_10": 0.3614893985006541,
+      "judged_fraction_at_10": 0.060000000000000005,
+      "known_positives": 1.0,
+      "queries": 30
+    }
+  },
+  "hybrid_end_to_end_seconds": {
+    "count": 180,
+    "mean": 3.1055471664301066,
+    "median": 1.865507666952908,
+    "p95": 9.792374871415081,
+    "p99": 10.846777962448542,
+    "max": 11.75585062499158
+  },
+  "peak_tree_rss_mib": {
+    "count": 180,
+    "mean": 1050.4012152777777,
+    "median": 1065.2421875,
+    "p95": 1116.6,
+    "p99": 1134.5359375,
+    "max": 1144.53125
+  },
+  "candidate_pool_recall": {
+    "count": 180,
+    "mean": 0.9505555555555555,
+    "median": 1.0,
+    "p95": 1.0,
+    "p99": 1.0,
+    "max": 1.0
+  },
+  "exports": {
+    "candidates": 23122,
+    "train_positive": 104,
+    "train_negative": 819,
+    "validation_positive": 30,
+    "validation_negative": 24,
+    "test_positive": 104,
+    "test_negative": 158
+  },
+  "unjudged_candidates": 21883,
+  "query_diagnostics": {
+    "counts": {
+      "ranking": 24,
+      "candidate_pool": 10
+    },
+    "affected_query_ids": {
+      "execution": [],
+      "candidate_pool": [
+        "fresh-10-ar",
+        "operations-reports-ar",
+        "operations-reports-fr",
+        "photos-00-ar",
+        "photos-03-ar",
+        "photos-03-en",
+        "photos-03-fr",
+        "photos-05-en",
+        "photos-05-fr",
+        "photos-10-ar"
+      ],
+      "ranking": [
+        "diagrams-05-ar",
+        "diagrams-07-ar",
+        "documents-08-ar",
+        "fresh-01-ar",
+        "fresh-04-fr",
+        "fresh-05-ar",
+        "fresh-05-en",
+        "fresh-05-fr",
+        "fresh-07-ar",
+        "fresh-07-en",
+        "fresh-07-fr",
+        "fresh-09-ar",
+        "photos-00-en",
+        "photos-00-fr",
+        "photos-01-ar",
+        "photos-01-en",
+        "photos-01-fr",
+        "photos-02-ar",
+        "photos-05-ar",
+        "photos-08-ar",
+        "screenshots-00-ar",
+        "screenshots-00-fr",
+        "screenshots-02-ar",
+        "screenshots-02-fr"
+      ]
+    }
+  },
+  "validation": {
+    "unchanged_query_traces_matching_original": 177,
+    "queries": 180,
+    "unique_images": 2000,
+    "candidate_records": 23122,
+    "resume_records_identical": true,
+    "resume_query_rows": 180,
+    "resume_attempt_rows": 180,
+    "identity_mismatch_rejected": true,
+    "training_split_checks_passed": true,
+    "production_mode_parity": [
+      {
+        "query_id": "photos-04-en",
+        "mode": "visual",
+        "matches": true
+      },
+      {
+        "query_id": "photos-04-en",
+        "mode": "lexical",
+        "matches": true
+      },
+      {
+        "query_id": "photos-04-en",
+        "mode": "semantic",
+        "matches": true
+      },
+      {
+        "query_id": "photos-04-en",
+        "mode": "hybrid",
+        "matches": true
+      },
+      {
+        "query_id": "screenshots-01-fr",
+        "mode": "visual",
+        "matches": true
+      },
+      {
+        "query_id": "screenshots-01-fr",
+        "mode": "lexical",
+        "matches": true
+      },
+      {
+        "query_id": "screenshots-01-fr",
+        "mode": "semantic",
+        "matches": true
+      },
+      {
+        "query_id": "screenshots-01-fr",
+        "mode": "hybrid",
+        "matches": true
+      },
+      {
+        "query_id": "documents-00-ar",
+        "mode": "visual",
+        "matches": true
+      },
+      {
+        "query_id": "documents-00-ar",
+        "mode": "lexical",
+        "matches": true
+      },
+      {
+        "query_id": "documents-00-ar",
+        "mode": "semantic",
+        "matches": true
+      },
+      {
+        "query_id": "documents-00-ar",
+        "mode": "hybrid",
+        "matches": true
+      }
+    ],
+    "network_policy": "macOS sandbox-exec deny network* applied to evaluator, index refresh, and all descendants"
+  },
+  "limitations": [
+    "Relevance uses reviewed known positives; judgments are incomplete.",
+    "Unjudged items contribute zero gain to known-judgment metrics, never a negative training label.",
+    "Candidate Recall@50 measures each ranked top 50; pool recall separately measures the full union.",
+    "Full mixed-corpus retrieval; training exports exclude unjudged and cross-split pairs.",
+    "Latency includes source checks, artifact verification, process/model startup, tracing, and thumbnails.",
+    "Channel rankings share one hybrid request; no independent channel latency is claimed.",
+    "Memory samples coordinator and children; shared pages can count twice and short spikes can be missed.",
+    "Judgments and translations are agent-reviewed without independent human/native verification.",
+    "Legacy targets were used in previous development; only the small photo-only new-scale subset is fresh.",
+    "Validation has no screenshot or document queries; test documents and some diagrams are synthetic.",
+    "Two incremental index passes are timed; this is not one cold 2,000-image build.",
+    "16 GiB Mac only; no native Windows/Linux or 8 GiB hardware measurement."
+  ],
+  "representative_diagnoses": [
+    {
+      "query_id": "photos-03-en",
+      "observation": "Known target absent from every top-50 channel. Original image is a dark fisheye interior; extracted text is short/noisy. Candidate generation must retain it before a reranker can help.",
+      "query": "Fisheye photograph of a dining table with people beside a bright window.",
+      "pool_recall": 0.0,
+      "hybrid_metrics": {
+        "candidate_recall_at_50": 0.0,
+        "mrr_at_10": 0.0,
+        "ndcg_at_10": 0.0,
+        "judged_fraction_at_10": 0.0,
+        "known_positives": 1
+      },
+      "targets": [
+        {
+          "image_id": "09380150b1421da0ffebe66670266bc9856311babf8058aa8283218dbbb624d0",
+          "path": "photos/COCO_val2014_000000021198.jpg",
+          "ocr_excerpt": "اا\n!\nie\n\\\na\nWV:"
+        }
+      ],
+      "positive_candidate_features": []
+    },
+    {
+      "query_id": "screenshots-02-fr",
+      "observation": "Target remains in the candidate pool but receives zero lexical evidence and zero semantic strength. Hybrid ordering therefore follows its visual score. Raw semantic cosine remains available to a learned ranker.",
+      "query": "Capture de terminal avec du JSON au-dessus de colonnes de noms de personnes et de pays.",
+      "pool_recall": 1.0,
+      "hybrid_metrics": {
+        "candidate_recall_at_50": 1.0,
+        "mrr_at_10": 0.0,
+        "ndcg_at_10": 0.0,
+        "judged_fraction_at_10": 0.0,
+        "known_positives": 1
+      },
+      "targets": [
+        {
+          "image_id": "5add7e8c4b16ac3e7e227bf17737d845e1aaa63187feb4808e4bc0b05d310e93",
+          "path": "screenshots/Textualize-rich/3097132582-columns.png",
+          "ocr_excerpt": "1\n\"shal':\n\"sha256':\nlusername': 'happymouse653',\n\"uuid':\n}\n‘nat': 'NZ',\n‘phone': '(755)-140-5760',\n\"picture':\nbash\n'35a0f fda690da41f42e1d1957c556d6f765ddb85',\n'7£a0a008-364c—4506—bfb2-41f61ccd38f1',\n{\nL\n‘name': {'first': 'Annabelle', 'last': 'Harris', 'title': 'Mrs'},\n\"large': 'https://randomuser.me/api/portraits/women/39.jpg',\n‘medium': 'https://"
+        }
+      ],
+      "positive_candidate_features": [
+        {
+          "candidate_rank": 47,
+          "image_id": "5add7e8c4b16ac3e7e227bf17737d845e1aaa63187feb4808e4bc0b05d310e93",
+          "visual_cosine": 0.13797059655189514,
+          "semantic_cosine": 0.8316216468811035,
+          "lexical_evidence": 0,
+          "semantic_strength": 0,
+          "hybrid_score": 0.13797059655189514,
+          "lexical_bm25": null,
+          "channel_ranks": {
+            "visual": 47,
+            "semantic": null,
+            "lexical": null,
+            "hybrid": 47
+          },
+          "ocr_characters": 1362,
+          "width": 2566,
+          "height": 1640,
+          "status": "ready"
+        }
+      ]
+    },
+    {
+      "query_id": "photos-01-en",
+      "observation": "Armored-person/horse target is retained but below the top ten, with zero OCR boost. This is a retained-candidate ranking case, without proof that the existing features suffice to resolve it.",
+      "query": "Black and white photograph of an armored person sitting beside a horse.",
+      "pool_recall": 1.0,
+      "hybrid_metrics": {
+        "candidate_recall_at_50": 1.0,
+        "mrr_at_10": 0.0,
+        "ndcg_at_10": 0.0,
+        "judged_fraction_at_10": 0.0,
+        "known_positives": 1
+      },
+      "targets": [
+        {
+          "image_id": "3357434d4d457f91281aafa0e713efbdb2317b8ccba983b80b8275e35b8b8ba0",
+          "path": "photos/COCO_val2014_000000004972.jpg",
+          "ocr_excerpt": "ER\nSa\nÀ\nMie gd\nsm es)\nes سصة‎\nnone aN"
+        }
+      ],
+      "positive_candidate_features": [
+        {
+          "candidate_rank": 24,
+          "image_id": "3357434d4d457f91281aafa0e713efbdb2317b8ccba983b80b8275e35b8b8ba0",
+          "visual_cosine": 0.03894537687301636,
+          "semantic_cosine": 0.7799493670463562,
+          "lexical_evidence": 0,
+          "semantic_strength": 0,
+          "hybrid_score": 0.03894537687301636,
+          "lexical_bm25": null,
+          "channel_ranks": {
+            "visual": 24,
+            "semantic": null,
+            "lexical": null,
+            "hybrid": 24
+          },
+          "ocr_characters": 37,
+          "width": 640,
+          "height": 321,
+          "status": "ready"
+        }
+      ]
+    },
+    {
+      "query_id": "fresh-10-ar",
+      "observation": "Arabic query loses the target at candidate generation. Compare the identical image under English and French queries below; no candidate-only reranker can restore a missing image.",
+      "query": "صورة لعجل أسود وأبيض يقف في جدول ضحل بجوار الأشجار.",
+      "pool_recall": 0.0,
+      "hybrid_metrics": {
+        "candidate_recall_at_50": 0.0,
+        "mrr_at_10": 0.0,
+        "ndcg_at_10": 0.0,
+        "judged_fraction_at_10": 0.0,
+        "known_positives": 1
+      },
+      "targets": [
+        {
+          "image_id": "ec64fd79183e2e2eefeac5b835aa5c824e77b0d1b8dc6f360b63fd210ef79aa1",
+          "path": "photos/COCO_val2014_000000239198.jpg",
+          "ocr_excerpt": "ery |\n2\nie SS\n1\nA\nAY\nSes\nD\n{\\\nWi\nIN\nhy\nss"
+        }
+      ],
+      "positive_candidate_features": []
+    }
+  ],
+  "fresh_cow_language_comparison": {
+    "en": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.1,
+      "known_positives": 1
+    },
+    "fr": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.1,
+      "known_positives": 1
+    },
+    "ar": {
+      "candidate_recall_at_50": 0.0,
+      "mrr_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "judged_fraction_at_10": 0.0,
+      "known_positives": 1
+    }
+  },
+  "reference_correction": {
+    "version": 1,
+    "revision": 2,
+    "initial_judgments_sha256": "1e8be53de7412866f2523ea0af86ffb3fd8c312ee993c6828bf1f01ba425fc28",
+    "corrected_judgments_sha256": "1541edf1e9a36d439055fcad6b7e2d81b007cc06778363d04e7c05b3a3d39af1",
+    "affected_queries": [
+      "operations-reports-en",
+      "operations-reports-fr",
+      "operations-reports-ar"
+    ],
+    "before": {
+      "en": "Operations capacity reports listing customer, date, quantity, and percentages for sections A through H.",
+      "fr": "Rapports de capacité opérationnelle indiquant le client, la date, la quantité et les pourcentages des sections A à H.",
+      "ar": "تقارير القدرة التشغيلية التي تسرد العميل والتاريخ والكمية والنسب المئوية للأقسام من A إلى H."
+    },
+    "after": {
+      "en": "Operations capacity reports listing customer, date, quantity, and section percentages.",
+      "fr": "Rapports de capacité opérationnelle indiquant le client, la date, la quantité et les pourcentages par section.",
+      "ar": "تقارير القدرة التشغيلية التي تسرد العميل والتاريخ والكمية والنسب المئوية لكل قسم."
+    },
+    "diagnosis": "The visual contact-sheet review incorrectly described section identifiers as A–H. Full-resolution report-071.jpg and benchmarks/datasets/synthetic.py show sections 1–9. Corrected the query constraint; labels and retrieval code/settings unchanged.",
+    "evidence": [
+      "documents/synthetic/report-071.jpg",
+      "benchmarks/datasets/synthetic.py"
+    ],
+    "original_run": "runs/retrieval-evaluation-v1/baseline",
+    "corrected_run": "runs/retrieval-evaluation-v1/baseline-reviewed-v2",
+    "policy": "Original inputs and run remain retained; only corrected judgments are authoritative for training and final quality metrics."
+  }
+}

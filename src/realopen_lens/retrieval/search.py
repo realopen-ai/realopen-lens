@@ -16,6 +16,7 @@ from realopen_lens.models.manager import digest, registry, verify
 from realopen_lens.retrieval.ranking import (
     hybrid_rank,
     lexical_index,
+    lexical_scores,
     lexical_frequencies,
     rank_lexical,
     rank_vectors,
@@ -68,18 +69,30 @@ def search_collection(
     limit: int = 10,
     mode: str = "hybrid",
     threads: int = 2,
+    trace: dict | None = None,
 ) -> list[SearchResult]:
+    """Search the active generation; optional hybrid trace exposes candidates and top-50 channels.
+
+    Tracing preserves scores and ordering. Raw BM25 is lower-is-better, cosine
+    similarities are higher-is-better, and absent channel values remain None.
+    """
     if not query.strip() or len(query) > 4096 or not 1 <= limit <= 100 or not 1 <= threads <= 8:
         raise ValueError(
             "Use a nonempty query up to 4096 characters, 1–100 results, and 1–8 threads"
         )
     if mode not in {"hybrid", "visual", "lexical", "semantic"}:
         raise ValueError("Search mode must be hybrid, visual, lexical, or semantic")
+    if trace is not None:
+        trace.clear()
+        if mode != "hybrid":
+            raise ValueError("Candidate tracing requires hybrid mode")
     catalog = Catalog(index_dir or default_directory(), readonly=True)
     index = None
     try:
         found, generation = catalog.snapshot(collection)
         manifest = load_manifest(catalog, generation)
+        if trace is not None:
+            trace.update(generation=generation["id"], manifest_sha256=generation["checksum"])
         from realopen_lens.indexing.service import signature
 
         paths_by_id = {}
@@ -103,6 +116,12 @@ def search_collection(
         }
         ocr_records = [r for r in manifest["ocr"] if r["image_id"] in lookup]
         if not lookup:
+            if trace is not None:
+                trace.update(
+                    candidates=[],
+                    rankings={key: [] for key in ("visual", "semantic", "lexical", "hybrid")},
+                    searchable_images=0,
+                )
             return []
         visual_query = semantic_query = None
         if mode != "lexical":
@@ -168,7 +187,26 @@ def search_collection(
                     limit=limit,
                     lexical_candidates=lexical,
                     lexical_statistics=lexical_frequencies(index, query),
+                    trace=trace,
                 )
+        if trace is not None:
+            bm25 = lexical_scores(index, query, limit=max(50, limit))
+            ranks = {
+                mode: {key: i for i, key in enumerate(ranking, 1)}
+                for mode, ranking in trace["rankings"].items()
+            }
+            texts_by_id = {row["image_id"]: row["text"] for row in ocr_records}
+            for candidate in trace["candidates"]:
+                key = candidate["image_id"]
+                candidate.update(
+                    lexical_bm25=bm25.get(key),
+                    channel_ranks={name: values.get(key) for name, values in ranks.items()},
+                    ocr_characters=len(texts_by_id.get(key, "")),
+                    width=lookup[key]["metadata"]["width"],
+                    height=lookup[key]["metadata"]["height"],
+                    status=lookup[key].get("status", "ready"),
+                )
+            trace["searchable_images"] = len(lookup)
         texts = {row["image_id"]: row["text"] for row in manifest["ocr"]}
         results: list[SearchResult] = []
         for image_id in ranking:
