@@ -1,7 +1,7 @@
 """Local Tesseract OCR with bounded retries and explicit low-quality diagnostics."""
 
 import io
-from contextlib import ExitStack
+from contextlib import ExitStack, contextmanager
 import math
 import os
 import re
@@ -198,11 +198,31 @@ def _source_region(path: Path, size: tuple[int, int]) -> tuple[int, int, int, in
     return full
 
 
+@contextmanager
+def _ocr_source(path: Path, detection: dict | None, mode: str):
+    with image_rgb(path) as source:
+        if detection is not None and mode == "mask":
+            from realopen_lens.text_regions import mask_regions
+
+            with mask_regions(source, detection) as masked:
+                yield masked
+        else:
+            yield source
+
+
 def extract(
-    path: Path, languages: str = "eng+fra+ara", threads: int = 2, timeout: float = 30
+    path: Path,
+    languages: str = "eng+fra+ara",
+    threads: int = 2,
+    timeout: float = 30,
+    *,
+    detector: Any = None,
+    region_mode: str = "gate",
 ) -> dict[str, Any]:
     if not 1 <= threads <= 32 or timeout <= 0:
         raise ValueError("OCR requires 1–32 threads and a positive timeout")
+    if region_mode not in {"mask", "gate"}:
+        raise ValueError("Text region mode must be 'mask' or 'gate'")
     executable = shutil.which("tesseract")
     if executable is None:
         raise ValueError("Tesseract 5 is required for OCR")
@@ -211,6 +231,7 @@ def extract(
     attempts: list[dict[str, Any]] = []
     failed_attempts: list[dict[str, Any]] = []
     warnings = []
+    detection = None
     with ExitStack() as buffers:
 
         def keep(image: Image.Image) -> Image.Image:
@@ -219,6 +240,37 @@ def extract(
 
         with image_rgb(path) as source:
             original_size = source.size
+            if detector is not None:
+                detection = detector.detect(source)
+                if detection["candidate_limit_reached"]:
+                    warnings.append("Detector candidate limit reached; preserving full image")
+                elif not detection["regions"]:
+                    with Image.open(path) as original:
+                        if getattr(original, "n_frames", 1) > 1:
+                            warnings.append("Only first frame/page processed")
+                    return {
+                        **environment,
+                        "text": "",
+                        "words": [],
+                        "confidence": None,
+                        "warnings": warnings
+                        + ["No text regions detected; text absence is not established"],
+                        "original_size": list(original_size),
+                        "source_region": [0, 0, *original_size],
+                        "ocr_size": list(original_size),
+                        "rotation": 0,
+                        "selected_psm": None,
+                        "inference_skipped": "no_detected_text_regions",
+                        "text_detection": detection,
+                        "region_mode": region_mode,
+                        "alternate_texts": [],
+                        "attempts": [],
+                        "failed_attempts": [],
+                    }
+                if region_mode == "mask":
+                    from realopen_lens.text_regions import mask_regions
+
+                    source = keep(mask_regions(source, detection))
             region = _source_region(path, original_size)
             full_region = (0, 0, *original_size)
             rgb = keep(source.copy())
@@ -286,7 +338,7 @@ def extract(
 
         best = max(attempts, key=_quality)
         if max(region[2] - region[0], region[3] - region[1]) > 3000 and len(best["words"]) >= 8:
-            with image_rgb(path) as source:
+            with _ocr_source(path, detection, region_mode) as source:
                 large = keep(source.crop(region))
             large.thumbnail((3200, 3200))
             large_gray, _ = _gray(large)
@@ -303,7 +355,7 @@ def extract(
             and len(attempts) < 4
         ):
             try:
-                with image_rgb(path) as source:
+                with _ocr_source(path, detection, region_mode) as source:
                     orientation_source = keep(source.crop(tuple(best["source_region"])))
                 orientation_source.thumbnail(tuple(best.get("ocr_size", gray.size)))
                 orientation = _orientation(
@@ -358,6 +410,7 @@ def extract(
         )
         return {
             **environment,
+            **({"text_detection": detection, "region_mode": region_mode} if detection else {}),
             "text": selected["text"],
             "words": selected["words"],
             "confidence": selected["confidence"],

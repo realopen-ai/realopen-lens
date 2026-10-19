@@ -1,0 +1,147 @@
+"""Regression tests for text-localization geometry, conservative masking and gating."""
+
+from types import SimpleNamespace
+
+import numpy as np
+import pytest
+from PIL import Image, ImageDraw
+
+from realopen_lens.ocr import extract
+from realopen_lens.text_regions import TextRegionDetector, mask_regions, probability_regions
+
+
+def test_detector_requires_verified_local_weights_before_loading_runtime(tmp_path):
+    with pytest.raises(ValueError, match="Missing text detector"):
+        TextRegionDetector(tmp_path / "absent.onnx")
+    model = tmp_path / "wrong.onnx"
+    model.write_bytes(b"incorrect")
+    with pytest.raises(ValueError, match="integrity"):
+        TextRegionDetector(model)
+
+
+def test_probability_regions_restore_source_coordinates_and_preserve_boundaries():
+    cv2 = pytest.importorskip("cv2")
+
+    probability = np.zeros((64, 128), dtype=np.float32)
+    probability[10:16, 20:80] = 0.9
+    regions, overflow = probability_regions(probability, (256, 128), cv2)
+    assert not overflow and len(regions) == 1
+    left, top, right, bottom = regions[0]["box"]
+    assert 0 <= left < 40 and 0 <= top < 20
+    assert 160 < right <= 256 and 32 < bottom <= 128
+    assert regions[0]["score"] == pytest.approx(0.9)
+
+
+def test_candidate_overflow_does_not_silently_drop_regions():
+    fake = SimpleNamespace(
+        findContours=lambda *args: ([None] * 2001, None),
+        RETR_EXTERNAL=0,
+        CHAIN_APPROX_SIMPLE=0,
+    )
+    regions, overflow = probability_regions(np.zeros((32, 32)), (32, 32), fake)
+    assert regions == [] and overflow
+    with Image.new("RGB", (40, 30), "black") as image:
+        image.putpixel((0, 0), (255, 255, 255))
+        with mask_regions(image, {"regions": [], "candidate_limit_reached": True}) as masked:
+            assert masked.tobytes() == image.tobytes()
+
+
+def test_mask_keeps_all_original_pixels_inside_source_rectangle():
+    with Image.new("RGB", (100, 60), "white") as image:
+        ImageDraw.Draw(image).rectangle((10, 10, 30, 30), fill="black")
+        image.putpixel((90, 50), (0, 0, 0))
+        detection = {"regions": [{"box": [8, 8, 34, 34]}], "candidate_limit_reached": False}
+        with mask_regions(image, detection) as masked:
+            assert masked.size == image.size
+            assert masked.crop((8, 8, 34, 34)).tobytes() == image.crop((8, 8, 34, 34)).tobytes()
+            assert masked.getpixel((90, 50)) == (255, 255, 255)
+
+
+def test_no_detected_regions_skips_tesseract_without_claiming_proven_absence(tmp_path, monkeypatch):
+    image = tmp_path / "image.png"
+    Image.new("RGB", (100, 60), "white").save(image)
+    monkeypatch.setattr("realopen_lens.ocr.shutil.which", lambda name: "tesseract")
+    monkeypatch.setattr("realopen_lens.ocr._environment", lambda *args: {})
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Recognition must not run on gated input")
+
+    monkeypatch.setattr("realopen_lens.ocr._recognize", forbidden)
+    detector = SimpleNamespace(
+        detect=lambda image: {"regions": [], "candidate_limit_reached": False}
+    )
+    result = extract(image, detector=detector)
+    assert result["text"] == "" and result["words"] == []
+    assert result["inference_skipped"] == "no_detected_text_regions"
+    assert "absence is not established" in result["warnings"][-1]
+
+
+def test_detector_failure_is_not_silently_converted_to_empty_success(tmp_path, monkeypatch):
+    image = tmp_path / "image.png"
+    Image.new("RGB", (100, 60), "white").save(image)
+    monkeypatch.setattr("realopen_lens.ocr.shutil.which", lambda name: "tesseract")
+    monkeypatch.setattr("realopen_lens.ocr._environment", lambda *args: {})
+
+    def broken(image):
+        raise ValueError("Invalid detector probability map")
+
+    with pytest.raises(ValueError, match="probability map"):
+        extract(image, detector=SimpleNamespace(detect=broken))
+
+
+def test_fragmented_small_line_merges_without_joining_neighboring_rows_or_columns():
+    from realopen_lens.text_regions import merge_line_regions
+
+    regions = [
+        {"box": [7, 9, 79, 29], "score": 0.84},
+        {"box": [75, 15, 181, 24], "score": 0.75},
+        {"box": [193, 16, 210, 24], "score": 0.55},
+        {"box": [211, 12, 241, 26], "score": 0.82},
+        {"box": [7, 45, 100, 60], "score": 0.8},
+        {"box": [600, 10, 700, 30], "score": 0.9},
+    ]
+    merged = merge_line_regions(regions)
+    assert len(merged) == 3
+    assert merged[0]["box"] == [7, 9, 241, 29]
+    assert merged[0]["members"] == 4
+    assert merged[0]["score"] == 0.55
+
+
+def test_cached_text_detector_setup_does_not_access_network(tmp_path, monkeypatch):
+    import hashlib
+    from realopen_lens.models import fetch_text_detector
+
+    payload = b"verified detector fixture"
+    spec = {"name": "det.onnx", "size": len(payload), "sha256": hashlib.sha256(payload).hexdigest()}
+    monkeypatch.setattr("realopen_lens.text_regions.detector_spec", lambda: spec)
+    path = tmp_path / "text-detector" / "det.onnx"
+    path.parent.mkdir()
+    path.write_bytes(payload)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Verified local model setup must stay offline")
+
+    monkeypatch.setattr("realopen_lens.models.urllib.request.urlopen", forbidden)
+    assert fetch_text_detector(tmp_path) == path
+
+
+@pytest.mark.parametrize("payload", [b"too long", b"bad!"])
+def test_bad_detector_download_is_not_published(tmp_path, monkeypatch, payload):
+    import hashlib
+    import io
+    from realopen_lens.models import fetch_text_detector
+
+    spec = {
+        "name": "det.onnx",
+        "size": 4,
+        "sha256": hashlib.sha256(b"good").hexdigest(),
+        "url": "https://example.invalid/det.onnx",
+    }
+    monkeypatch.setattr("realopen_lens.text_regions.detector_spec", lambda: spec)
+    monkeypatch.setattr(
+        "realopen_lens.models.urllib.request.urlopen", lambda *a, **k: io.BytesIO(payload)
+    )
+    with pytest.raises(ValueError):
+        fetch_text_detector(tmp_path)
+    assert not (tmp_path / "text-detector" / "det.onnx").exists()
+    assert not (tmp_path / "text-detector" / "det.onnx.part").exists()
