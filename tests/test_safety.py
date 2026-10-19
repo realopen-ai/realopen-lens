@@ -4,6 +4,12 @@ import hashlib
 import json
 
 
+import subprocess
+
+
+import sys
+
+
 import pytest
 
 
@@ -32,6 +38,24 @@ def test_model_verification_detects_tampering_without_network(tmp_path, monkeypa
     path.write_bytes(b"broken model")
     with pytest.raises(ValueError, match="integrity"):
         models.verify(tmp_path, "int8")
+
+
+def test_worker_offline_policy_blocks_python_network_operations():
+    code = """
+from realopen_lens.offline import enforce
+import socket
+enforce()
+try:
+    socket.getaddrinfo('example.com', 443)
+except PermissionError:
+    print('blocked')
+else:
+    raise SystemExit('Network guard failed')
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, check=True
+    )
+    assert result.stdout.strip() == "blocked"
 
 
 def test_images_are_bounded_before_decode(tmp_path):
