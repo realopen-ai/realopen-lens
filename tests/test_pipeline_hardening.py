@@ -1,29 +1,17 @@
 """Regression cases for observed preprocessing, OCR, fusion, and resume failures."""
 
 import random
-
-
+import sqlite3
 import subprocess
 
-
 import numpy as np
-
-
 import pytest
-
-
 from PIL import Image
 
-
 from benchmarks.ocr_metrics import distance
-
-
+from benchmarks.suite import connect, load_vectors, save_stage
 from realopen_lens.inference import image_rgb
-
-
 from realopen_lens.ocr import extract, parse_tsv
-
-
 from realopen_lens.retrieval import (
     hybrid_rank,
     lexical_evidence,
@@ -145,6 +133,29 @@ def test_failed_ocr_fallback_keeps_first_result_and_reports_warning(tmp_path, mo
     assert result["text"] == "one"
     assert len(calls) == 2
     assert any("fallback failed" in warning for warning in result["warnings"])
+
+
+def test_resume_records_survive_reopen_and_errors_cannot_leave_stale_vectors(tmp_path):
+    path = tmp_path / "results.sqlite"
+    db = connect(path)
+    save_stage(db, "good", "vision", {"status": "ok"}, np.array([[1.0, 2.0]]))
+    db.close()
+    db = connect(path)
+    assert db.execute("SELECT image_id FROM stages").fetchall() == [("good",)]
+    save_stage(db, "bad", "vision", {"status": "error", "error": "corrupt image"})
+    assert load_vectors(db, "vision")[0] == ["good"]
+    save_stage(db, "good", "vision", {"status": "error", "error": "retry failed"})
+    assert load_vectors(db, "vision")[0] == []
+    assert db.execute("SELECT COUNT(*) FROM stages").fetchone() == (2,)
+    # A failed SQLite write rolls vector deletion back with the stage update.
+    db.execute(
+        "CREATE TRIGGER reject_invalid BEFORE INSERT ON stages "
+        "WHEN NEW.image_id='invalid' BEGIN SELECT RAISE(ABORT, 'injected failure'); END"
+    )
+    with pytest.raises(sqlite3.IntegrityError):
+        save_stage(db, "invalid", "vision", {"status": "ok"}, np.array([[1.0, 2.0]]))
+    assert load_vectors(db, "vision")[0] == []
+    db.close()
 
 
 def test_fast_edit_distance_matches_reference_on_random_unicode_sequences():
