@@ -183,6 +183,7 @@ def hybrid_rank(
     semantic_margin: float = 0.04,
     lexical_candidates: list[str] | None = None,
     lexical_statistics: tuple[int, dict[str, int]] | None = None,
+    trace: dict | None = None,
 ) -> list[str]:
     """Score-preserving fusion with one bounded OCR contribution per image.
 
@@ -214,6 +215,7 @@ def hybrid_rank(
     candidates.update(sorted(semantic, key=lambda key: (-semantic[key], key))[:50])
     candidates.update(lexical_ids)
     combined = {}
+    evidence = {}
     for image_id in candidates & visual.keys():
         score = visual[image_id]
         lexical = (
@@ -242,4 +244,25 @@ def hybrid_rank(
             ),
         )
         combined[image_id] = score + 0.16 * max(lexical, strength)
-    return sorted(combined, key=lambda key: (-combined[key], key))[:limit]
+        if trace is not None:
+            evidence[image_id] = {
+                "visual_cosine": score,
+                "semantic_cosine": semantic.get(image_id),
+                "lexical_evidence": lexical,
+                "semantic_strength": strength,
+                "hybrid_score": combined[image_id],
+            }
+    ordered = sorted(combined, key=lambda key: (-combined[key], key))
+    if trace is not None:
+        trace.update(
+            {
+                "candidates": [{"image_id": key, **evidence[key]} for key in ordered],
+                "rankings": {
+                    "visual": sorted(visual, key=lambda key: (-visual[key], key))[:50],
+                    "semantic": sorted(semantic, key=lambda key: (-semantic[key], key))[:50],
+                    "lexical": lexical_candidates[:50],
+                    "hybrid": ordered[:50],
+                },
+            }
+        )
+    return ordered[:limit]

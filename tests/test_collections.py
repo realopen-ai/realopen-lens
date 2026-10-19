@@ -520,3 +520,43 @@ def test_degraded_only_run_has_clean_json_and_nonzero_cli_exit(app, monkeypatch)
     assert response.exit_code == 1
     output = json.loads(response.stdout)
     assert output["failed_files"] == 0 and output["degraded_files"] == 1
+
+
+def test_candidate_trace_uses_production_scores_without_changing_results(app, monkeypatch):
+    from benchmarks.runtime.collections import snapshot
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    image(root / "two.png", "green")
+    run()
+    monkeypatch.setattr(search, "verify", lambda *a: None)
+    monkeypatch.setattr(
+        search,
+        "query_vector",
+        lambda text, kind, *a: np.eye(1, 768 if kind == "siglip2" else 384, dtype=np.float32)[0],
+    )
+    trace = {"stale": True}
+    normal = search.search_collection("red ERR_42", index_dir=store, limit=50)
+    traced = search.search_collection("red ERR_42", index_dir=store, limit=50, trace=trace)
+    assert normal == traced and "stale" not in trace
+    assert [r.image_id for r in traced] == trace["rankings"]["hybrid"]
+    assert trace["searchable_images"] == 2
+    candidate = next(r for r in trace["candidates"] if r["image_id"] == traced[0].image_id)
+    assert candidate["visual_cosine"] == traced[0].visual_similarity
+    assert candidate["lexical_bm25"] < 0 and candidate["channel_ranks"]["lexical"] == 1
+    assert candidate["semantic_cosine"] == pytest.approx(1)
+    assert candidate["hybrid_score"] > candidate["visual_cosine"]
+    assert candidate["width"] == 64 and candidate["ocr_characters"] > 0
+    corpus = {
+        "images": [
+            {"sha256": r.image_id, "path": Path(r.paths[0]).relative_to(root).as_posix()}
+            for r in traced
+        ]
+    }
+    state = snapshot(store, "personal", corpus)
+    assert state["unique_images"] == 2 and state["paths"] == 2
+    with pytest.raises(ValueError, match="exactly"):
+        snapshot(store, "personal", {"images": corpus["images"][:1]})
+    image(root / "one.png", "blue")
+    with pytest.raises(ValueError, match="Source changed"):
+        snapshot(store, "personal", corpus)
