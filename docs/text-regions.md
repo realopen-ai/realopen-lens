@@ -91,7 +91,7 @@ of false-positive rates across all photos. The control set was used during
 implementation and is not an untouched holdout set.
 
 Detector provenance and model checksum are in
-`src/realopen_lens/text-detector.lock.json`. Upstream references:
+`src/realopen_lens/models/text-detector.lock.json`. Upstream references:
 [model registry](https://github.com/RapidAI/RapidOCR/blob/v3.10.0/python/rapidocr/default_models.yaml),
 [DB preprocessing and postprocessing](https://github.com/RapidAI/RapidOCR/blob/v3.10.0/python/rapidocr/ch_ppocr_det/utils.py).
 

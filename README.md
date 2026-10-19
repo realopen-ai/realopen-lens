@@ -122,6 +122,25 @@ measurement limitations.
 - `tests/`: automated tests.
 - `docs/`: architecture, benchmark instructions, and published results.
 
+The engine is grouped by responsibility:
+
+```text
+src/realopen_lens/
+├── indexing/       # Discovery, incremental orchestration, processing stages
+├── encoders/       # CPU ONNX encoders and image preprocessing
+├── ocr/            # Tesseract, backend selection, experimental alternatives
+├── retrieval/      # Ranking, fusion, and saved-collection search
+├── storage/        # SQLite catalog, caches, immutable search generations
+├── runtime/        # Worker processes, supervision, offline enforcement
+├── models/         # Artifact management and pinned manifests
+├── cli.py
+├── search.py       # Stable public search entry points
+└── __init__.py
+```
+
+The documented Python entry points remain `realopen_lens.indexing.index_collection`,
+`realopen_lens.indexing.collection_status`, and `realopen_lens.search.search_collection`.
+
 Benchmark tools run from the checkout with `python -m benchmarks`; they are not
 included in the application wheel. See the [benchmark guide](docs/benchmark.md)
 for commands and setup.

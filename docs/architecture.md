@@ -29,6 +29,12 @@ storage, lexical retrieval, and vector retrieval. Keep storage rows, SQL dialect
 and web request objects out of the engine's public data types. Avoid a generic
 plugin framework or speculative implementations.
 
+The engine's implementation is grouped into `indexing`, `encoders`, `ocr`,
+`retrieval`, `storage`, `runtime`, and `models` packages. CLI adapters call the
+same collection operations; the root `search` module preserves the documented
+Python search entry points. Benchmark and evaluation infrastructure stays in the
+repository's top-level `benchmarks/` directory.
+
 ## Selected technologies
 
 | Area | Decision |

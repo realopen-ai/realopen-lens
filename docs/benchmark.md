@@ -47,7 +47,7 @@ uv run --no-sync lens models verify
 Among the `lens` commands, only `models fetch` accesses the network. Model files
 go into ignored `models/`. The optional sample downloader below also uses the
 network explicitly.
-The package's `models.lock.json` pins repository revisions, sizes, and SHA-256
+The bundled `realopen_lens/models/models.lock.json` pins repository revisions, sizes, and SHA-256
 checksums. Existing matching files are reused; interrupted partial downloads
 restart on the next fetch. Inference never downloads missing files.
 
