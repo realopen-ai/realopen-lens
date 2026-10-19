@@ -96,3 +96,55 @@ def test_worker_loads_detector_once_and_keeps_item_failures_durable(tmp_path, mo
     assert results["a"]["status"] == "error"
     assert results["b"]["status"] == "ok"
     db.close()
+
+
+@pytest.mark.parametrize(
+    "different", ["engine_sha256", "runner_sha256", "worker_limits", "variant", "images"]
+)
+def test_presence_comparison_rejects_different_pipeline_identities(tmp_path, different):
+    from benchmarks.presence_report import evaluate
+
+    config = {
+        "engine_sha256": "engine",
+        "runner_sha256": "harness",
+        "worker_limits": {},
+        "variant": "improved",
+        "images": [],
+    }
+    for mode in ("whole", "gate"):
+        root = tmp_path / mode
+        root.mkdir()
+        row = dict(config)
+        if mode == "gate":
+            row[different] = "changed"
+            row["text_detector"] = {"mode": "gate"}
+        (root / "config.json").write_text(json.dumps(row))
+    with pytest.raises(ValueError, match=different):
+        evaluate(tmp_path / "whole", tmp_path / "gate", tmp_path / "comparison")
+
+
+def test_allowing_documented_source_change_does_not_allow_different_limits(tmp_path):
+    from benchmarks.presence_report import evaluate
+
+    config = {
+        "engine_sha256": "engine",
+        "runner_sha256": "harness",
+        "worker_limits": {},
+        "variant": "improved",
+        "images": [],
+    }
+    for name in ("whole", "gate"):
+        root = tmp_path / name
+        root.mkdir()
+        row = dict(config)
+        if name == "gate":
+            row["engine_sha256"] = "new-engine"
+            row["worker_limits"] = {"image_timeout": 100}
+        (root / "config.json").write_text(json.dumps(row))
+    with pytest.raises(ValueError, match="worker_limits"):
+        evaluate(
+            tmp_path / "whole",
+            tmp_path / "gate",
+            tmp_path / "output",
+            source_change_reason="Reviewed guard-only change",
+        )
