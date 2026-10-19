@@ -9,6 +9,9 @@ from PIL import Image
 from realopen_lens.inference import image_rgb
 
 
+from realopen_lens.ocr import parse_tsv
+
+
 @pytest.mark.parametrize("mode", ["RGBA", "P"])
 def test_transparent_screenshot_border_is_white_not_black(tmp_path, mode):
     # Rich's empty-OCR failure was caused by discarding transparent black pixels.
@@ -25,6 +28,30 @@ def test_transparent_screenshot_border_is_white_not_black(tmp_path, mode):
         assert actual.getpixel((5, 5)) == (35, 35, 35)
         assert not actual.info
     assert path.read_bytes() == original
+
+
+def test_tsv_keeps_reading_order_confidence_and_word_boxes():
+    tsv = (
+        "level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\t"
+        "left\ttop\twidth\theight\tconf\ttext\n"
+        "5\t1\t1\t1\t1\t1\t10\t20\t70\t15\t90.5\tnotify_hello\n"
+        "5\t1\t1\t1\t2\t1\t10\t40\t60\t15\t81.5\tDeadpool\n"
+    )
+    result = parse_tsv(tsv)
+    assert result["text"] == "notify_hello\nDeadpool"
+    assert result["words"][0]["box"] == [10, 20, 70, 15]
+    assert result["confidence"] == 86
+
+
+def test_tsv_rejects_nonfinite_confidence_instead_of_serializing_nan():
+    header = (
+        "level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\t"
+        "left\ttop\twidth\theight\tconf\ttext\n"
+    )
+    with pytest.raises(ValueError, match="confidence"):
+        parse_tsv(header + "5\t1\t1\t1\t1\t1\t1\t1\t20\t10\tnan\tword\n")
+    with pytest.raises(ValueError, match="header"):
+        parse_tsv("not tsv")
 
 
 def test_relative_corpus_paths_and_invalid_limits(tmp_path, monkeypatch):
