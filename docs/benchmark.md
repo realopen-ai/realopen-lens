@@ -3,9 +3,9 @@
 For the larger, resumable per-image suite, see the
 [500-image benchmark guide](large-benchmark.md).
 
-This is the first executable part of Lens. It tests local CPU inference and
-retrieval before the application and persistent index are built. It does not
-train a model or establish production hardware support.
+This harness tests local CPU inference and retrieval independently of the
+[persistent collection workflow](collections.md). It does not train a model or
+establish production hardware support.
 
 The harness lives in the repository's `benchmarks/` directory, alongside sample
 downloaders, generated fixtures, reference transcripts, and evaluation metrics.

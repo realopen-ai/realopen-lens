@@ -7,13 +7,22 @@ document images by their visual content and the text they contain. It combines
 multilingual image embeddings, optical character recognition (OCR), and hybrid
 retrieval, with a lightweight ranking model that can learn from explicit feedback.
 
-> **Status: early development.** A local inference benchmark is available to test
-> the selected models, OCR, retrieval, and resource use. The full application is
-> not available yet. Features below describe the planned first release.
+> **Status: early development.** Persistent folder indexing and CLI search are
+> available, alongside inference and retrieval benchmarks. The gallery, API,
+> feedback, and learned ranking are still planned.
 
-Start with the [benchmark setup and usage guide](docs/benchmark.md), or the
+Start with the [collection indexing and search guide](docs/collections.md), the
+[benchmark setup and usage guide](docs/benchmark.md), or the
 [500-image benchmark guide](docs/large-benchmark.md). Add your own
 images to the root `data/` folder, which is ignored by Git.
+
+After [installing the package, Tesseract, and local models](docs/collections.md#setup-and-first-collection):
+
+```sh
+uv run --no-sync lens index data --index-dir runs/personal-index --log
+uv run --no-sync lens status --index-dir runs/personal-index
+uv run --no-sync lens search "database connection error" --index-dir runs/personal-index
+```
 
 ## What you'll be able to do
 
@@ -95,16 +104,16 @@ current pipeline evaluation uses Tesseract only.
 ## Roadmap
 
 - [ ] Validate multilingual inference, OCR quality, and memory use on 8 GB hardware.
-- [ ] Build the Python package, CLI, and resumable ingestion pipeline.
-- [ ] Implement visual, lexical, and semantic OCR retrieval with hybrid fusion.
-- [ ] Publish reproducible baseline evaluations by language and image category.
+- [x] Build the Python package, CLI, and resumable ingestion pipeline.
+- [x] Implement visual, lexical, and semantic OCR retrieval with hybrid fusion.
+- [x] Publish reproducible baseline evaluations by language and image category.
 - [ ] Train and compare lightweight rerankers against fixed fusion.
 - [ ] Add explicit feedback, validated model updates, and collection management.
 - [ ] Build the local image gallery and verify installation on all three platforms.
 
-See [the benchmark guide](docs/benchmark.md) for current installation instructions,
-offline setup, query judgments, and measurement limitations. Application setup
-instructions will follow when the first user-facing prototype is ready.
+See [the collection guide](docs/collections.md) for installation and CLI usage, and
+[the benchmark guide](docs/benchmark.md) for offline setup, query judgments, and
+measurement limitations.
 
 ## Repository layout
 

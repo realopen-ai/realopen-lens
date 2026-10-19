@@ -75,6 +75,14 @@ explicit mappings from vector rows to image or passage identifiers. Publish
 index generations consistently with database state and recover from partial
 writes without returning mismatched records.
 
+The [persistent collection CLI](collections.md) implements these operations with
+a SQLite catalog, content-addressed stage cache, immutable FTS5/vector generations,
+and a cross-process writer lock. Search reads one published snapshot; indexing
+publishes a replacement only after its artifacts are complete.
+Metadata and visual embeddings are required for publication. Failed OCR or semantic
+OCR embeddings degrade the image while preserving usable search channels. Failed
+text stages retry on later indexing jobs without repeating successful image stages.
+
 Search retrieves candidates independently through visual similarity, lexical
 OCR matching, and semantic OCR similarity. Aggregate passage matches into image
 results before fusion. Preserve similarity scores and keep one bounded OCR
