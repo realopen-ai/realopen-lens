@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "revision": 2,
+  "initial_judgments_sha256": "1e8be53de7412866f2523ea0af86ffb3fd8c312ee993c6828bf1f01ba425fc28",
+  "corrected_judgments_sha256": "1541edf1e9a36d439055fcad6b7e2d81b007cc06778363d04e7c05b3a3d39af1",
+  "affected_queries": [
+    "operations-reports-en",
+    "operations-reports-fr",
+    "operations-reports-ar"
+  ],
+  "before": {
+    "en": "Operations capacity reports listing customer, date, quantity, and percentages for sections A through H.",
+    "fr": "Rapports de capacité opérationnelle indiquant le client, la date, la quantité et les pourcentages des sections A à H.",
+    "ar": "تقارير القدرة التشغيلية التي تسرد العميل والتاريخ والكمية والنسب المئوية للأقسام من A إلى H."
+  },
+  "after": {
+    "en": "Operations capacity reports listing customer, date, quantity, and section percentages.",
+    "fr": "Rapports de capacité opérationnelle indiquant le client, la date, la quantité et les pourcentages par section.",
+    "ar": "تقارير القدرة التشغيلية التي تسرد العميل والتاريخ والكمية والنسب المئوية لكل قسم."
+  },
+  "diagnosis": "The visual contact-sheet review incorrectly described section identifiers as A–H. Full-resolution report-071.jpg and benchmarks/datasets/synthetic.py show sections 1–9. Corrected the query constraint; labels and retrieval code/settings unchanged.",
+  "evidence": [
+    "documents/synthetic/report-071.jpg",
+    "benchmarks/datasets/synthetic.py"
+  ],
+  "original_run": "runs/retrieval-evaluation-v1/baseline",
+  "corrected_run": "runs/retrieval-evaluation-v1/baseline-reviewed-v2",
+  "policy": "Original inputs and run remain retained; only corrected judgments are authoritative for training and final quality metrics."
+}
