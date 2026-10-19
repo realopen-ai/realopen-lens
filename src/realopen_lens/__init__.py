@@ -1,3 +1,3 @@
-"""Reusable components for the RealOpen Lens inference benchmark."""
+"""Private, offline image indexing and retrieval engine."""
 
 __version__ = "0.1.0"

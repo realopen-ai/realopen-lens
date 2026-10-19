@@ -23,6 +23,6 @@ def enforce(loopback_port: int | None = None) -> None:
             if isinstance(address, tuple) and address[:2] == ("127.0.0.1", loopback_port):
                 return
         if event in {"socket.connect", "socket.connect_ex", "socket.getaddrinfo", "socket.sendto"}:
-            raise PermissionError("Network access is disabled during the benchmark")
+            raise PermissionError("Network access is disabled during local inference")
 
     sys.addaudithook(audit)
