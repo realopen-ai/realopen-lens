@@ -150,6 +150,11 @@ Benchmark implementations are grouped into `datasets/`, `metrics/`, `runtime/`,
 remain as thin compatibility entry points. Pinned sources and OCR reference
 assets retain their original locations.
 
+Evaluate published collections and export reviewed candidate features using the
+[saved-collection retrieval guide](docs/retrieval-evaluation.md). The
+[2,000-image retrieval report](docs/benchmarks/2026-10-20-retrieval-evaluation.md)
+records the production baseline, reviewed-label limitations, and training exports.
+
 The [500-image hardening report](docs/benchmarks/2026-10-19-pipeline-hardening.md)
 includes before/after results, failure analysis, resource costs and remaining limitations.
 
