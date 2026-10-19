@@ -1,0 +1,43 @@
+-bash
+Traceback (most recent call last)
+exception.py:21 in divide_all
+16
+17 def divide_all(divides: List[Tuple[float, float]]) -> None:
+18 """Do something impossible every day."""
+19 try:
+20 for number, divisor in divides:
+21 result = divide_by(number, divisor)
+22 console.print(f"{number} divided by {divisor} is {result}")
+23 except Exception:
+24 console.print_exception(extra_lines=5, show_locals=True)
+25
+26
+locals
+divides = [
+(1000, 200),
+(10000, 500),
+(0, 1000000),
+(3.1427, 2),
+(4294967296, 65536),
+(1, 0)
+]
+divisor = 0
+number = 1
+result = 65536.0
+exception.py:13 in divide_by
+8
+9
+10 def divide_by(number: float, divisor: float) -> float:
+11 """Divide any number by zero."""
+12 # Will throw a ZeroDivisionError if divisor is 0
+13 result = number / divisor
+14 return result
+15
+16
+17 def divide_all(divides: List[Tuple[float, float]]) -> None:
+18 """Do something impossible every day."""
+locals
+divisor = 0
+number = 1
+ZeroDivisionError: division by zero
+rich/examples on master via v3.8.3 (rich)

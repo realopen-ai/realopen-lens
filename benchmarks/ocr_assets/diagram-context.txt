@@ -1,0 +1,18 @@
+Personal Banking Customer
+[Person]
+A customer of the bank with one or more personal bank accounts.
+Internet Banking System
+[Software System]
+Allows customers to view information about their bank accounts and make payments via the web.
+Amazon Web Services Simple Email Service
+[Software System]
+Cloud-based email service provider.
+Core Banking System
+[Software System]
+Handles core banking functions including customer information, bank account management, transactions, etc.
+Sends e-mails to
+Views account balances and makes payments using
+Sends e-mails to customers using
+Gets bank account information from and makes payments using
+System Context View: Internet Banking System
+The system context diagram for a fictional Internet Banking System | Simon Brown | c4model.com | License: CC BY 4.0

@@ -1,0 +1,22 @@
+[14:49:49] INFO Server starting... logging.py:62
+INFO Listening on http://127.0.0.1:8080 logging.py:63
+[14:49:50] INFO GET /index.html 200 1298 logging.py:66
+INFO GET /imgs/backgrounds/back1.jpg 200 54386 logging.py:67
+INFO GET /css/styles.css 200 54386 logging.py:68
+WARNING GET /favicon.ico 404 242 logging.py:69
+[14:49:51] DEBUG JSONRPC request logging.py:72
+--> {'version': '1.1', 'method': 'confirmFruitPurchase', 'params': [['apple',
+'orange', 'mangoes', 'pomelo'], 1.123], 'id': '194521489'}
+<-- {'version': '1.1', 'result': True, 'error': None, 'id': '194521489'}
+ERROR Unable to find 'pomelo' in database! logging.py:82
+INFO POST /jsonrpc/ 200 65532 logging.py:83
+INFO POST /admin/ 401 42234 logging.py:84
+WARNING password was rejected for admin site. logging.py:85
+ERROR An error of some kind occurred! logging.py:89
+Traceback (most recent call last):
+File "/Users/willmcgugan/projects/rich/rich/logging.py", line 87, in
+<module>
+1 / 0
+ZeroDivisionError: division by zero
+[14:49:52] CRITICAL Out of memory! logging.py:91
+INFO Server exited with code=-1 logging.py:92
