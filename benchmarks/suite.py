@@ -1,36 +1,29 @@
 """Resumable per-image evaluation with immutable run identities and retained evidence."""
 
+import argparse
 import hashlib
-
-
 import json
-
-
+import os
+import platform
 import sqlite3
-
-
+import shutil
+import sys
+from time import perf_counter
 from collections import Counter, defaultdict
-
-
 from datetime import UTC, datetime
-
-
+from importlib.metadata import version
 from pathlib import Path
-
-
 from typing import Any
 
-
 import numpy as np
+import psutil
 
-
+from benchmarks.dataset import digest
 from benchmarks.ocr_metrics import evaluate, normalized
-
-
 from benchmarks.retrieval_metrics import metrics
-
-
 from benchmarks.resources import MemoryMonitor
+from benchmarks.execution import run_stage
+from realopen_lens.models import registry, verify
 
 
 def connect(path: Path) -> sqlite3.Connection:
@@ -510,3 +503,140 @@ def write_resources(output: Path, memory: MemoryMonitor) -> None:
     temporary = destination.with_suffix(".json.tmp")
     temporary.write_text(json.dumps(merged, indent=2) + "\n")
     temporary.replace(destination)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--dataset", type=Path, default=Path("data/benchmark-500"))
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--engine-root", type=Path, default=Path("src"))
+    parser.add_argument("--variant", choices=["baseline", "improved"], required=True)
+    parser.add_argument("--models", type=Path, default=Path("models"))
+    parser.add_argument("--languages", default="eng+fra+ara")
+    parser.add_argument("--threads", type=int, choices=range(1, 9), default=2)
+    parser.add_argument("--limit", type=int)
+    parser.add_argument("--image-timeout", type=float, default=90)
+    parser.add_argument("--startup-timeout", type=float, default=120)
+    parser.add_argument("--retry-errors", action="store_true")
+    args = parser.parse_args()
+    manifest = args.dataset / "manifest.json"
+    rows = json.loads(manifest.read_text())["images"]
+    if args.image_timeout <= 0 or args.startup_timeout <= 0:
+        raise ValueError("Worker timeouts must be positive")
+    if args.limit is not None:
+        if not 1 <= args.limit <= len(rows):
+            raise ValueError("Limit must select at least one available image")
+        rows = rows[: args.limit]
+    for row in rows:
+        path = (args.dataset / row["path"]).resolve()
+        if not path.is_relative_to(args.dataset.resolve()) or digest(path) != row["sha256"]:
+            raise ValueError(f"Invalid dataset input: {row['id']}")
+    verify(args.models, "int8")
+    identity = {
+        "dataset": str(args.dataset.resolve()),
+        "manifest_sha256": digest(manifest),
+        "images": rows,
+        "queries": query_items(rows),
+        "engine_root": str(args.engine_root.resolve()),
+        "engine_sha256": source_hash(args.engine_root),
+        "variant": args.variant,
+        "models": str(args.models.resolve()),
+        "artifacts": registry(),
+        "threads": args.threads,
+        "languages": args.languages,
+        "worker_limits": {
+            "image_timeout": args.image_timeout,
+            "startup_timeout": args.startup_timeout,
+        },
+        "runner_sha256": source_hash(Path("benchmarks")),
+        "host": {
+            "system": platform.system(),
+            "release": platform.release(),
+            "machine": platform.machine(),
+            "ram_gib": psutil.virtual_memory().total / 2**30,
+            "python": sys.version,
+        },
+        "packages": {
+            name: version(name)
+            for name in ["numpy", "Pillow", "onnxruntime", "tokenizers", "psutil", "realopen-lens"]
+        },
+    }
+    args.output.mkdir(parents=True, exist_ok=True)
+    config_path = args.output / "config.json"
+    if config_path.exists() and json.loads(config_path.read_text()) != identity:
+        raise ValueError(
+            "Resume configuration/source/environment mismatch; choose a new output directory"
+        )
+    config_path.write_text(json.dumps(identity, ensure_ascii=False, indent=2) + "\n")
+    for source, name in (
+        (args.engine_root, "engine-source"),
+        (Path("benchmarks"), "harness-source"),
+    ):
+        if not (args.output / name).exists():
+            shutil.copytree(
+                source, args.output / name, ignore=shutil.ignore_patterns("__pycache__")
+            )
+    db = connect(args.output / "results.sqlite")
+    if args.retry_errors:
+        reset_errors(db)
+    db.close()
+    memory = MemoryMonitor()
+    try:
+        with memory:
+            for stage in ["ocr", "vision", "semantic", "visual_queries", "semantic_queries"]:
+                if source_hash(args.engine_root) != identity["engine_sha256"]:
+                    raise ValueError(
+                        "Engine changed during run; resume with preserved original source"
+                    )
+                memory.phase = stage
+                print(f"Running {stage} (completed records are reused)", flush=True)
+                env = {
+                    **os.environ,
+                    "PYTHONPATH": str(args.engine_root.resolve()),
+                    "OMP_NUM_THREADS": str(args.threads),
+                    "OPENBLAS_NUM_THREADS": str(args.threads),
+                    "TOKENIZERS_PARALLELISM": "false",
+                }
+                stage_start = perf_counter()
+                stage_db = connect(args.output / "results.sqlite")
+                try:
+                    events = run_stage(
+                        [
+                            sys.executable,
+                            "-m",
+                            "benchmarks.suite_worker",
+                            str(config_path.resolve()),
+                            stage,
+                        ],
+                        stage_db,
+                        stage,
+                        env,
+                        args.output / f"{stage}.log",
+                        lambda image_id, payload: save_stage(stage_db, image_id, stage, payload),
+                        image_timeout=args.image_timeout,
+                        startup_timeout=args.startup_timeout,
+                        stage_timeout=max(600, len(rows) * 60),
+                    )
+                finally:
+                    stage_db.close()
+                with (args.output / "run-events.jsonl").open("a") as log:
+                    log.write(
+                        json.dumps(
+                            {
+                                "stage": stage,
+                                "seconds": perf_counter() - stage_start,
+                                "returncode": 0,
+                                "supervision": events,
+                                "timestamp": datetime.now(UTC).isoformat(),
+                            }
+                        )
+                        + "\n"
+                    )
+            memory.phase = "evaluation"
+            report(args.output, identity)
+    finally:
+        write_resources(args.output, memory)
+
+
+if __name__ == "__main__":
+    main()
