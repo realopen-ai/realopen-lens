@@ -1,0 +1,533 @@
+{
+  "version": 1,
+  "seed": 20261020,
+  "protocol": "Fixed-seed licensed COCO candidates excluded from all earlier local image datasets. One assistant visually inspected native-resolution selected photos before any OCR or detector inference. This is model-independent annotation, not independent human review.",
+  "selection": {
+    "candidates": 48,
+    "selected": 20,
+    "excluded": [
+      {
+        "filename": "COCO_val2014_000000482160.jpg",
+        "sha256": "5db3ddfa432de4478a5446cbea3de54a7261a24d5410673301109ecd18f87cec",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000335800.jpg",
+        "sha256": "cd4f9f9e797d1146db474f98b7560dc443e7e6efa91fa563fece45374b8de7af",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000223094.jpg",
+        "sha256": "7e5a4c4c1b0fd34008e9616298e2d2b0509188900eb78ac7d2d994c7acd6f90e",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000526364.jpg",
+        "sha256": "3c1d9500d8de38006d2c5dc2b352f85849b9de9a227a235b8228d6865d22a6d3",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000344930.jpg",
+        "sha256": "2c82fdd0a94bced721cbe6c4cf0e129dc98bbb5297d1bcb9077ea7fdbd61fe45",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000212288.jpg",
+        "sha256": "a749132d42d289267bb9606b341f638dd0bb65af0bf6bf85ba2fa1de98402685",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000074759.jpg",
+        "sha256": "a875c142082a6288ec2896c94087b13a613313024d1dfaecb6d31ff068a50565",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000450728.jpg",
+        "sha256": "de2acc1fb80efd3c9415e1126bdc9a75142b4073b2bad83aa3dfbab8cd0a581b",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000098284.jpg",
+        "sha256": "9ec4468f762cb966a12107a9856fbd9f39051f9af9a0e789018762d2e8a04e1e",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000232173.jpg",
+        "sha256": "9d6be7c3cf406db1c1871f4a0662f05f813305db7bd91dd7d9fa34dfb7e7d32c",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000224554.jpg",
+        "sha256": "24a0a557ae5eb9a1f8344ea837c9f089df120cbc29907dd624c55a5c38af1338",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000161185.jpg",
+        "sha256": "76f7fbffc8ccd33d70fa1d6b876b3a5697562cf1b91180cada1b1c235d45cf5e",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000056983.jpg",
+        "sha256": "8f46c15b1e07648d81d07e3eb9208aab0c7651a7888be9ae9bd7d3075b31d9c2",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000046775.jpg",
+        "sha256": "68ced521a791dae60a8100803c50b013a1a359e1cb807fffa61e30d1a3740884",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000167989.jpg",
+        "sha256": "ab8f416714ca6f22348b5a14178ae9026a2cf8b007a8e426863f77706d2908c5",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000127801.jpg",
+        "sha256": "48160c17326334f496e6146e543a94e342de4fc5ba77b70037031c81e4b707fb",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000282298.jpg",
+        "sha256": "4a5ea7d1f08a112ff876cc121812e1f156f7a5e9d0f283749128fa0279433213",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000491835.jpg",
+        "sha256": "40136ec0b2ac5f497b108513ae9b0ef821dfd69af805e417c0eec044e810621f",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000429593.jpg",
+        "sha256": "e90439bfabe8439802d6fe4aec9215878ad365edd49e2003b0986a9cffaa9d9c",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000290289.jpg",
+        "sha256": "81dd7ece8f9e1498a15d9f83f03b40b20a19fd4cea7ec9d4f860d0d3672a53fc",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000465537.jpg",
+        "sha256": "38adc966c110e005d912a870f021efb53efcd52e68cfb08811a3bef12b120af0",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000101491.jpg",
+        "sha256": "fadce8f094b7574aed7fb90618f739b2da6484db5dd45edb0d7f83198a7cee40",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000540806.jpg",
+        "sha256": "fcdcbb40efa588928960fcbeab408a72200c17155803725c89fbb5cac3697738",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000479948.jpg",
+        "sha256": "8f15c7af5acbaf5b624ebac0637fa01a8539b4c9e5df3c578f86adb34ab41c53",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000332545.jpg",
+        "sha256": "f1ba8316e6389f23e25b45d1939f74d9bb7e4f3b051e2af6c40a685d3edb5c96",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000393869.jpg",
+        "sha256": "cd6d87fbd7dd8fd7b565554e5d13c608b2597e5045d7bc8bc601f6580050429f",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000106909.jpg",
+        "sha256": "58f4291419c4dd16dbdf53aa0ea8b09b13c4ec22bb5e589407b5e0c0020eb8ec",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      },
+      {
+        "filename": "COCO_val2014_000000099874.jpg",
+        "sha256": "1a253cd6836750c06029a629f55cfac4aed74f0bf122f3726937c95232f4caf4",
+        "reason": "Readable/potential text or ambiguous markings in visual screening; not used as a negative."
+      }
+    ]
+  },
+  "photos": [
+    {
+      "filename": "COCO_val2014_000000513611.jpg",
+      "sha256": "c89a9c3e731d7fcdd1f208a0f2b9927a8249da5b02deff9fc5e7489028a47e50",
+      "query": "Small herd of grazing cattle in field of farm land.",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000513611.jpg",
+        "coco_id": 513611,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm3.staticflickr.com/2603/4003779080_2c07429d1c_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Cattle in a pasture; no readable text at native resolution."
+    },
+    {
+      "filename": "COCO_val2014_000000070256.jpg",
+      "sha256": "132ddfcfc9ebe125712b3dcc20529f51586d2d84b853308cac6e385fcea89ddb",
+      "query": "a man cts into a small cake with his sharp knife",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000070256.jpg",
+        "coco_id": 70256,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by-sa/2.0/",
+          "id": 5,
+          "name": "Attribution-ShareAlike License"
+        },
+        "flickr_url": "http://farm4.staticflickr.com/3108/2297528721_24c952d7fb_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Cake being cut; watch face and table do not show readable characters."
+    },
+    {
+      "filename": "COCO_val2014_000000089909.jpg",
+      "sha256": "b1215cba64a30fbf42301e207336ebc190414b9b84e009efda8200252947e02e",
+      "query": "A wooden bench on a fence and plants surrounding it",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000089909.jpg",
+        "coco_id": 89909,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm9.staticflickr.com/8149/7622931096_0cfddb02da_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Garden bench and fountain; decorative face and patterns are not text."
+    },
+    {
+      "filename": "COCO_val2014_000000157102.jpg",
+      "sha256": "6b41de7dfadae8f2e567445a7754efa417f80fe1207292abc67b72fb31af17c5",
+      "query": "The young child is cutting up some paper.",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000157102.jpg",
+        "coco_id": 157102,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm6.staticflickr.com/5059/5499048888_1142a9c541_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Child with craft supplies; clothing drawings contain no readable words."
+    },
+    {
+      "filename": "COCO_val2014_000000035975.jpg",
+      "sha256": "44163c4d3b8fabf3593eee6d4d616863d872b0e7abaf3538b0d8c9a7654d5ccb",
+      "query": "A large pizza sitting on top of a cutting board.",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000035975.jpg",
+        "coco_id": 35975,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm5.staticflickr.com/4146/4986900512_56c4c3bbe4_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Pizza and tableware; no readable text."
+    },
+    {
+      "filename": "COCO_val2014_000000542634.jpg",
+      "sha256": "8503d7d0b85c393174254ef3bc14ef344ddd4a398a6dbe5e83052465fb7b64af",
+      "query": "The woman wears a helmet as she rides a brown horse.",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000542634.jpg",
+        "coco_id": 542634,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by-sa/2.0/",
+          "id": 5,
+          "name": "Attribution-ShareAlike License"
+        },
+        "flickr_url": "http://farm9.staticflickr.com/8226/8509181444_0e9473b6f1_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Horse and rider at sunset; saddle decoration has no clearly readable characters."
+    },
+    {
+      "filename": "COCO_val2014_000000256250.jpg",
+      "sha256": "50992e7f512145fe238d7c1122abfea902cd719891b18a5f64b9e4d7b3747b3f",
+      "query": "two giraffes in a field next to some standing water",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000256250.jpg",
+        "coco_id": 256250,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm8.staticflickr.com/7113/7522639500_d3529717b4_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Two giraffes in wetland; no readable text."
+    },
+    {
+      "filename": "COCO_val2014_000000558483.jpg",
+      "sha256": "cf122a75fcc900e758852e7a42ed286667ae2648092b085d323c3dc279874807",
+      "query": "THERE ARE SHEEPS THAT ARE EATING GRASS IN THE FIELD",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000558483.jpg",
+        "coco_id": 558483,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm7.staticflickr.com/6153/6160342454_37cc1e38c5_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Estuary with grazing sheep; no readable boat names at native resolution."
+    },
+    {
+      "filename": "COCO_val2014_000000214919.jpg",
+      "sha256": "b9ba2c5bf594382c27a03ba3176ac4f92d916ce327004a5b9a2d785543a6452e",
+      "query": "A white container filled with lots of food.",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000214919.jpg",
+        "coco_id": 214919,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm5.staticflickr.com/4084/5092329882_1482144819_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Meal in an unmarked container; no readable text."
+    },
+    {
+      "filename": "COCO_val2014_000000098434.jpg",
+      "sha256": "3ba41adf4fc08c2390570d2f18cdedaf55981b76edcfd0ec5662c09a6c7a91df",
+      "query": "This person is about to eat a banana.",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000098434.jpg",
+        "coco_id": 98434,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm3.staticflickr.com/2605/4189678031_c1cbfeaefa_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Person eating a banana; no readable text."
+    },
+    {
+      "filename": "COCO_val2014_000000342322.jpg",
+      "sha256": "3e841c2c787d1faab3fc2d5233df5be75a13a38138938d716819e890bc983be8",
+      "query": "a herd of sheep walking across green grass.",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000342322.jpg",
+        "coco_id": 342322,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm5.staticflickr.com/4148/5129021175_4abb740b3e_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Rider herding sheep with dogs; no readable text."
+    },
+    {
+      "filename": "COCO_val2014_000000213008.jpg",
+      "sha256": "0adbb11cb6b2c0127b2bc4a6b0db2fefd227b937d9b1e04383b4b8d803aff5ae",
+      "query": "A couple of chairs and a large bed in a room.",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000213008.jpg",
+        "coco_id": 213008,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm5.staticflickr.com/4118/4745677628_f9cb08b72f_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Bedroom with lamps and furnishings; no readable text."
+    },
+    {
+      "filename": "COCO_val2014_000000056405.jpg",
+      "sha256": "c52b27d2993214db08f448856b9c438a6452834a004d433dbd7a1e901f973447",
+      "query": "A girl holds a teddy bear while an adult stands behind her.",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000056405.jpg",
+        "coco_id": 56405,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm1.staticflickr.com/50/127977702_6b8138ead9_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Child with a teddy bear; no readable text."
+    },
+    {
+      "filename": "COCO_val2014_000000215245.jpg",
+      "sha256": "8f26d81db7cb960105b0dbfdd5e2846a4aace8d2fb352b0698f00afb3fe6ebb4",
+      "query": "A group of zebra's playing and grazing in a field.",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000215245.jpg",
+        "coco_id": 215245,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm6.staticflickr.com/5187/5699107573_2059b4c0e1_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Zebras in grassland; no readable text."
+    },
+    {
+      "filename": "COCO_val2014_000000225546.jpg",
+      "sha256": "ca480433da734ffff458cda744259deb1e9f492d091a1411818b12d6c5ac744c",
+      "query": "a small bathroom with a mirror and sink",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000225546.jpg",
+        "coco_id": 225546,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by-sa/2.0/",
+          "id": 5,
+          "name": "Attribution-ShareAlike License"
+        },
+        "flickr_url": "http://farm3.staticflickr.com/2771/4308728153_e5239999fc_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Bathroom mirror and sink; no readable markings."
+    },
+    {
+      "filename": "COCO_val2014_000000342711.jpg",
+      "sha256": "7b221791065e3d91c7690b7a2cee576bcc57ed2b0ec74e11ea132038b55329ed",
+      "query": "Woman in sportswear playing tennis on a tennis court.",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000342711.jpg",
+        "coco_id": 342711,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by-sa/2.0/",
+          "id": 5,
+          "name": "Attribution-ShareAlike License"
+        },
+        "flickr_url": "http://farm4.staticflickr.com/3431/3244700443_dcb381d81b_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Tennis player; small logos are symbols, no readable text."
+    },
+    {
+      "filename": "COCO_val2014_000000182417.jpg",
+      "sha256": "688c4a3bf75a7dd19a9401d7f105f9675d50b2b1bc01a1355320878500e4d1fd",
+      "query": "A beautiful dessert waiting to be shared by two people",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000182417.jpg",
+        "coco_id": 182417,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm3.staticflickr.com/2151/2100467664_2703dd9ff2_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Dessert with decorative sugar shape; no letters."
+    },
+    {
+      "filename": "COCO_val2014_000000146965.jpg",
+      "sha256": "3e47112caed297bd422c03ef7a3f684614066cde8d6ab748bc0cb4cda0f2fd85",
+      "query": "a room wit ha chair a bed multiple windows",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000146965.jpg",
+        "coco_id": 146965,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm5.staticflickr.com/4118/4919635075_726b79a347_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Ornate living room; patterns and pictures contain no readable text."
+    },
+    {
+      "filename": "COCO_val2014_000000054931.jpg",
+      "sha256": "a49694d5dc982701f33a1d449a3ff7ebf953d1947ca141352097fb2528b10d1b",
+      "query": "a woman with a rope leading a horse",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000054931.jpg",
+        "coco_id": 54931,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm4.staticflickr.com/3707/9707884793_36195de2b5_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Woman holding a horse rope; no readable text."
+    },
+    {
+      "filename": "COCO_val2014_000000203003.jpg",
+      "sha256": "bc8007b203bceaaa16a69b4cf58e5982ff199b05fd29aad808ba7173438da4d1",
+      "query": "A young man holding a plate of food while sitting on a couch",
+      "source": {
+        "kind": "real",
+        "url": "https://s3.amazonaws.com/images.cocodataset.org/val2014/COCO_val2014_000000203003.jpg",
+        "coco_id": 203003,
+        "license": {
+          "url": "http://creativecommons.org/licenses/by/2.0/",
+          "id": 4,
+          "name": "Attribution License"
+        },
+        "flickr_url": "http://farm5.staticflickr.com/4009/4223355372_16781d3001_z.jpg",
+        "license_annotations_sha256": "cf925f18a0593c6a55defad56d4f5847731832993f4ae689d2d0ce93964bd663"
+      },
+      "text_presence": "absent",
+      "review_note": "Person holding a plate of pizza; no readable text."
+    }
+  ]
+}
