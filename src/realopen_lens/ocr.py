@@ -201,7 +201,7 @@ def _source_region(path: Path, size: tuple[int, int]) -> tuple[int, int, int, in
 @contextmanager
 def _ocr_source(path: Path, detection: dict | None, mode: str):
     with image_rgb(path) as source:
-        if detection is not None and mode == "mask":
+        if detection is not None and mode == "mask" and not detection.get("whole_image_fallback"):
             from realopen_lens.text_regions import mask_regions
 
             with mask_regions(source, detection) as masked:
@@ -244,6 +244,19 @@ def extract(
                 detection = detector.detect(source)
                 if detection["candidate_limit_reached"]:
                     warnings.append("Detector candidate limit reached; preserving full image")
+                elif not detection["regions"] and max(
+                    detection.get("input_size", original_size)
+                ) < max(original_size):
+                    # A reduced detector input can erase small glyphs that Tesseract
+                    # still reads from the source. No regions is insufficient evidence
+                    # to discard recognition (or mask away the source) in this case.
+                    detection = {
+                        **detection,
+                        "whole_image_fallback": "no_regions_after_downscaling",
+                    }
+                    warnings.append(
+                        "No text regions after detector downscaling; preserving whole-image OCR"
+                    )
                 elif not detection["regions"]:
                     with Image.open(path) as original:
                         if getattr(original, "n_frames", 1) > 1:
@@ -267,7 +280,7 @@ def extract(
                         "attempts": [],
                         "failed_attempts": [],
                     }
-                if region_mode == "mask":
+                if region_mode == "mask" and not detection.get("whole_image_fallback"):
                     from realopen_lens.text_regions import mask_regions
 
                     source = keep(mask_regions(source, detection))

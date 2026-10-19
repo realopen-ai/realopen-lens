@@ -145,3 +145,46 @@ def test_bad_detector_download_is_not_published(tmp_path, monkeypatch, payload):
         fetch_text_detector(tmp_path)
     assert not (tmp_path / "text-detector" / "det.onnx").exists()
     assert not (tmp_path / "text-detector" / "det.onnx.part").exists()
+
+
+@pytest.mark.parametrize("mode", ["gate", "mask"])
+def test_no_regions_after_downscaling_preserves_source_ocr_and_reload(tmp_path, monkeypatch, mode):
+    from realopen_lens.ocr import _ocr_source
+
+    path = tmp_path / "tiny-text.png"
+    with Image.new("RGB", (2400, 1350), "white") as image:
+        ImageDraw.Draw(image).rectangle((45, 105, 220, 130), fill="black")
+        image.save(path)
+    monkeypatch.setattr("realopen_lens.ocr.shutil.which", lambda name: "tesseract")
+    monkeypatch.setattr("realopen_lens.ocr._environment", lambda *args: {})
+    monkeypatch.setattr("realopen_lens.ocr._layout_incomplete", lambda *args: False)
+    detector = SimpleNamespace(
+        detect=lambda image: {
+            "regions": [],
+            "candidate_limit_reached": False,
+            "input_size": [1600, 896],
+        }
+    )
+    calls = []
+
+    def recognize(image, executable, languages, threads, psm, timeout):
+        calls.append(image.getpixel((50, 110)))
+        return {
+            "text": "LENS-7303 status timeout",
+            "words": [
+                {"text": text, "confidence": 99, "box": [45, 105, 50, 25]}
+                for text in ["LENS-7303", "status", "timeout"]
+            ],
+            "confidence": 99,
+            "psm": psm,
+        }
+
+    monkeypatch.setattr("realopen_lens.ocr._recognize", recognize)
+    result = extract(path, detector=detector, region_mode=mode)
+    assert result["text"] == "LENS-7303 status timeout"
+    assert calls == [(0, 0, 0)]
+    assert "inference_skipped" not in result
+    assert result["text_detection"]["whole_image_fallback"] == "no_regions_after_downscaling"
+    assert any("downscaling" in warning for warning in result["warnings"])
+    with _ocr_source(path, result["text_detection"], mode) as image:
+        assert image.getpixel((50, 110)) == (0, 0, 0)
