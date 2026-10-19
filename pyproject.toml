@@ -16,6 +16,9 @@ dependencies = [
   "typer>=0.16,<1",
 ]
 
+[project.scripts]
+lens = "realopen_lens.cli:app"
+
 [dependency-groups]
 dev = [
   "psutil>=7,<8",
