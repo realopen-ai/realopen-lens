@@ -66,7 +66,7 @@ def build(base: Path, output: Path, cache: Path, count: int, workers: int, lock:
         raise ValueError("Use 500–5000 unique images")
     output.mkdir(parents=True, exist_ok=True)
     if lock is not None:
-        frozen = json.loads(lock.read_text())
+        frozen = json.loads(lock.read_text(encoding="utf-8"))
         if len(frozen["images"]) != count:
             raise ValueError("Requested count differs from frozen corpus")
         for row in frozen["images"]:
@@ -84,7 +84,7 @@ def build(base: Path, output: Path, cache: Path, count: int, workers: int, lock:
         return
     if (output / "manifest.json").exists():
         return build(base, output, cache, count, workers, output / "manifest.json")
-    base_manifest = json.loads((base / "manifest.json").read_text())
+    base_manifest = json.loads((base / "manifest.json").read_text(encoding="utf-8"))
     rows, seen, pixels = [], set(), set()
     for item in base_manifest["images"]:
         if item["expected"]["decode"] != "success" or item["sha256"] in seen:

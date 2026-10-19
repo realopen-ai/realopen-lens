@@ -55,7 +55,7 @@ def run(args):
     }
     args.output.mkdir(parents=True, exist_ok=True)
     config = args.output / "config.json"
-    if config.exists() and json.loads(config.read_text()) != identity:
+    if config.exists() and json.loads(config.read_text(encoding="utf-8")) != identity:
         raise ValueError("Resume identity changed; use a new output directory")
     save_json(config, identity)
     save_json(args.output / "corpus.json", corpus)

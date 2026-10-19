@@ -27,6 +27,16 @@ def mock_model_integrity_for_unit_tests(monkeypatch):
     monkeypatch.setattr(collections, "verify", lambda *args: None)
 
 
+@pytest.fixture(params=["utf-8", "cp1252"])
+def default_text_encoding(request, monkeypatch):
+    original = Path.read_text
+
+    def read_text(path, encoding=None, errors=None):
+        return original(path, encoding=encoding or request.param, errors=errors)
+
+    monkeypatch.setattr(Path, "read_text", read_text)
+
+
 def corpus_files(tmp_path):
     rows = [
         {
@@ -149,7 +159,9 @@ def test_grouping_is_transitive_and_family_safe():
     assert len({r["split"] for r in rows}) == 1
 
 
-def test_evaluation_resumes_records_and_rejects_identity_changes(tmp_path, monkeypatch):
+def test_evaluation_resumes_records_and_rejects_identity_changes(
+    tmp_path, monkeypatch, default_text_encoding
+):
     corpus, path, rows, bundle = corpus_files(tmp_path)
     state = {"generation": "g", "unique_images": 3, "paths": 3}
     monkeypatch.setattr(collections, "snapshot", lambda *a, **kw: state)
@@ -172,7 +184,7 @@ def test_evaluation_resumes_records_and_rejects_identity_changes(tmp_path, monke
         corpus=corpus,
         judgments=path,
         index_dir=tmp_path / "index",
-        collection="test",
+        collection="اختبار",
         models=Path("models"),
         threads=2,
         output=tmp_path / "out",
@@ -186,7 +198,8 @@ def test_evaluation_resumes_records_and_rejects_identity_changes(tmp_path, monke
         assert db.execute("SELECT * FROM queries").fetchall() == before
     assert len(calls) == 1
     exported = [
-        json.loads(line) for line in (args.output / "training-train.jsonl").read_text().splitlines()
+        json.loads(line)
+        for line in (args.output / "training-train.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert len(exported) == 2 and all(r["label"] is not None for r in exported)
     state["generation"] = "changed"
@@ -222,9 +235,9 @@ def test_query_failures_are_retained_and_remaining_queries_run(tmp_path, monkeyp
     with pytest.raises(ValueError, match="2 queries failed"):
         collections.run(args)
     assert len(calls) == 2
-    summary = json.loads((args.output / "summary.json").read_text())
+    summary = json.loads((args.output / "summary.json").read_text(encoding="utf-8"))
     assert summary["failed_queries"] == 2 and summary["execution_success_rate"] == 0
-    assert len((args.output / "queries.jsonl").read_text().splitlines()) == 2
+    assert len((args.output / "queries.jsonl").read_text(encoding="utf-8").splitlines()) == 2
 
 
 def test_explicit_cross_split_labels_and_invalid_grades_are_rejected(tmp_path):
@@ -272,7 +285,7 @@ def test_retry_retains_all_failed_attempts(tmp_path, monkeypatch):
     with sqlite3.connect(args.output / "results.sqlite") as db:
         assert db.execute("SELECT COUNT(*) FROM queries").fetchone()[0] == 1
         assert db.execute("SELECT COUNT(*) FROM attempts").fetchone()[0] == 2
-    assert len((args.output / "attempts.jsonl").read_text().splitlines()) == 2
+    assert len((args.output / "attempts.jsonl").read_text(encoding="utf-8").splitlines()) == 2
 
 
 def test_pixel_identity_ignores_encoding_but_preserves_shape(tmp_path):
@@ -360,15 +373,14 @@ def test_pixel_identity_uses_production_orientation_and_alpha(tmp_path):
     assert pixel_hash(tmp_path / "rotated.png") == pixel_hash(tmp_path / "white.bmp")
 
 
-def test_reference_correction_is_auditable_and_preserves_unaffected_queries():
+def test_reference_correction_is_auditable_and_preserves_unaffected_queries(default_text_encoding):
     base = Path(__file__).resolve().parents[1] / "benchmarks/sources/retrieval-v1"
-    correction = json.loads((base / "corrections-v2.json").read_text())
+    correction = json.loads((base / "corrections-v2.json").read_text(encoding="utf-8"))
     assert correction["initial_judgments_sha256"] == digest(base / "judgments.initial.json")
     assert correction["corrected_judgments_sha256"] == digest(base / "judgments.json")
-    initial = {
-        q["id"]: q for q in json.loads((base / "judgments.initial.json").read_text())["queries"]
-    }
-    corrected = json.loads((base / "judgments.json").read_text())
+    initial_bundle = json.loads((base / "judgments.initial.json").read_text(encoding="utf-8"))
+    initial = {q["id"]: q for q in initial_bundle["queries"]}
+    corrected = json.loads((base / "judgments.json").read_text(encoding="utf-8"))
     affected = set(correction["affected_queries"])
     assert len(affected) == 3 and corrected["revision"] == 2
     for query in corrected["queries"]:
