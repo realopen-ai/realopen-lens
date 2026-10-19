@@ -1,0 +1,200 @@
+"""Search a published collection with existing visual, lexical, and hybrid ranking."""
+
+from dataclasses import dataclass
+import json
+from pathlib import Path
+import sqlite3
+import subprocess
+import sys
+
+import numpy as np
+
+from realopen_lens.storage.catalog import Catalog, default_directory, local_path
+from realopen_lens.storage.artifacts import load_manifest, matrices
+from realopen_lens.runtime.jobs import environment
+from realopen_lens.models.manager import digest, registry, verify
+from realopen_lens.retrieval.ranking import (
+    hybrid_rank,
+    lexical_index,
+    lexical_frequencies,
+    rank_lexical,
+    rank_vectors,
+    vector_scores,
+)
+
+
+@dataclass(frozen=True)
+class SearchResult:
+    rank: int
+    image_id: str
+    paths: tuple[str, ...]
+    thumbnail: str | None
+    width: int
+    height: int
+    text: str
+    visual_similarity: float | None
+    status: str = "ready"
+    issues: tuple[dict, ...] = ()
+
+
+def query_vector(text: str, kind: str, models: Path, threads: int) -> np.ndarray:
+    request = {"query": text, "kind": kind, "models": str(models.resolve()), "threads": threads}
+    try:
+        result = subprocess.run(
+            [sys.executable, "-m", "realopen_lens.runtime.worker", "--query"],
+            input=json.dumps(request),
+            capture_output=True,
+            text=True,
+            env=environment(threads),
+            timeout=120,
+            check=True,
+        )
+    except subprocess.TimeoutExpired as error:
+        raise TimeoutError("Query encoder exceeded its deadline") from error
+    except subprocess.CalledProcessError as error:
+        raise RuntimeError("Local query encoder failed: " + error.stderr[-1500:]) from error
+    vector = np.asarray(json.loads(result.stdout), dtype=np.float32)
+    if vector.shape != (768 if kind == "siglip2" else 384,) or not np.isfinite(vector).all():
+        raise ValueError("Invalid query embedding")
+    return vector
+
+
+def search_collection(
+    query: str,
+    *,
+    collection: str = "personal",
+    index_dir: Path | None = None,
+    models: Path = Path("models"),
+    limit: int = 10,
+    mode: str = "hybrid",
+    threads: int = 2,
+) -> list[SearchResult]:
+    if not query.strip() or len(query) > 4096 or not 1 <= limit <= 100 or not 1 <= threads <= 8:
+        raise ValueError(
+            "Use a nonempty query up to 4096 characters, 1–100 results, and 1–8 threads"
+        )
+    if mode not in {"hybrid", "visual", "lexical", "semantic"}:
+        raise ValueError("Search mode must be hybrid, visual, lexical, or semantic")
+    catalog = Catalog(index_dir or default_directory(), readonly=True)
+    index = None
+    try:
+        found, generation = catalog.snapshot(collection)
+        manifest = load_manifest(catalog, generation)
+        from realopen_lens.indexing.service import signature
+
+        paths_by_id = {}
+        for row in manifest["images"]:
+            paths = []
+            for relative in row["paths"]:
+                try:
+                    source = (Path(found["root"]) / relative).resolve()
+                    if (
+                        source.is_relative_to(Path(found["root"]))
+                        and source.is_file()
+                        and signature(source) == row["signatures"][relative]
+                    ):
+                        paths.append(str(source))
+                except (OSError, RuntimeError):
+                    continue
+            if paths:
+                paths_by_id[row["image_id"]] = tuple(paths)
+        lookup = {
+            row["image_id"]: row for row in manifest["images"] if row["image_id"] in paths_by_id
+        }
+        ocr_records = [r for r in manifest["ocr"] if r["image_id"] in lookup]
+        if not lookup:
+            return []
+        visual_query = semantic_query = None
+        if mode != "lexical":
+            from realopen_lens.encoders import onnx as inference
+            from importlib.metadata import version
+
+            spec = manifest["config"]["spec"]
+            if spec["model_registry"] != registry() or spec["inference_sha256"] != digest(
+                Path(inference.__file__)
+            ):
+                raise ValueError(
+                    "Index model/preprocessing version differs; run 'lens index' again"
+                )
+            for name in ("numpy", "onnxruntime", "tokenizers"):
+                if spec["packages"][name] != version(name):
+                    raise ValueError("Query encoder dependencies changed; run 'lens index' again")
+            verify(models, "int8")
+            if mode in {"hybrid", "visual"}:
+                visual_query = query_vector(query, "siglip2", models, threads)
+            if mode in {"hybrid", "semantic"}:
+                semantic_query = query_vector(query, "e5", models, threads)
+        path = local_path(catalog.root, manifest["artifacts"]["lexical"]["path"])
+        index = (
+            sqlite3.connect(path.as_uri() + "?mode=ro", uri=True)
+            if len(lookup) == len(manifest["images"])
+            else lexical_index(ocr_records)
+        )
+        lexical = rank_lexical(index, query, limit=max(50, limit))
+        scores = {}
+        if mode == "lexical":
+            ranking = lexical[:limit]
+        else:
+            visual, semantic = matrices(catalog, manifest)
+            vision_ids, passage_ids = manifest["vision_ids"], manifest["passage_ids"]
+            if len(lookup) != len(manifest["images"]):
+                visual = visual[[key in lookup for key in vision_ids]]
+                semantic = semantic[[key in lookup for key in passage_ids]]
+                vision_ids = [key for key in vision_ids if key in lookup]
+                passage_ids = [key for key in passage_ids if key in lookup]
+            if visual_query is not None:
+                scores = vector_scores(visual, visual_query, vision_ids)
+            if mode == "visual":
+                assert visual_query is not None
+                ranking = rank_vectors(visual, visual_query, vision_ids, limit)
+            elif mode == "semantic":
+                assert semantic_query is not None
+                ranking = (
+                    rank_vectors(semantic, semantic_query, passage_ids, limit)
+                    if passage_ids
+                    else []
+                )
+            else:
+                assert visual_query is not None and semantic_query is not None
+                ranking = hybrid_rank(
+                    visual,
+                    visual_query,
+                    vision_ids,
+                    semantic,
+                    semantic_query,
+                    passage_ids,
+                    query,
+                    ocr_records,
+                    limit=limit,
+                    lexical_candidates=lexical,
+                    lexical_statistics=lexical_frequencies(index, query),
+                )
+        texts = {row["image_id"]: row["text"] for row in manifest["ocr"]}
+        results: list[SearchResult] = []
+        for image_id in ranking:
+            row = lookup[image_id]
+            result_paths = paths_by_id[image_id]
+            thumbnail = local_path(catalog.root, row["thumbnail"])
+            results.append(
+                SearchResult(
+                    len(results) + 1,
+                    image_id,
+                    result_paths,
+                    (
+                        str(thumbnail)
+                        if thumbnail.is_file() and digest(thumbnail) == row["thumbnail_sha256"]
+                        else None
+                    ),
+                    row["metadata"]["width"],
+                    row["metadata"]["height"],
+                    texts[image_id][:300],
+                    scores.get(image_id),
+                    row.get("status", "ready"),
+                    tuple(row.get("issues", [])),
+                )
+            )
+        return results
+    finally:
+        if index is not None:
+            index.close()
+        catalog.close()

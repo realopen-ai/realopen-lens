@@ -76,10 +76,12 @@ def test_worker_keeps_completed_heartbeat_between_items_and_can_resume(tmp_path,
     from benchmarks.ocr_compare import worker
     from benchmarks.suite import connect
 
-    monkeypatch.setattr("realopen_lens.offline.enforce", lambda: None)
-    monkeypatch.setattr("realopen_lens.ocr._environment", lambda *args: {"version": "test"})
+    monkeypatch.setattr("realopen_lens.runtime.offline.enforce", lambda: None)
     monkeypatch.setattr(
-        "realopen_lens.ocr.extract", lambda *args: {"text": "example", "warnings": []}
+        "realopen_lens.ocr.tesseract._environment", lambda *args: {"version": "test"}
+    )
+    monkeypatch.setattr(
+        "realopen_lens.ocr.tesseract.extract", lambda *args: {"text": "example", "warnings": []}
     )
     config = tmp_path / "config.json"
     config.write_text(

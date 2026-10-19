@@ -50,7 +50,7 @@ def test_negative_empty_output_only_passes_when_ocr_succeeded(tmp_path, status, 
 @pytest.mark.parametrize("gated", [False, True])
 def test_worker_loads_detector_once_and_keeps_item_failures_durable(tmp_path, monkeypatch, gated):
     from benchmarks import suite_worker
-    from realopen_lens import ocr, text_regions
+    from realopen_lens.ocr import tesseract as ocr, regions as text_regions
 
     initialized, calls = [], []
     detector = SimpleNamespace()

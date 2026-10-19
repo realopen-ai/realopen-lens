@@ -176,6 +176,15 @@ directory; the original image folder is independent.
 The engine's public entry points are `indexing.index_collection`,
 `indexing.collection_status`, and `search.search_collection`. They return Python
 dataclasses/dictionaries without depending on benchmark tooling, FastAPI, or React.
+Indexing implementations live in `realopen_lens.indexing.service`; search lives in
+`realopen_lens.retrieval.search`. Internal imports use those implementation modules,
+while the documented public paths remain available.
+
+The package reorganization preserves existing catalog and generation formats.
+Earlier saved collections remain searchable. Because processing fingerprints hash
+source files, changed import statements in the moved OCR and processing modules
+invalidate older processing caches on the next indexing run. This can require a
+one-time refresh; the refactor does not reinterpret older fingerprints as equivalent.
 
 ## Validation scope
 

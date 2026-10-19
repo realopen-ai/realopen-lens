@@ -7,8 +7,8 @@ import textwrap
 
 import pytest
 
-from realopen_lens.catalog import Catalog
-from realopen_lens.jobs import recover, supervise, writer_lock
+from realopen_lens.storage.catalog import Catalog
+from realopen_lens.runtime.jobs import recover, supervise, writer_lock
 
 
 @pytest.mark.parametrize(
@@ -33,8 +33,8 @@ def test_failed_native_item_does_not_block_later_items(tmp_path, failure, corrup
     script = textwrap.dedent("""
         import os, sys, time
         from pathlib import Path
-        from realopen_lens.catalog import Catalog
-        from realopen_lens.index_files import attempted, valid_analysis
+        from realopen_lens.storage.catalog import Catalog
+        from realopen_lens.storage.artifacts import attempted, valid_analysis
         catalog = Catalog(Path(sys.argv[1]))
         job, failure, stage = sys.argv[2:]
         for row in catalog.files(job):
@@ -71,7 +71,7 @@ def test_failed_native_item_does_not_block_later_items(tmp_path, failure, corrup
 def test_writer_lock_excludes_another_process_and_releases(tmp_path):
     script = (
         "from pathlib import Path; import sys; "
-        "from realopen_lens.jobs import writer_lock\n"
+        "from realopen_lens.runtime.jobs import writer_lock\n"
         "with writer_lock(Path(sys.argv[1])): pass\n"
     )
     command = [sys.executable, "-c", script, str(tmp_path)]
@@ -82,7 +82,7 @@ def test_writer_lock_excludes_another_process_and_releases(tmp_path):
 
 
 def test_stale_recovery_never_kills_a_pid_without_creation_time(tmp_path, monkeypatch):
-    from realopen_lens import jobs
+    from realopen_lens.runtime import jobs
 
     catalog = Catalog(tmp_path)
     collection = catalog.ensure_collection("test", tmp_path / "images")

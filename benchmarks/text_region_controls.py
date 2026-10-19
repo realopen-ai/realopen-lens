@@ -8,7 +8,7 @@ import shutil
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from realopen_lens.models import digest
+from realopen_lens.models.manager import digest
 
 
 def build(output: Path, dataset: Path) -> None:

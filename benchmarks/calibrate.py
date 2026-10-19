@@ -11,7 +11,12 @@ import numpy as np
 
 from benchmarks.suite import connect, load_vectors, source_hash
 from benchmarks.retrieval_metrics import metrics
-from realopen_lens.retrieval import hybrid_rank, lexical_index, lexical_frequencies, rank_lexical
+from realopen_lens.retrieval.ranking import (
+    hybrid_rank,
+    lexical_index,
+    lexical_frequencies,
+    rank_lexical,
+)
 
 
 def run(root: Path, output: Path) -> list[dict]:

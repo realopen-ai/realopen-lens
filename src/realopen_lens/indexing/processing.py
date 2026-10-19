@@ -10,9 +10,9 @@ from typing import Any
 import numpy as np
 from PIL import Image
 
-from realopen_lens.catalog import Catalog, local_path
-from realopen_lens.index_files import atomic_bytes, attempted, save_vectors, valid_analysis
-from realopen_lens.models import artifact_path, digest
+from realopen_lens.storage.catalog import Catalog, local_path
+from realopen_lens.storage.artifacts import atomic_bytes, attempted, save_vectors, valid_analysis
+from realopen_lens.models.manager import artifact_path, digest
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ def source_path(config: dict, row: dict, *, check_hash: bool = True) -> Path:
 
 
 def encoder(stage: str, config: dict):
-    from realopen_lens.inference import TextEncoder, VisionEncoder
+    from realopen_lens.encoders.onnx import TextEncoder, VisionEncoder
 
     root = Path(config["models"])
     if stage == "vision":
@@ -44,7 +44,7 @@ def encoder(stage: str, config: dict):
 
 
 def metadata(path: Path) -> tuple[dict, bytes]:
-    from realopen_lens.inference import image_rgb
+    from realopen_lens.encoders.onnx import image_rgb
 
     with Image.open(path) as source:
         result: dict[str, Any] = {
@@ -133,7 +133,7 @@ def process_stage(catalog: Catalog, job_id: str, stage: str):
                 atomic_bytes(target, thumbnail)
                 artifact, checksum = relative.as_posix(), digest(target)
             elif stage == "ocr":
-                from realopen_lens.ocr import extract
+                from realopen_lens.ocr.tesseract import extract
 
                 data = compact_ocr(extract(path, config["languages"], config["threads"]))
             else:

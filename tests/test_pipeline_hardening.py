@@ -10,9 +10,9 @@ from PIL import Image
 
 from benchmarks.ocr_metrics import distance
 from benchmarks.suite import connect, load_vectors, save_stage
-from realopen_lens.inference import image_rgb
-from realopen_lens.ocr import extract, parse_tsv
-from realopen_lens.retrieval import (
+from realopen_lens.encoders.onnx import image_rgb
+from realopen_lens.ocr.tesseract import extract, parse_tsv
+from realopen_lens.retrieval.ranking import (
     hybrid_rank,
     lexical_evidence,
     lexical_index,
@@ -111,8 +111,10 @@ def test_tsv_keeps_reading_order_confidence_and_word_boxes():
 def test_failed_ocr_fallback_keeps_first_result_and_reports_warning(tmp_path, monkeypatch):
     path = tmp_path / "sparse.png"
     Image.new("RGB", (50, 50), "white").save(path)
-    monkeypatch.setattr("realopen_lens.ocr.shutil.which", lambda _: "test-tesseract")
-    monkeypatch.setattr("realopen_lens.ocr._environment", lambda *args: {"version": "test"})
+    monkeypatch.setattr("realopen_lens.ocr.tesseract.shutil.which", lambda _: "test-tesseract")
+    monkeypatch.setattr(
+        "realopen_lens.ocr.tesseract._environment", lambda *args: {"version": "test"}
+    )
     calls = []
 
     def recognize(*args):
@@ -128,7 +130,7 @@ def test_failed_ocr_fallback_keeps_first_result_and_reports_warning(tmp_path, mo
             "stderr": "",
         }
 
-    monkeypatch.setattr("realopen_lens.ocr._recognize", recognize)
+    monkeypatch.setattr("realopen_lens.ocr.tesseract._recognize", recognize)
     result = extract(path)
     assert result["text"] == "one"
     assert len(calls) == 2
@@ -178,7 +180,7 @@ def test_fast_edit_distance_matches_reference_on_random_unicode_sequences():
 
 def test_diagram_layout_checks_detect_missing_lower_labels_without_numpy_scalars():
     import json
-    from realopen_lens.ocr import _layout_incomplete, _remove_rules
+    from realopen_lens.ocr.tesseract import _layout_incomplete, _remove_rules
     from PIL import ImageDraw
 
     image = Image.new("L", (300, 200), 255)
@@ -209,7 +211,7 @@ def test_tsv_rejects_nonfinite_confidence_instead_of_serializing_nan():
 
 
 def test_relative_corpus_paths_and_invalid_limits(tmp_path, monkeypatch):
-    from realopen_lens.corpus import scan
+    from realopen_lens.indexing.scanner import scan
 
     (tmp_path / "images").mkdir()
     (tmp_path / "images" / "good.png").touch()
@@ -236,10 +238,12 @@ def test_orientation_is_verified_and_boxes_describe_the_selected_input(
 ):
     path = tmp_path / "rotated.png"
     Image.new("RGB", (100, 200), "white").save(path)
-    monkeypatch.setattr("realopen_lens.ocr.shutil.which", lambda _: "test-tesseract")
-    monkeypatch.setattr("realopen_lens.ocr._environment", lambda *args: {"version": "test"})
+    monkeypatch.setattr("realopen_lens.ocr.tesseract.shutil.which", lambda _: "test-tesseract")
     monkeypatch.setattr(
-        "realopen_lens.ocr._orientation", lambda *args: {"rotation": 90, "confidence": 8}
+        "realopen_lens.ocr.tesseract._environment", lambda *args: {"version": "test"}
+    )
+    monkeypatch.setattr(
+        "realopen_lens.ocr.tesseract._orientation", lambda *args: {"rotation": 90, "confidence": 8}
     )
     calls = []
 
@@ -264,7 +268,7 @@ def test_orientation_is_verified_and_boxes_describe_the_selected_input(
             "stderr": "",
         }
 
-    monkeypatch.setattr("realopen_lens.ocr._recognize", recognize)
+    monkeypatch.setattr("realopen_lens.ocr.tesseract._recognize", recognize)
     result = extract(path)
     assert calls == [(100, 200), (100, 200), (200, 100)]
     assert result["rotation"] == (90 if improves else 0)
@@ -284,8 +288,10 @@ def test_confident_observed_alternatives_support_code_search_without_changing_tr
 ):
     path = tmp_path / "code.png"
     Image.new("RGB", (50, 50), "white").save(path)
-    monkeypatch.setattr("realopen_lens.ocr.shutil.which", lambda _: "test-tesseract")
-    monkeypatch.setattr("realopen_lens.ocr._environment", lambda *args: {"version": "test"})
+    monkeypatch.setattr("realopen_lens.ocr.tesseract.shutil.which", lambda _: "test-tesseract")
+    monkeypatch.setattr(
+        "realopen_lens.ocr.tesseract._environment", lambda *args: {"version": "test"}
+    )
     calls = []
 
     def recognize(image, *args):
@@ -307,7 +313,7 @@ def test_confident_observed_alternatives_support_code_search_without_changing_tr
             "stderr": "",
         }
 
-    monkeypatch.setattr("realopen_lens.ocr._recognize", recognize)
+    monkeypatch.setattr("realopen_lens.ocr.tesseract._recognize", recognize)
     result = extract(path)
     assert result["text"] == "divide_al1"
     assert result["alternate_texts"] == ["divide_all"]
@@ -320,7 +326,7 @@ def test_confident_observed_alternatives_support_code_search_without_changing_tr
 
 
 def test_common_form_vocabulary_cannot_outvote_a_photo_but_rare_terms_help():
-    from realopen_lens.retrieval import lexical_frequencies
+    from realopen_lens.retrieval.ranking import lexical_frequencies
 
     records = [
         {"image_id": str(i), "text": "person above head address tax form"} for i in range(100)

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from benchmarks.retrieval_metrics import metrics
-from realopen_lens.retrieval import fuse, lexical_index, rank_lexical, rank_vectors
+from realopen_lens.retrieval.ranking import fuse, lexical_index, rank_lexical, rank_vectors
 
 
 def test_recall_is_not_hit_rate():

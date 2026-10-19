@@ -9,9 +9,9 @@ from uuid import uuid4
 
 import numpy as np
 
-from realopen_lens.catalog import Catalog, REQUIRED_STAGES, identifier, local_path
-from realopen_lens.models import digest
-from realopen_lens.retrieval import lexical_index
+from realopen_lens.storage.catalog import Catalog, REQUIRED_STAGES, identifier, local_path
+from realopen_lens.models.manager import digest
+from realopen_lens.retrieval.ranking import lexical_index
 
 
 def atomic_bytes(path: Path, payload: bytes):

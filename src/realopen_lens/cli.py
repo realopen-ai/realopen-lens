@@ -24,7 +24,7 @@ def fetch_models(
     precision: Annotated[str, typer.Option()] = "int8",
 ) -> None:
     """Explicitly download pinned ONNX model artifacts."""
-    from realopen_lens.models import fetch
+    from realopen_lens.models.manager import fetch
 
     try:
         fetch(directory, precision, typer.echo)
@@ -39,7 +39,7 @@ def verify_models(
     precision: Annotated[str, typer.Option()] = "int8",
 ) -> None:
     """Verify local model checksums without making network requests."""
-    from realopen_lens.models import verify
+    from realopen_lens.models.manager import verify
 
     try:
         verify(directory, precision)
@@ -54,7 +54,7 @@ def fetch_detector(
     directory: Annotated[Path, typer.Option("--directory")] = Path("models"),
 ) -> None:
     """Explicitly download the pinned experimental text-localization model."""
-    from realopen_lens.models import fetch_text_detector
+    from realopen_lens.models.manager import fetch_text_detector
 
     try:
         typer.echo(str(fetch_text_detector(directory)))
@@ -119,7 +119,7 @@ def recognize_image(
     ] = "gate",
 ) -> None:
     """Read an image locally; optional GLM-OCR uses only numeric loopback HTTP."""
-    from realopen_lens.ocr_backends import create_backend
+    from realopen_lens.ocr.backends import create_backend
 
     backend = None
     try:
@@ -166,7 +166,7 @@ def index_folder(
 ):
     """Index or refresh a folder; unchanged processing resumes from durable cache."""
     from dataclasses import asdict
-    from realopen_lens.indexing import index_collection
+    from realopen_lens.indexing.service import index_collection
 
     try:
         result = index_collection(
@@ -193,7 +193,7 @@ def show_status(
     index_dir: Annotated[Path | None, typer.Option()] = None,
 ):
     """Inspect the latest indexing job, failures, and published generation."""
-    from realopen_lens.indexing import collection_status
+    from realopen_lens.indexing.service import collection_status
 
     try:
         typer.echo(
@@ -216,7 +216,7 @@ def find_images(
 ):
     """Search a saved collection after indexing, including across restarts."""
     from dataclasses import asdict
-    from realopen_lens.search import search_collection
+    from realopen_lens.retrieval.search import search_collection
 
     try:
         results = search_collection(

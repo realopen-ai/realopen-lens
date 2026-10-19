@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 from PIL import Image, ImageDraw
 
-from realopen_lens.ocr import extract
-from realopen_lens.text_regions import TextRegionDetector, mask_regions, probability_regions
+from realopen_lens.ocr.tesseract import extract
+from realopen_lens.ocr.regions import TextRegionDetector, mask_regions, probability_regions
 
 
 def test_detector_requires_verified_local_weights_before_loading_runtime(tmp_path):
@@ -60,13 +60,13 @@ def test_mask_keeps_all_original_pixels_inside_source_rectangle():
 def test_no_detected_regions_skips_tesseract_without_claiming_proven_absence(tmp_path, monkeypatch):
     image = tmp_path / "image.png"
     Image.new("RGB", (100, 60), "white").save(image)
-    monkeypatch.setattr("realopen_lens.ocr.shutil.which", lambda name: "tesseract")
-    monkeypatch.setattr("realopen_lens.ocr._environment", lambda *args: {})
+    monkeypatch.setattr("realopen_lens.ocr.tesseract.shutil.which", lambda name: "tesseract")
+    monkeypatch.setattr("realopen_lens.ocr.tesseract._environment", lambda *args: {})
 
     def forbidden(*args, **kwargs):
         raise AssertionError("Recognition must not run on gated input")
 
-    monkeypatch.setattr("realopen_lens.ocr._recognize", forbidden)
+    monkeypatch.setattr("realopen_lens.ocr.tesseract._recognize", forbidden)
     detector = SimpleNamespace(
         detect=lambda image: {"regions": [], "candidate_limit_reached": False}
     )
@@ -79,8 +79,8 @@ def test_no_detected_regions_skips_tesseract_without_claiming_proven_absence(tmp
 def test_detector_failure_is_not_silently_converted_to_empty_success(tmp_path, monkeypatch):
     image = tmp_path / "image.png"
     Image.new("RGB", (100, 60), "white").save(image)
-    monkeypatch.setattr("realopen_lens.ocr.shutil.which", lambda name: "tesseract")
-    monkeypatch.setattr("realopen_lens.ocr._environment", lambda *args: {})
+    monkeypatch.setattr("realopen_lens.ocr.tesseract.shutil.which", lambda name: "tesseract")
+    monkeypatch.setattr("realopen_lens.ocr.tesseract._environment", lambda *args: {})
 
     def broken(image):
         raise ValueError("Invalid detector probability map")
@@ -90,7 +90,7 @@ def test_detector_failure_is_not_silently_converted_to_empty_success(tmp_path, m
 
 
 def test_fragmented_small_line_merges_without_joining_neighboring_rows_or_columns():
-    from realopen_lens.text_regions import merge_line_regions
+    from realopen_lens.ocr.regions import merge_line_regions
 
     regions = [
         {"box": [7, 9, 79, 29], "score": 0.84},
@@ -109,11 +109,11 @@ def test_fragmented_small_line_merges_without_joining_neighboring_rows_or_column
 
 def test_cached_text_detector_setup_does_not_access_network(tmp_path, monkeypatch):
     import hashlib
-    from realopen_lens.models import fetch_text_detector
+    from realopen_lens.models.manager import fetch_text_detector
 
     payload = b"verified detector fixture"
     spec = {"name": "det.onnx", "size": len(payload), "sha256": hashlib.sha256(payload).hexdigest()}
-    monkeypatch.setattr("realopen_lens.text_regions.detector_spec", lambda: spec)
+    monkeypatch.setattr("realopen_lens.ocr.regions.detector_spec", lambda: spec)
     path = tmp_path / "text-detector" / "det.onnx"
     path.parent.mkdir()
     path.write_bytes(payload)
@@ -121,7 +121,7 @@ def test_cached_text_detector_setup_does_not_access_network(tmp_path, monkeypatc
     def forbidden(*args, **kwargs):
         raise AssertionError("Verified local model setup must stay offline")
 
-    monkeypatch.setattr("realopen_lens.models.urllib.request.urlopen", forbidden)
+    monkeypatch.setattr("realopen_lens.models.manager.urllib.request.urlopen", forbidden)
     assert fetch_text_detector(tmp_path) == path
 
 
@@ -129,7 +129,7 @@ def test_cached_text_detector_setup_does_not_access_network(tmp_path, monkeypatc
 def test_bad_detector_download_is_not_published(tmp_path, monkeypatch, payload):
     import hashlib
     import io
-    from realopen_lens.models import fetch_text_detector
+    from realopen_lens.models.manager import fetch_text_detector
 
     spec = {
         "name": "det.onnx",
@@ -137,9 +137,9 @@ def test_bad_detector_download_is_not_published(tmp_path, monkeypatch, payload):
         "sha256": hashlib.sha256(b"good").hexdigest(),
         "url": "https://example.invalid/det.onnx",
     }
-    monkeypatch.setattr("realopen_lens.text_regions.detector_spec", lambda: spec)
+    monkeypatch.setattr("realopen_lens.ocr.regions.detector_spec", lambda: spec)
     monkeypatch.setattr(
-        "realopen_lens.models.urllib.request.urlopen", lambda *a, **k: io.BytesIO(payload)
+        "realopen_lens.models.manager.urllib.request.urlopen", lambda *a, **k: io.BytesIO(payload)
     )
     with pytest.raises(ValueError):
         fetch_text_detector(tmp_path)
@@ -149,15 +149,15 @@ def test_bad_detector_download_is_not_published(tmp_path, monkeypatch, payload):
 
 @pytest.mark.parametrize("mode", ["gate", "mask"])
 def test_no_regions_after_downscaling_preserves_source_ocr_and_reload(tmp_path, monkeypatch, mode):
-    from realopen_lens.ocr import _ocr_source
+    from realopen_lens.ocr.tesseract import _ocr_source
 
     path = tmp_path / "tiny-text.png"
     with Image.new("RGB", (2400, 1350), "white") as image:
         ImageDraw.Draw(image).rectangle((45, 105, 220, 130), fill="black")
         image.save(path)
-    monkeypatch.setattr("realopen_lens.ocr.shutil.which", lambda name: "tesseract")
-    monkeypatch.setattr("realopen_lens.ocr._environment", lambda *args: {})
-    monkeypatch.setattr("realopen_lens.ocr._layout_incomplete", lambda *args: False)
+    monkeypatch.setattr("realopen_lens.ocr.tesseract.shutil.which", lambda name: "tesseract")
+    monkeypatch.setattr("realopen_lens.ocr.tesseract._environment", lambda *args: {})
+    monkeypatch.setattr("realopen_lens.ocr.tesseract._layout_incomplete", lambda *args: False)
     detector = SimpleNamespace(
         detect=lambda image: {
             "regions": [],
@@ -179,7 +179,7 @@ def test_no_regions_after_downscaling_preserves_source_ocr_and_reload(tmp_path, 
             "psm": psm,
         }
 
-    monkeypatch.setattr("realopen_lens.ocr._recognize", recognize)
+    monkeypatch.setattr("realopen_lens.ocr.tesseract._recognize", recognize)
     result = extract(path, detector=detector, region_mode=mode)
     assert result["text"] == "LENS-7303 status timeout"
     assert calls == [(0, 0, 0)]

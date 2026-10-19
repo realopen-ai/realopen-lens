@@ -7,9 +7,9 @@ import pytest
 from PIL import Image
 from typer.testing import CliRunner
 
-from realopen_lens import models
+from realopen_lens.models import manager as models
 from benchmarks.__main__ import app
-from realopen_lens.inference import image_rgb
+from realopen_lens.encoders.onnx import image_rgb
 
 
 def test_model_verification_detects_tampering_without_network(tmp_path, monkeypatch):
@@ -32,7 +32,7 @@ def test_model_verification_detects_tampering_without_network(tmp_path, monkeypa
 
 def test_worker_offline_policy_blocks_python_network_operations():
     code = """
-from realopen_lens.offline import enforce
+from realopen_lens.runtime.offline import enforce
 import socket
 enforce()
 try:

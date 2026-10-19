@@ -6,10 +6,11 @@ import numpy as np
 from PIL import Image
 import pytest
 
-from realopen_lens.catalog import Catalog
-from realopen_lens.index_files import load_manifest
-from realopen_lens.indexing import collection_status, run_index
-from realopen_lens import indexing, processing, search
+from realopen_lens.storage.catalog import Catalog
+from realopen_lens.storage.artifacts import load_manifest
+from realopen_lens.indexing.service import collection_status, run_index
+from realopen_lens.indexing import service as indexing, processing
+from realopen_lens.retrieval import search
 
 
 @pytest.fixture
@@ -19,8 +20,10 @@ def app(tmp_path, monkeypatch):
     store = tmp_path / "index"
     calls = []
     monkeypatch.setattr(indexing, "verify", lambda *a: None)
-    monkeypatch.setattr("realopen_lens.ocr.shutil.which", lambda name: "tesseract")
-    monkeypatch.setattr("realopen_lens.ocr._environment", lambda *a: {"version": "fixture"})
+    monkeypatch.setattr("realopen_lens.ocr.tesseract.shutil.which", lambda name: "tesseract")
+    monkeypatch.setattr(
+        "realopen_lens.ocr.tesseract._environment", lambda *a: {"version": "fixture"}
+    )
 
     def ocr(path, *args):
         with Image.open(path) as im:
@@ -28,7 +31,7 @@ def app(tmp_path, monkeypatch):
         calls.append(("ocr", path.name))
         return {"text": text, "words": [], "warnings": [], "alternate_texts": []}
 
-    monkeypatch.setattr("realopen_lens.ocr.extract", ocr)
+    monkeypatch.setattr("realopen_lens.ocr.tesseract.extract", ocr)
 
     class Encoder:
         def __init__(self, kind):
@@ -325,7 +328,7 @@ def test_special_files_do_not_block_scanning(app):
 def test_empty_ocr_has_no_semantic_rows_but_remains_visually_searchable(app, monkeypatch):
     root, store, calls, run = app
     image(root / "one.png")
-    monkeypatch.setattr("realopen_lens.ocr.extract", lambda *a: {"text": ""})
+    monkeypatch.setattr("realopen_lens.ocr.tesseract.extract", lambda *a: {"text": ""})
     run()
     monkeypatch.setattr(search, "verify", lambda *a: None)
     monkeypatch.setattr(
@@ -355,7 +358,7 @@ def test_logging_reports_cache_reuse_without_invalidating_it(app, caplog):
 def test_ocr_failure_keeps_visual_results_and_retry_reuses_completed_stages(app, monkeypatch):
     import json
     import subprocess
-    from realopen_lens import ocr
+    from realopen_lens.ocr import tesseract as ocr
 
     root, store, calls, run = app
     image(root / "one.png")
@@ -372,7 +375,7 @@ def test_ocr_failure_keeps_visual_results_and_retry_reuses_completed_stages(app,
             raise subprocess.TimeoutExpired("tesseract", 15)
         return original(path, *args)
 
-    monkeypatch.setattr("realopen_lens.ocr.extract", fail)
+    monkeypatch.setattr("realopen_lens.ocr.tesseract.extract", fail)
     first = run()
     assert first.images == 2 and first.failed_files == 0 and first.degraded_files == 2
     assert first.degraded_images == 1 and first.status == "completed_with_errors"
@@ -415,7 +418,7 @@ def test_ocr_failure_keeps_visual_results_and_retry_reuses_completed_stages(app,
     assert second.generation != first.generation and len(attempts) == 2
     assert second.reused_stages == {"metadata": 2, "ocr": 1, "vision": 2, "semantic": 1}
     assert calls == []  # Healthy OCR and both visual/metadata records are reused.
-    monkeypatch.setattr("realopen_lens.ocr.extract", original)
+    monkeypatch.setattr("realopen_lens.ocr.tesseract.extract", original)
     recovered = run()
     assert recovered.status == "completed" and recovered.degraded_files == 0
     assert not [c for c in calls if c[0] == "vision"]
@@ -439,7 +442,9 @@ def test_retried_ocr_invalidates_previous_semantic_embeddings(app, monkeypatch):
     with catalog.db:
         catalog.db.execute("DELETE FROM analyses WHERE stage='ocr'")
     catalog.close()
-    monkeypatch.setattr("realopen_lens.ocr.extract", lambda *a: {"text": "new transcription"})
+    monkeypatch.setattr(
+        "realopen_lens.ocr.tesseract.extract", lambda *a: {"text": "new transcription"}
+    )
     calls.clear()
     result = run()
     assert result.reused_stages["vision"] == 1 and result.reused_stages["semantic"] == 0
@@ -492,7 +497,7 @@ def test_source_mutation_during_failed_ocr_remains_a_hard_failure(app, monkeypat
         image(path, "green")
         raise RuntimeError("OCR failed after file changed")
 
-    monkeypatch.setattr("realopen_lens.ocr.extract", fail)
+    monkeypatch.setattr("realopen_lens.ocr.tesseract.extract", fail)
     result = run()
     assert result.failed_files == 1 and result.images == 0 and result.degraded_files == 0
 
@@ -508,7 +513,7 @@ def test_degraded_only_run_has_clean_json_and_nonzero_cli_exit(app, monkeypatch)
     def fail(*args):
         raise RuntimeError("OCR unavailable")
 
-    monkeypatch.setattr("realopen_lens.ocr.extract", fail)
+    monkeypatch.setattr("realopen_lens.ocr.tesseract.extract", fail)
     result = run()
     monkeypatch.setattr(indexing, "index_collection", lambda *a, **kw: result)
     response = CliRunner().invoke(cli, ["index", str(root)])

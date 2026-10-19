@@ -6,8 +6,8 @@ import sys
 
 import pytest
 
-from realopen_lens.ocr_backends import TesseractBackend, create_backend
-from realopen_lens.ollama_ocr import OllamaOCR, parse_response
+from realopen_lens.ocr.backends import TesseractBackend, create_backend
+from realopen_lens.ocr.ollama import OllamaOCR, parse_response
 
 
 def test_tesseract_is_default_and_rapidocr_remains_experimental(monkeypatch):
@@ -91,7 +91,7 @@ def test_http_uses_only_numeric_loopback_and_does_not_follow_redirects(monkeypat
         def close(self):
             calls.append("closed")
 
-    monkeypatch.setattr("realopen_lens.ollama_ocr.http.client.HTTPConnection", Connection)
+    monkeypatch.setattr("realopen_lens.ocr.ollama.http.client.HTTPConnection", Connection)
     engine = OllamaOCR.__new__(OllamaOCR)
     engine.port, engine.timeout = 11434, 90
     with pytest.raises(ValueError, match="HTTP 302"):
@@ -102,7 +102,7 @@ def test_http_uses_only_numeric_loopback_and_does_not_follow_redirects(monkeypat
 def test_loopback_exception_keeps_external_and_other_local_ports_blocked():
     code = """
 import sys,json
-from realopen_lens.offline import enforce
+from realopen_lens.runtime.offline import enforce
 enforce(loopback_port=11434)
 sys.audit("socket.getaddrinfo", "127.0.0.1", 11434, 0, 0, 0)
 sys.audit("socket.connect", None, ("127.0.0.1", 11434))
@@ -212,7 +212,7 @@ def test_installed_cli_exposes_explicit_secondary_engine_and_defaults_to_tessera
         calls.append((engine, kwargs))
         return SimpleNamespace(extract=lambda path: {"text": "example"}, close=lambda: None)
 
-    monkeypatch.setattr("realopen_lens.ocr_backends.create_backend", factory)
+    monkeypatch.setattr("realopen_lens.ocr.backends.create_backend", factory)
     runner = CliRunner()
     assert runner.invoke(app, ["ocr", str(image)]).exit_code == 0
     assert calls[-1][0] == "tesseract"
@@ -244,7 +244,7 @@ def test_glm_run_identity_survives_json_pid_serialization(tmp_path, monkeypatch)
     output = tmp_path / "run"
     monkeypatch.setattr(ocr_compare, "inputs", lambda path: [])
     monkeypatch.setattr(
-        "realopen_lens.ollama_ocr.OllamaOCR",
+        "realopen_lens.ocr.ollama.OllamaOCR",
         lambda **kwargs: SimpleNamespace(
             info={"digest": "a" * 64}, request=lambda path: {"models": []}
         ),

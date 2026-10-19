@@ -12,8 +12,8 @@ from time import monotonic, sleep
 
 import psutil
 
-from realopen_lens.catalog import Catalog
-from realopen_lens.index_files import valid_analysis
+from realopen_lens.storage.catalog import Catalog
+from realopen_lens.storage.artifacts import valid_analysis
 
 logger = logging.getLogger(__name__)
 

@@ -11,7 +11,7 @@ from typing import Any, cast
 
 from PIL import Image, ImageDraw
 
-from realopen_lens.inference import image_rgb
+from realopen_lens.encoders.onnx import image_rgb
 
 
 class OllamaOCR:

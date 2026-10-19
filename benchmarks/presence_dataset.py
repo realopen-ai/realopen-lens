@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from benchmarks.dataset import download
 from benchmarks.ocr_compare import CORRECTIONS, inputs
-from realopen_lens.models import digest
+from realopen_lens.models.manager import digest
 
 SOURCES = Path(__file__).parent / "sources"
 SEED = 20261020
