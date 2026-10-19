@@ -10,7 +10,7 @@ from typing import Annotated
 import typer
 
 app = typer.Typer(
-    no_args_is_help=True, help="Private, offline image search: setup and diagnostics."
+    no_args_is_help=True, help="Private, offline collection indexing and image search."
 )
 models_app = typer.Typer(
     no_args_is_help=True, help="Explicit model downloads and integrity checks."
@@ -147,6 +147,91 @@ def recognize_image(
                 backend.close()
             except (OSError, ValueError) as error:
                 typer.echo(f"OCR cleanup warning: {error}", err=True)
+
+
+@app.command("index")
+def index_folder(
+    folder: Annotated[Path, typer.Argument(exists=True, file_okay=False)],
+    collection: Annotated[str, typer.Option()] = "personal",
+    index_dir: Annotated[
+        Path | None, typer.Option(help="Private catalog and derived-data directory")
+    ] = None,
+    models: Annotated[Path, typer.Option()] = Path("models"),
+    languages: Annotated[str, typer.Option()] = "eng+fra+ara",
+    threads: Annotated[int, typer.Option(min=1, max=8)] = 2,
+    rehash: Annotated[
+        bool, typer.Option(help="Rehash even files with unchanged filesystem metadata")
+    ] = False,
+    log: Annotated[bool, typer.Option("--log", help="Stream live indexing logs to stderr")] = False,
+):
+    """Index or refresh a folder; unchanged processing resumes from durable cache."""
+    from dataclasses import asdict
+    from realopen_lens.indexing import index_collection
+
+    try:
+        result = index_collection(
+            folder,
+            collection=collection,
+            index_dir=index_dir,
+            models=models,
+            languages=languages,
+            threads=threads,
+            rehash=rehash,
+            log=log,
+        )
+        typer.echo(json.dumps(asdict(result), ensure_ascii=False, indent=2))
+    except (OSError, ValueError, RuntimeError, sqlite3.Error) as error:
+        typer.echo(f"Error: {error}", err=True)
+        raise typer.Exit(1) from error
+    if result.failed_files or result.degraded_files:
+        raise typer.Exit(1)
+
+
+@app.command("status")
+def show_status(
+    collection: Annotated[str, typer.Option()] = "personal",
+    index_dir: Annotated[Path | None, typer.Option()] = None,
+):
+    """Inspect the latest indexing job, failures, and published generation."""
+    from realopen_lens.indexing import collection_status
+
+    try:
+        typer.echo(
+            json.dumps(collection_status(collection, index_dir), ensure_ascii=False, indent=2)
+        )
+    except (OSError, ValueError, sqlite3.Error) as error:
+        typer.echo(f"Error: {error}", err=True)
+        raise typer.Exit(1) from error
+
+
+@app.command("search")
+def find_images(
+    query: Annotated[str, typer.Argument()],
+    collection: Annotated[str, typer.Option()] = "personal",
+    index_dir: Annotated[Path | None, typer.Option()] = None,
+    models: Annotated[Path, typer.Option()] = Path("models"),
+    limit: Annotated[int, typer.Option(min=1, max=100)] = 10,
+    mode: Annotated[str, typer.Option(help="hybrid, visual, lexical, or semantic")] = "hybrid",
+    threads: Annotated[int, typer.Option(min=1, max=8)] = 2,
+):
+    """Search a saved collection after indexing, including across restarts."""
+    from dataclasses import asdict
+    from realopen_lens.search import search_collection
+
+    try:
+        results = search_collection(
+            query,
+            collection=collection,
+            index_dir=index_dir,
+            models=models,
+            limit=limit,
+            mode=mode,
+            threads=threads,
+        )
+        typer.echo(json.dumps([asdict(r) for r in results], ensure_ascii=False, indent=2))
+    except (OSError, ValueError, RuntimeError, TimeoutError, sqlite3.Error) as error:
+        typer.echo(f"Error: {error}", err=True)
+        raise typer.Exit(1) from error
 
 
 if __name__ == "__main__":
