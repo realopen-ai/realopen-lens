@@ -1,0 +1,74 @@
+"""Internal managed indexing/query workers. Invoke public operations through the CLI."""
+
+import argparse
+from dataclasses import asdict
+import json
+import logging
+from pathlib import Path
+import signal
+import sys
+
+
+def interrupted(signum, frame):
+    raise KeyboardInterrupt
+
+
+def configure_logging(config):
+    if config.get("log", False):
+        logging.basicConfig(
+            level=logging.INFO,
+            format="[%(asctime)s] %(levelname)s %(message)s",
+            datefmt="%H:%M:%S",
+        )
+
+
+def main():
+    signal.signal(signal.SIGTERM, interrupted)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--request", type=Path)
+    parser.add_argument("--store", type=Path)
+    parser.add_argument("--job")
+    parser.add_argument("--stage", choices=["metadata", "ocr", "vision", "semantic"])
+    parser.add_argument("--query", action="store_true")
+    args = parser.parse_args()
+    from realopen_lens.offline import enforce
+
+    enforce()
+    if args.query:
+        from realopen_lens.inference import TextEncoder
+        from realopen_lens.models import artifact_path
+
+        request = json.load(sys.stdin)
+        root, kind = Path(request["models"]), request["kind"]
+        model = TextEncoder(
+            artifact_path(root, kind, "text_int8"),
+            artifact_path(root, kind, "tokenizer"),
+            kind,
+            request["threads"],
+        )
+        print(json.dumps(model.encode([request["query"]])[0].tolist()))
+    elif args.request:
+        from realopen_lens.indexing import run_index
+
+        try:
+            request = json.loads(args.request.read_text())
+            configure_logging(request)
+            result = run_index(request)
+            print(json.dumps(asdict(result)))
+        except (Exception, KeyboardInterrupt) as error:
+            print(f"Indexing failed: {type(error).__name__}: {error}", file=sys.stderr)
+            raise SystemExit(1) from error
+    else:
+        from realopen_lens.catalog import Catalog
+        from realopen_lens.processing import process_stage
+
+        catalog = Catalog(args.store)
+        try:
+            configure_logging(json.loads(catalog.job(args.job)["config"]))
+            process_stage(catalog, args.job, args.stage)
+        finally:
+            catalog.close()
+
+
+if __name__ == "__main__":
+    main()
