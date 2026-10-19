@@ -1,5 +1,8 @@
 """Regression cases for observed preprocessing, OCR, fusion, and resume failures."""
 
+import random
+
+
 import subprocess
 
 
@@ -10,6 +13,9 @@ import pytest
 
 
 from PIL import Image
+
+
+from benchmarks.ocr_metrics import distance
 
 
 from realopen_lens.inference import image_rgb
@@ -139,6 +145,24 @@ def test_failed_ocr_fallback_keeps_first_result_and_reports_warning(tmp_path, mo
     assert result["text"] == "one"
     assert len(calls) == 2
     assert any("fallback failed" in warning for warning in result["warnings"])
+
+
+def test_fast_edit_distance_matches_reference_on_random_unicode_sequences():
+    def reference(left, right):
+        previous = list(range(len(right) + 1))
+        for i, a in enumerate(left, 1):
+            row = [i]
+            for j, b in enumerate(right, 1):
+                row.append(min(row[-1] + 1, previous[j] + 1, previous[j - 1] + (a != b)))
+            previous = row
+        return previous[-1]
+
+    rng = random.Random(42)
+    for _ in range(250):
+        left = "".join(rng.choices("abéش_", k=rng.randrange(35)))
+        right = "".join(rng.choices("abéش_", k=rng.randrange(35)))
+        assert distance(left, right) == reference(left, right)
+        assert distance(list(left), list(right)) == reference(left, right)
 
 
 def test_diagram_layout_checks_detect_missing_lower_labels_without_numpy_scalars():
