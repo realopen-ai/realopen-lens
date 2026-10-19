@@ -12,9 +12,9 @@ from time import perf_counter, monotonic
 
 from benchmarks.resources import MemoryMonitor
 from benchmarks.suite import connect, save_stage
-from realopen_lens.inference import TextEncoder, VisionEncoder
-from realopen_lens.models import artifact_path
-from realopen_lens.offline import enforce
+from realopen_lens.encoders.onnx import TextEncoder, VisionEncoder
+from realopen_lens.models.manager import artifact_path
+from realopen_lens.runtime.offline import enforce
 
 
 def baseline_ocr(config: dict, row: dict) -> dict:
@@ -62,7 +62,7 @@ def main() -> None:
     detector = None
     start = perf_counter()
     if stage == "ocr" and config.get("text_detector"):
-        from realopen_lens.text_regions import TextRegionDetector
+        from realopen_lens.ocr.regions import TextRegionDetector
 
         detector = TextRegionDetector(Path(config["text_detector"]["path"]), threads)
     if stage == "vision":
@@ -105,7 +105,7 @@ def main() -> None:
                     if config["variant"] == "baseline":
                         data = baseline_ocr(config, row)
                     else:
-                        from realopen_lens.ocr import extract
+                        from realopen_lens.ocr.tesseract import extract
 
                         data = extract(
                             Path(config["dataset"]) / row["path"],

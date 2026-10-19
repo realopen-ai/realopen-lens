@@ -31,12 +31,12 @@ def main():
     parser.add_argument("--stage", choices=["metadata", "ocr", "vision", "semantic"])
     parser.add_argument("--query", action="store_true")
     args = parser.parse_args()
-    from realopen_lens.offline import enforce
+    from realopen_lens.runtime.offline import enforce
 
     enforce()
     if args.query:
-        from realopen_lens.inference import TextEncoder
-        from realopen_lens.models import artifact_path
+        from realopen_lens.encoders.onnx import TextEncoder
+        from realopen_lens.models.manager import artifact_path
 
         request = json.load(sys.stdin)
         root, kind = Path(request["models"]), request["kind"]
@@ -48,7 +48,7 @@ def main():
         )
         print(json.dumps(model.encode([request["query"]])[0].tolist()))
     elif args.request:
-        from realopen_lens.indexing import run_index
+        from realopen_lens.indexing.service import run_index
 
         try:
             request = json.loads(args.request.read_text())
@@ -59,8 +59,8 @@ def main():
             print(f"Indexing failed: {type(error).__name__}: {error}", file=sys.stderr)
             raise SystemExit(1) from error
     else:
-        from realopen_lens.catalog import Catalog
-        from realopen_lens.processing import process_stage
+        from realopen_lens.storage.catalog import Catalog
+        from realopen_lens.indexing.processing import process_stage
 
         catalog = Catalog(args.store)
         try:

@@ -11,7 +11,7 @@ from typing import Any
 
 
 def registry() -> dict[str, Any]:
-    return json.loads(files("realopen_lens").joinpath("models.lock.json").read_text())
+    return json.loads(files("realopen_lens.models").joinpath("models.lock.json").read_text())
 
 
 def digest(path: Path) -> str:
@@ -74,7 +74,7 @@ def fetch(root: Path, precision: str, progress: Callable[[str], None] = print) -
 
 def fetch_text_detector(root: Path) -> Path:
     """Explicitly fetch one pinned detector, with bounded size and atomic publication."""
-    from realopen_lens.text_regions import detector_spec
+    from realopen_lens.ocr.regions import detector_spec
 
     spec = detector_spec()
     path = root / "text-detector" / spec["name"]

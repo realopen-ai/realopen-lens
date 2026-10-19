@@ -24,7 +24,7 @@ from benchmarks.ocr_metrics import evaluate, normalized
 from benchmarks.retrieval_metrics import metrics
 from benchmarks.resources import MemoryMonitor
 from benchmarks.execution import run_stage
-from realopen_lens.models import registry, verify
+from realopen_lens.models.manager import registry, verify
 
 
 def connect(path: Path) -> sqlite3.Connection:
@@ -411,7 +411,7 @@ def report(output: Path, config: dict) -> dict:
 
 
 def retrieval_report(db: sqlite3.Connection, config: dict, output: Path) -> dict:
-    from realopen_lens.retrieval import fuse, lexical_index, rank_lexical, rank_vectors
+    from realopen_lens.retrieval.ranking import fuse, lexical_index, rank_lexical, rank_vectors
 
     ids, visual = load_vectors(db, "vision")
     pids, semantic = load_vectors(db, "semantic")
@@ -447,7 +447,7 @@ def retrieval_report(db: sqlite3.Connection, config: dict, output: Path) -> dict
             if config["variant"] == "baseline":
                 hybrid = fuse([v[:50], lex[:50], sem[:50]])
             else:
-                from realopen_lens.retrieval import hybrid_rank, lexical_frequencies
+                from realopen_lens.retrieval.ranking import hybrid_rank, lexical_frequencies
 
                 hybrid = hybrid_rank(
                     visual,
@@ -593,7 +593,7 @@ def main() -> None:
         },
     }
     if args.detector_model is not None:
-        from realopen_lens.text_regions import detector_spec
+        from realopen_lens.ocr.regions import detector_spec
 
         spec = detector_spec()
         if (

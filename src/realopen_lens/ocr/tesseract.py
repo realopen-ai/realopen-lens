@@ -15,8 +15,8 @@ from typing import Any
 import numpy as np
 from PIL import Image, ImageOps
 
-from realopen_lens.inference import image_rgb
-from realopen_lens.models import digest
+from realopen_lens.encoders.onnx import image_rgb
+from realopen_lens.models.manager import digest
 
 
 @lru_cache(maxsize=8)
@@ -202,7 +202,7 @@ def _source_region(path: Path, size: tuple[int, int]) -> tuple[int, int, int, in
 def _ocr_source(path: Path, detection: dict | None, mode: str):
     with image_rgb(path) as source:
         if detection is not None and mode == "mask" and not detection.get("whole_image_fallback"):
-            from realopen_lens.text_regions import mask_regions
+            from realopen_lens.ocr.regions import mask_regions
 
             with mask_regions(source, detection) as masked:
                 yield masked
@@ -281,7 +281,7 @@ def extract(
                         "failed_attempts": [],
                     }
                 if region_mode == "mask" and not detection.get("whole_image_fallback"):
-                    from realopen_lens.text_regions import mask_regions
+                    from realopen_lens.ocr.regions import mask_regions
 
                     source = keep(mask_regions(source, detection))
             region = _source_region(path, original_size)

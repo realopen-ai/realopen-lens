@@ -12,7 +12,7 @@ class TesseractBackend:
         self.detector, self.region_mode = detector, region_mode
 
     def extract(self, path: Path) -> dict:
-        from realopen_lens.ocr import extract
+        from realopen_lens.ocr.tesseract import extract
 
         if self.detector is None:
             return extract(path, self.languages, self.threads)
@@ -48,14 +48,14 @@ def create_backend(
     if engine == "tesseract":
         detector = None
         if detector_model is not None:
-            from realopen_lens.text_regions import TextRegionDetector
+            from realopen_lens.ocr.regions import TextRegionDetector
 
             detector = TextRegionDetector(detector_model, threads)
         return TesseractBackend(languages, threads, detector, region_mode)
     if detector_model is not None:
         raise ValueError("Text-region OCR is currently supported only with Tesseract")
     if engine == "glm-ocr":
-        from realopen_lens.ollama_ocr import OllamaOCR
+        from realopen_lens.ocr.ollama import OllamaOCR
 
         return OllamaOCR(threads=threads, **glm_options)
     raise ValueError("Choose 'tesseract' or 'glm-ocr'; RapidOCR is benchmark-only experimental")

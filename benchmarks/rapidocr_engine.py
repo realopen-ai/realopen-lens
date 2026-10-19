@@ -10,8 +10,8 @@ from typing import Any
 import numpy as np
 from PIL import Image
 
-from realopen_lens.inference import image_rgb
-from realopen_lens.models import digest
+from realopen_lens.encoders.onnx import image_rgb
+from realopen_lens.models.manager import digest
 
 LOCK = Path(__file__).parent / "sources" / "rapidocr.lock.json"
 

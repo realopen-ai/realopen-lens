@@ -46,7 +46,7 @@ def run(
 ) -> None:
     """Run sequential local inference stages and write private JSON/Markdown reports."""
     from benchmarks.runner import run as run_benchmark
-    from realopen_lens.offline import enforce
+    from realopen_lens.runtime.offline import enforce
 
     enforce()
     if output is None:

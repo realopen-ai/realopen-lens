@@ -9,11 +9,11 @@ from time import perf_counter
 import numpy as np
 from PIL import Image, ImageDraw
 
-from realopen_lens.models import digest
+from realopen_lens.models.manager import digest
 
 
 def detector_spec() -> dict:
-    return json.loads(files("realopen_lens").joinpath("text-detector.lock.json").read_text())
+    return json.loads(files("realopen_lens.models").joinpath("text-detector.lock.json").read_text())
 
 
 class TextRegionDetector:

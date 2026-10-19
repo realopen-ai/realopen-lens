@@ -3,7 +3,7 @@ import json
 import pytest
 
 from benchmarks.judgments import queries
-from realopen_lens.corpus import scan
+from realopen_lens.indexing.scanner import scan
 
 
 def test_scan_is_sorted_bounded_and_excludes_symlinks_outside_root(tmp_path):

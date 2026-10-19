@@ -11,9 +11,9 @@ import subprocess
 import sys
 from time import perf_counter
 
-from realopen_lens.catalog import Catalog, STAGES, default_directory, identifier
-from realopen_lens.corpus import EXTENSIONS
-from realopen_lens.index_files import (
+from realopen_lens.storage.catalog import Catalog, STAGES, default_directory, identifier
+from realopen_lens.indexing.scanner import EXTENSIONS
+from realopen_lens.storage.artifacts import (
     atomic_bytes,
     attempted,
     image_issues,
@@ -21,8 +21,8 @@ from realopen_lens.index_files import (
     publish,
     valid_analysis,
 )
-from realopen_lens.jobs import environment, recover, stop_worker, supervise, writer_lock
-from realopen_lens.models import digest, registry, verify
+from realopen_lens.runtime.jobs import environment, recover, stop_worker, supervise, writer_lock
+from realopen_lens.models.manager import digest, registry, verify
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,9 @@ def signature(path: Path) -> dict:
 
 
 def pipeline_config(options: dict) -> dict:
-    from realopen_lens import inference, ocr, processing
+    from realopen_lens.encoders import onnx as inference
+    from realopen_lens.ocr import tesseract as ocr
+    from realopen_lens.indexing import processing
     import shutil
 
     verify(Path(options["models"]), "int8")
@@ -206,7 +208,7 @@ def run_index(options: dict, *, stage_runner=supervise) -> IndexResult:
                 command = [
                     sys.executable,
                     "-m",
-                    "realopen_lens.worker",
+                    "realopen_lens.runtime.worker",
                     "--store",
                     str(store),
                     "--job",
@@ -217,7 +219,7 @@ def run_index(options: dict, *, stage_runner=supervise) -> IndexResult:
                 processed = True
                 stage_runner(catalog, job_id, stage, command, threads=config["threads"])
                 logger.info("[%s] Stage finished", stage)
-            from realopen_lens.processing import source_path
+            from realopen_lens.indexing.processing import source_path
 
             logger.info("Validating source files before publication")
             for row in catalog.files(job_id):
@@ -349,7 +351,7 @@ def index_collection(
     process = None
     try:
         process = subprocess.Popen(
-            [sys.executable, "-m", "realopen_lens.worker", "--request", str(request)],
+            [sys.executable, "-m", "realopen_lens.runtime.worker", "--request", str(request)],
             stdout=subprocess.PIPE,
             stderr=None if log else subprocess.PIPE,
             env=environment(threads),

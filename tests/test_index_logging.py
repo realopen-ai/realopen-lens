@@ -11,7 +11,7 @@ def test_log_streams_before_completion_and_keeps_result_protocol_clean(
 ):
     from concurrent.futures import ThreadPoolExecutor
     from time import monotonic, sleep
-    from realopen_lens import indexing
+    from realopen_lens.indexing import service as indexing
 
     original_popen = subprocess.Popen
     marker, gate = tmp_path / "started", tmp_path / "finish"

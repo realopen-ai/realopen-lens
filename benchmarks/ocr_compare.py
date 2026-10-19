@@ -25,7 +25,7 @@ from benchmarks.suite import (
     source_hash,
     summarize,
 )
-from realopen_lens.models import digest
+from realopen_lens.models.manager import digest
 
 ENGINES = ("tesseract", "rapidocr", "glm-ocr")
 CORRECTIONS = Path(__file__).parent / "sources/evaluation-corrections-v1.json"
@@ -55,7 +55,7 @@ def inputs(dataset: Path) -> list[dict]:
 
 
 def worker(config_path: Path, engine: str) -> None:
-    from realopen_lens.offline import enforce
+    from realopen_lens.runtime.offline import enforce
 
     config = json.loads(config_path.read_text())
     if engine == "glm-ocr":
@@ -73,7 +73,7 @@ def worker(config_path: Path, engine: str) -> None:
     with MemoryMonitor(external_pids=external_pids) as memory:
         start = perf_counter()
         if engine == "glm-ocr":
-            from realopen_lens.ollama_ocr import OllamaOCR
+            from realopen_lens.ocr.ollama import OllamaOCR
 
             adapter = OllamaOCR(
                 threads=config["threads"],
@@ -97,7 +97,7 @@ def worker(config_path: Path, engine: str) -> None:
             environment = {**rapid.info, "params": rapid.params}
         else:
             import shutil
-            from realopen_lens.ocr import _environment, extract as tesseract
+            from realopen_lens.ocr.tesseract import _environment, extract as tesseract
 
             environment = _environment(
                 shutil.which("tesseract") or "tesseract", config["languages"]
@@ -357,7 +357,7 @@ def main() -> None:
         return
     if args.limit < 1:
         parser.error("--limit must be positive")
-    from realopen_lens.inference import image_rgb
+    from realopen_lens.encoders.onnx import image_rgb
 
     evaluation = "".join(
         inspect.getsource(fn) for fn in (record, image_quality, quality_status, summarize)
@@ -397,7 +397,7 @@ def main() -> None:
         },
     }
     if "glm-ocr" in args.engines:
-        from realopen_lens.ollama_ocr import OllamaOCR
+        from realopen_lens.ocr.ollama import OllamaOCR
         from benchmarks.ollama_resources import server_pids
 
         options = {

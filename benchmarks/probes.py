@@ -13,7 +13,7 @@ from time import perf_counter
 import psutil
 from PIL import Image
 
-from realopen_lens.inference import image_rgb
+from realopen_lens.encoders.onnx import image_rgb
 
 
 def png_chunk(kind: bytes, payload: bytes) -> bytes:

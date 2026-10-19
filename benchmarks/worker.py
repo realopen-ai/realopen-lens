@@ -6,11 +6,11 @@ from pathlib import Path
 from time import perf_counter
 from typing import Any
 
-from realopen_lens.offline import enforce
+from realopen_lens.runtime.offline import enforce
 
 
 def ocr(config: dict[str, Any]) -> dict[str, Any]:
-    from realopen_lens.ocr import extract
+    from realopen_lens.ocr.tesseract import extract
 
     records, times = [], []
     environment = {}
@@ -26,8 +26,8 @@ def ocr(config: dict[str, Any]) -> dict[str, Any]:
 def embeddings(stage: str, config: dict[str, Any]) -> dict[str, Any]:
     import numpy as np
 
-    from realopen_lens.inference import TextEncoder, VisionEncoder
-    from realopen_lens.models import artifact_path
+    from realopen_lens.encoders.onnx import TextEncoder, VisionEncoder
+    from realopen_lens.models.manager import artifact_path
 
     output = Path(config["output"])
     root = Path(config["models"])

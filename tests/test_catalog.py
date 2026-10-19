@@ -1,6 +1,6 @@
 """Catalog format upgrades preserve existing collection analyses."""
 
-from realopen_lens.catalog import Catalog
+from realopen_lens.storage.catalog import Catalog
 
 
 def test_legacy_catalog_migration_preserves_analysis_records(tmp_path):

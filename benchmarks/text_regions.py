@@ -15,17 +15,17 @@ from benchmarks.execution import run_stage
 from benchmarks.ocr_compare import inputs, record
 from benchmarks.resources import MemoryMonitor
 from benchmarks.suite import connect, save_stage, source_hash, summarize
-from realopen_lens.models import digest
+from realopen_lens.models.manager import digest
 
 VARIANTS = ("baseline", "gate", "mask")
 
 
 def worker(path: Path, variant: str):
-    from realopen_lens.offline import enforce
+    from realopen_lens.runtime.offline import enforce
 
     enforce()
-    from realopen_lens.ocr import extract
-    from realopen_lens.text_regions import TextRegionDetector
+    from realopen_lens.ocr.tesseract import extract
+    from realopen_lens.ocr.regions import TextRegionDetector
 
     config = json.loads(path.read_text())
     db = connect(path.parent / "results.sqlite")

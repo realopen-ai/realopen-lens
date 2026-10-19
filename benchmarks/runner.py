@@ -23,9 +23,9 @@ from benchmarks.ocr_metrics import by_category as ocr_by_category
 from benchmarks.ocr_metrics import load_truth
 from benchmarks.resources import MemoryMonitor
 from benchmarks.retrieval_metrics import metrics
-from realopen_lens.corpus import scan
-from realopen_lens.models import digest, registry, verify
-from realopen_lens.retrieval import (
+from realopen_lens.indexing.scanner import scan
+from realopen_lens.models.manager import digest, registry, verify
+from realopen_lens.retrieval.ranking import (
     hybrid_rank,
     lexical_index,
     lexical_frequencies,
