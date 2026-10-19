@@ -86,6 +86,11 @@ inference with bounded resource use.
 See [the architecture document](docs/architecture.md) for model choices, resource
 profiles, privacy requirements, and evaluation methodology.
 
+Tesseract is the default OCR backend. Optional
+[text-region detection](docs/text-regions.md) can run ahead of recognition.
+The earlier [OCR engine experiments](docs/ocr-comparison.md) remain documented;
+current pipeline evaluation uses Tesseract only.
+
 ## Roadmap
 
 - [ ] Validate multilingual inference, OCR quality, and memory use on 8 GB hardware.
