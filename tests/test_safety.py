@@ -1,24 +1,14 @@
 import hashlib
-
-
 import json
-
-
 import subprocess
-
-
 import sys
 
-
 import pytest
-
-
 from PIL import Image
-
+from typer.testing import CliRunner
 
 from realopen_lens import models
-
-
+from benchmarks.__main__ import app
 from realopen_lens.inference import image_rgb
 
 
@@ -75,6 +65,12 @@ def test_exif_orientation_is_applied_without_modifying_original(tmp_path):
     with image_rgb(path) as decoded:
         assert decoded.size == (10, 20)
     assert path.read_bytes() == before
+
+
+def test_cli_does_not_download_when_corpus_empty(tmp_path):
+    result = CliRunner().invoke(app, ["run", "--data", str(tmp_path)])
+    assert result.exit_code == 1
+    assert "Add images to data/" in result.output
 
 
 def test_model_manifest_pins_full_revisions_and_sha256():
