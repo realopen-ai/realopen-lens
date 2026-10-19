@@ -7,8 +7,8 @@ import sys
 import numpy as np
 import pytest
 
-from benchmarks.execution import run_stage
-from benchmarks.suite import connect, load_vectors, reset_errors, save_stage
+from benchmarks.runtime.execution import run_stage
+from benchmarks.storage.results import connect, load_vectors, reset_errors, save_stage
 
 
 def test_hung_item_is_recorded_and_later_items_still_run(tmp_path):
@@ -80,7 +80,7 @@ def test_retry_invalidates_blocked_dependents_and_failed_vectors(tmp_path):
 
 
 def test_failed_query_embeddings_count_as_zero_quality_not_omitted_queries(tmp_path):
-    from benchmarks.suite import retrieval_report
+    from benchmarks.reporting.retrieval import retrieval_report
 
     db = connect(tmp_path / "results.sqlite")
     config = {
@@ -106,7 +106,7 @@ def test_failed_query_embeddings_count_as_zero_quality_not_omitted_queries(tmp_p
 
 def test_resuming_does_not_replace_a_full_memory_peak_with_a_skipped_run(tmp_path):
     from types import SimpleNamespace
-    from benchmarks.suite import write_resources
+    from benchmarks.runtime.resources import write_resources
 
     initial = SimpleNamespace(peaks={"vision": 100 * 2**20}, samples=10, access_errors=0)
     resumed = SimpleNamespace(peaks={"vision": 10 * 2**20}, samples=2, access_errors=0)

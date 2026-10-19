@@ -1,6 +1,6 @@
 import pytest
 
-from benchmarks.ocr_metrics import by_category, evaluate, load_truth
+from benchmarks.metrics.ocr import by_category, evaluate, load_truth
 
 
 def test_ocr_error_rates_include_missing_and_extra_words():

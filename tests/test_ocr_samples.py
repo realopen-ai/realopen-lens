@@ -5,8 +5,8 @@ from pathlib import PurePosixPath
 
 import pytest
 
-from benchmarks.ocr_samples import SPECS, ensure_download, manifest, publish
-from benchmarks.ocr_metrics import normalized
+from benchmarks.datasets.ocr import SPECS, ensure_download, manifest, publish
+from benchmarks.metrics.ocr import normalized
 
 
 def test_fixture_manifest_covers_three_categories_and_reviewed_references():

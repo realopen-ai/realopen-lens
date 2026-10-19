@@ -8,10 +8,8 @@ import sys
 import traceback
 from pathlib import Path
 from time import perf_counter, monotonic
-
-
-from benchmarks.resources import MemoryMonitor
-from benchmarks.suite import connect, save_stage
+from benchmarks.runtime.resources import MemoryMonitor
+from benchmarks.storage.results import connect, save_stage
 from realopen_lens.encoders.onnx import TextEncoder, VisionEncoder
 from realopen_lens.models.manager import artifact_path
 from realopen_lens.runtime.offline import enforce

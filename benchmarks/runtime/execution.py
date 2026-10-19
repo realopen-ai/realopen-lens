@@ -9,7 +9,6 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 from time import monotonic, sleep
-
 import psutil
 
 

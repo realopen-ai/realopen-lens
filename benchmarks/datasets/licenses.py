@@ -6,6 +6,7 @@ import json
 import subprocess
 import zipfile
 from pathlib import Path
+from benchmarks.paths import SOURCES
 
 URL = "https://s3.amazonaws.com/images.cocodataset.org/annotations/annotations_trainval2014.zip"
 SIZE = 252872794
@@ -71,7 +72,7 @@ def load(cache: Path) -> dict:
             ),
             encoding="utf-8",
         )
-    lock = json.loads((Path(__file__).parent / "sources/coco-license-info.lock.json").read_text())
+    lock = json.loads((SOURCES / "coco-license-info.lock.json").read_text())
     if hashlib.sha256(path.read_bytes()).hexdigest() != lock["sha256"]:
         raise ValueError("COCO license metadata checksum mismatch")
     return json.loads(path.read_text())

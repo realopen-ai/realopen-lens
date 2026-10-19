@@ -4,7 +4,7 @@ import json
 import pytest
 from PIL import Image
 
-from benchmarks import samples
+from benchmarks.datasets import photos as samples
 
 
 def rows():
