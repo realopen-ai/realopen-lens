@@ -84,6 +84,18 @@ def test_index_encoder_selects_matching_vision_graph(monkeypatch, precision):
     assert selected == ["vision_" + precision]
 
 
+def test_current_training_schema_rejects_fp32_instead_of_exporting_an_int8_model():
+    from benchmarks.experiments.logistic import validate_records
+
+    config = {
+        "candidate_feature_schema": 1,
+        "search_limit": 50,
+        "snapshot": {"pipeline_spec": {"siglip_precision": "fp32"}},
+    }
+    with pytest.raises(ValueError, match="INT8 SigLIP2 compatibility"):
+        validate_records([], {"queries": []}, {"images": []}, config)
+
+
 def test_fp32_verification_never_falls_back_to_int8(tmp_path, monkeypatch):
     from realopen_lens.models import manager
 
