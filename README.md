@@ -8,8 +8,8 @@ multilingual image embeddings, optical character recognition (OCR), and hybrid
 retrieval, with a lightweight ranking model that can learn from explicit feedback.
 
 > **Status: early development.** Persistent folder indexing and CLI search are
-> available, alongside inference and retrieval benchmarks. The gallery, API,
-> feedback, and learned ranking are still planned.
+> available, alongside inference and retrieval benchmarks and an opt-in experimental
+> logistic reranker. The gallery, API, feedback, and neural ranking are still planned.
 
 Start with the [collection indexing and search guide](docs/collections.md), the
 [benchmark setup and usage guide](docs/benchmark.md), or the
@@ -90,7 +90,7 @@ inference with bounded resource use.
 | OCR semantic embeddings | Multilingual E5 Small |
 | Storage and retrieval | SQLite, FTS5, NumPy |
 | API and interface | FastAPI, React, TypeScript, Vite |
-| Optional training | scikit-learn, PyTorch |
+| Reranker training | NumPy logistic baseline; neural training deferred |
 
 See [the architecture document](docs/architecture.md) for model choices, resource
 profiles, privacy requirements, and evaluation methodology.
@@ -107,7 +107,8 @@ current pipeline evaluation uses Tesseract only.
 - [x] Build the Python package, CLI, and resumable ingestion pipeline.
 - [x] Implement visual, lexical, and semantic OCR retrieval with hybrid fusion.
 - [x] Publish reproducible baseline evaluations by language and image category.
-- [ ] Train and compare lightweight rerankers against fixed fusion.
+- [x] Train and evaluate an experimental logistic reranker against hybrid fusion.
+- [ ] Expand independent relevance review and compare a small neural reranker.
 - [ ] Add explicit feedback, validated model updates, and collection management.
 - [ ] Build the local image gallery and verify installation on all three platforms.
 
@@ -130,6 +131,7 @@ src/realopen_lens/
 ├── encoders/       # CPU ONNX encoders and image preprocessing
 ├── ocr/            # Tesseract, backend selection, experimental alternatives
 ├── retrieval/      # Ranking, fusion, and saved-collection search
+├── learning/       # Explicit reranker features and local JSON inference
 ├── storage/        # SQLite catalog, caches, immutable search generations
 ├── runtime/        # Worker processes, supervision, offline enforcement
 ├── models/         # Artifact management and pinned manifests
@@ -154,6 +156,14 @@ Evaluate published collections and export reviewed candidate features using the
 [saved-collection retrieval guide](docs/retrieval-evaluation.md). The
 [2,000-image retrieval report](docs/benchmarks/2026-10-20-retrieval-evaluation.md)
 records the production baseline, reviewed-label limitations, and training exports.
+
+The [experimental logistic reranker](docs/logistic-reranker.md) learns from reviewed
+training pairs and is selected explicitly with `lens search --reranker MODEL.json`.
+Hybrid remains the default. Its [initial comparison](docs/benchmarks/2026-10-20-logistic-reranker.md)
+records both ranking improvements and text-heavy retrieval regressions.
+The [fresh-source scope study](docs/benchmarks/2026-10-20-reranker-scope-study.md)
+adds reviewed document/screenshot coverage, feature ablations and a protected
+top-50 reranking scope, with individual results and remaining recall limitations.
 
 The [500-image hardening report](docs/benchmarks/2026-10-19-pipeline-hardening.md)
 includes before/after results, failure analysis, resource costs and remaining limitations.

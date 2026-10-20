@@ -69,3 +69,12 @@ inputs for audit. They contain a known reference error and are not training inpu
 `corrections-v2.json` records original/corrected checksums, exact query changes,
 evidence, and run locations. The corrected test intent is not an untouched holdout.
 Use the canonical `judgments.json` for new evaluations and training exports.
+
+## Training-only pooled review
+
+`training-review-v1.json` adds explicit agent-reviewed decisions for 212 training
+family/image pairs from the original hybrid top 10. Its four direct matches and
+165 negatives add 507 judgments across translations; 43 ambiguous decisions remain
+unjudged. The canonical bundle and all validation/test judgments remain unchanged.
+Per-image observations and decision reasons preserve the review evidence. See the
+[logistic guide](../../../docs/logistic-reranker.md) for application and fitting.

@@ -30,7 +30,7 @@ and web request objects out of the engine's public data types. Avoid a generic
 plugin framework or speculative implementations.
 
 The engine's implementation is grouped into `indexing`, `encoders`, `ocr`,
-`retrieval`, `storage`, `runtime`, and `models` packages. CLI adapters call the
+`retrieval`, `learning`, `storage`, `runtime`, and `models` packages. CLI adapters call the
 same collection operations; the root `search` module preserves the documented
 Python search entry points. Benchmark and evaluation infrastructure stays in the
 repository's top-level `benchmarks/` directory.
@@ -51,7 +51,7 @@ repository's top-level `benchmarks/` directory.
 | API | FastAPI and Uvicorn |
 | UI | React, TypeScript, Vite |
 | CLI and development tooling | Typer, `pyproject.toml`, uv |
-| Optional training dependencies | scikit-learn and PyTorch |
+| Initial learned ranking | NumPy logistic regression; neural training dependencies deferred |
 | Quality checks | pytest, Black, Flake8, Ruff, type checking, native OS CI |
 
 Pin model revisions, tokenizer files, preprocessing, ONNX exports, and checksums.
@@ -99,6 +99,10 @@ validated against held-out data; equal-vote reciprocal rank fusion remains a
 historical benchmark baseline. Apply filters consistently with the
 candidate search so filtered queries do not silently lose relevant candidates.
 An optional learned reranker reorders the resulting pool.
+
+The [experimental logistic reranker](logistic-reranker.md) uses a versioned feature
+allowlist and a small local JSON artifact. Training and evaluation remain outside
+the runtime package. It is opt-in; measured text-heavy regressions prevent promotion.
 
 Start ranking experiments with fixed fusion, logistic regression with query-score
 interaction features, and a small neural network. Deploy a trained reranker only

@@ -1,8 +1,13 @@
 # Saved-collection retrieval evaluation
 
+For fresh document/screenshot source groups, diagnostic-only legacy holdouts and
+guarded reranker selection, see the [retrieval-v2 protocol and commands](../benchmarks/sources/retrieval-v2/README.md)
+and [measured scope study](benchmarks/2026-10-20-reranker-scope-study.md).
+
 This benchmark evaluates the same published generations and search implementation
 used by `lens index` and `lens search`. It does not rebuild a separate in-memory
-index. Tesseract is the indexing OCR backend. Reranker training is a later step.
+index. Tesseract is the indexing OCR backend. The optional
+[logistic reranker guide](logistic-reranker.md) covers training and production comparison.
 
 ## Prepare and freeze the corpus
 
