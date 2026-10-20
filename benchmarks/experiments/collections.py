@@ -11,6 +11,7 @@ import sys
 import shutil
 import realopen_lens
 from time import perf_counter
+from typing import Any
 
 from benchmarks.datasets.downloads import digest
 from benchmarks.datasets.photos import save_json
@@ -24,9 +25,18 @@ from realopen_lens.models.manager import registry, verify
 from realopen_lens.retrieval.search import search_collection
 from realopen_lens.retrieval.candidates import CandidateDepths
 from realopen_lens.runtime.offline import enforce
+from realopen_lens.runtime.resident import ResidentQueryEncoder
 
 
 def run(args):
+    if getattr(args, "resident", False):
+        with ResidentQueryEncoder() as encoder:
+            return _run(args, encoder)
+    return _run(args)
+
+
+def _run(args, encoder: ResidentQueryEncoder | None = None):
+    encoder_options: dict[str, Any] = {"query_encoder": encoder} if encoder is not None else {}
     corpus, bundle = load(args.corpus, args.judgments)
 
     def current_snapshot(*, verify_files: bool = True) -> dict:
@@ -79,6 +89,8 @@ def run(args):
     }
     if reranker is not None:
         identity["reranker_sha256"] = reranker_sha256
+    if encoder is not None:
+        identity["query_runtime"] = "resident"
     if defer_test:
         identity["defer_test_metrics"] = True
     args.output.mkdir(parents=True, exist_ok=True)
@@ -143,6 +155,7 @@ def run(args):
                         trace=trace,
                         candidate_depths=depths,
                         **({"reranker": reranker} if reranker is not None else {}),
+                        **encoder_options,
                     )
                     if (
                         trace["generation"] != state["generation"]
@@ -225,6 +238,7 @@ def main():
     )
     parser.add_argument("--threads", type=int, choices=range(1, 9), default=2)
     parser.add_argument("--retry-errors", action="store_true")
+    parser.add_argument("--resident", action="store_true", help="Reuse owned query encoders")
     parser.add_argument(
         "--defer-test-metrics",
         action="store_true",
