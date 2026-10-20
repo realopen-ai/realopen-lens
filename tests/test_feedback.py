@@ -5,7 +5,9 @@ import sqlite3
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
+from typer.testing import CliRunner
 
+from realopen_lens.cli import app
 from realopen_lens.learning import feedback
 from realopen_lens.storage.feedback import FeedbackStore
 
@@ -145,6 +147,27 @@ def test_listing_without_feedback_is_readonly_and_validates_limits(tmp_path):
     with pytest.raises(ValueError, match="save-run"):
         feedback.judge("missing", "one", "relevant", index_dir=tmp_path)
     assert not (tmp_path / "feedback.sqlite3").exists()
+
+
+def test_feedback_cli_supports_set_show_remove_history_and_export(saved, tmp_path):
+    root, run_id, _ = saved
+    runner = CliRunner()
+
+    def invoke(*args):
+        result = runner.invoke(app, ["feedback", *args, "--index-dir", str(root)])
+        assert result.exit_code == 0, result.output
+        return json.loads(result.stdout)
+
+    assert invoke("runs")[0]["run_id"] == run_id
+    assert invoke("set", run_id, "one", "relevant")["label"] == "relevant"
+    assert invoke("show", run_id)["judgments"][0]["label"] == "relevant"
+    assert invoke("export", str(tmp_path / "cli.jsonl")) == 1
+    invoke("remove", run_id, "one")
+    assert invoke("history", run_id)[-1]["label"] is None
+    result = runner.invoke(
+        app, ["feedback", "set", run_id, "not-returned", "relevant", "--index-dir", str(root)]
+    )
+    assert result.exit_code == 1 and "Error:" in result.output and "Traceback" not in result.output
 
 
 def test_default_export_does_not_clobber_concurrently_created_destination(
