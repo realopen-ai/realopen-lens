@@ -121,6 +121,16 @@ def test_known_grades_and_unjudged_candidates_are_distinct(tmp_path):
     assert "label" not in rows[0]["features"]
 
 
+def test_superset_candidates_keep_unknown_metadata_and_are_not_training_negatives(tmp_path):
+    _, _, images, bundle = corpus_files(tmp_path)
+    record = {"trace": {"candidates": [{"image_id": "unreviewed-extra", "visual_cosine": 0.5}]}}
+    row = candidate_rows(record, bundle["queries"][0], {r["sha256"]: r for r in images})[0]
+    assert row["in_reference_corpus"] is False
+    assert row["label"] is None and row["grade"] is None
+    assert row["category"] is None and row["image_split"] is None
+    assert row["training_eligible"] is False
+
+
 def test_candidate_trace_preserves_ranking_and_passage_aggregation():
     rng = np.random.default_rng(42)
     visual = rng.normal(size=(80, 8)).astype(np.float32)

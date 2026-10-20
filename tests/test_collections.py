@@ -81,6 +81,39 @@ def image(path, color="red"):
     Image.new("RGB", (64, 48), color).save(path)
 
 
+def test_superset_evaluation_requires_opt_in_and_freezes_extra_paths(app):
+    from benchmarks.runtime.collections import snapshot
+    from realopen_lens.models.manager import digest
+
+    root, store, calls, run = app
+    (root / "frozen").mkdir()
+    image(root / "frozen/one.png")
+    image(root / "extra.png", "green")
+    run()
+    corpus = {"images": [{"sha256": digest(root / "frozen/one.png"), "path": "one.png"}]}
+    with pytest.raises(ValueError, match="exactly"):
+        snapshot(store, "personal", corpus, corpus_prefix=Path("frozen"))
+    with pytest.raises(ValueError, match="Frozen path is absent"):
+        snapshot(store, "personal", corpus, allow_extra_images=True)
+    state = snapshot(
+        store, "personal", corpus, corpus_prefix=Path("frozen"), allow_extra_images=True
+    )
+    assert state["reference_images"] == 1 and state["additional_unreviewed_images"] == 1
+    assert state["unique_images"] == 2
+    with pytest.raises(ValueError, match="relative"):
+        snapshot(store, "personal", corpus, corpus_prefix=Path("../outside"))
+    (root / "extra.png").write_bytes(b"changed")
+    with pytest.raises(ValueError, match="Source changed"):
+        snapshot(
+            store,
+            "personal",
+            corpus,
+            verify_files=False,
+            corpus_prefix=Path("frozen"),
+            allow_extra_images=True,
+        )
+
+
 @pytest.mark.parametrize("precision", ["int8", "fp32"])
 def test_precision_is_immutable_and_search_uses_saved_encoder(app, monkeypatch, precision):
     root, store, calls, run = app
