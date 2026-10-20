@@ -34,6 +34,7 @@ import pytest
         "experiments.ocr_recovery",
         "experiments.siglip_precision",
         "experiments.saved_precision",
+        "reporting.precision",
     ],
 )
 def test_published_commands_still_accept_help(command):

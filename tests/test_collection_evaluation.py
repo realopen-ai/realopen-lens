@@ -76,6 +76,150 @@ def corpus_files(tmp_path):
     return corpus, path, rows, bundle
 
 
+@pytest.fixture
+def precision_reports(tmp_path, monkeypatch):
+    from benchmarks.reporting import precision
+
+    corpus, judgments, images, bundle = corpus_files(tmp_path)
+    metrics = evaluate(["a", "b"], {"a": 2, "b": 0})
+    paths = []
+    for policy in ("int8", "fp32"):
+        directory = tmp_path / policy
+        directory.mkdir()
+        shutil.copyfile(corpus, directory / "corpus.json")
+        shutil.copyfile(judgments, directory / "judgments.json")
+        config = {
+            "corpus_sha256": digest(corpus),
+            "judgments_sha256": digest(judgments),
+            "model_registry": {},
+            "threads": 2,
+            "packages": {},
+            "engine_sha256": "engine",
+            "harness_sha256": "harness",
+            "candidate_depths": {},
+            "search_limit": 50,
+            "collection": "personal",
+            "index_dir": str(directory / "index"),
+            "snapshot": {
+                "unique_images": 3,
+                "signatures": {},
+                "generation": policy,
+                "pipeline_spec": {"siglip_precision": policy},
+            },
+        }
+        save_json(directory / "config.json", config)
+        save_json(
+            directory / "summary.json",
+            {
+                "identity": config,
+                "processed_queries": 1,
+                "failed_queries": 0,
+                "quality_deferred_queries": 0,
+                "aggregate": {"hybrid/all": dict(metrics, queries=1)},
+                "hybrid_end_to_end_seconds": {"median": 1.0, "p95": 1.1},
+            },
+        )
+        record = {
+            "query_id": "q",
+            "query": bundle["queries"][0],
+            "status": "ok",
+            "metrics": {"hybrid": metrics},
+            "trace": {"rankings": {"hybrid": ["a", "b"]}},
+            "memory_access_errors": 0,
+            "memory_samples": 1,
+            "seconds": 1.0,
+            "peak_tree_rss_mib": 100.0,
+        }
+        (directory / "queries.jsonl").write_text(json.dumps(record) + "\n", encoding="utf-8")
+        with sqlite3.connect(directory / "results.sqlite") as db:
+            db.execute("CREATE TABLE queries (query_id TEXT PRIMARY KEY, payload TEXT NOT NULL)")
+            db.execute("CREATE TABLE attempts (query_id TEXT, attempt INTEGER, payload TEXT)")
+            db.execute("INSERT INTO queries VALUES (?, ?)", ("q", json.dumps(record)))
+            db.execute("INSERT INTO attempts VALUES (?, ?, ?)", ("q", 1, json.dumps(record)))
+        paths.append(directory)
+    monkeypatch.setattr(
+        precision,
+        "compare_controls",
+        lambda *a: {"source_generation": "fp32", "target_generation": "int8"},
+    )
+    return precision, paths
+
+
+def test_precision_report_pairs_records_and_exposes_incomplete_memory(precision_reports, tmp_path):
+    precision, paths = precision_reports
+    report = precision.compare(*paths, tmp_path / "report")
+    assert report["queries"] == 1 and report["memory_complete"]
+    assert report["paired_queries"][0]["positive_ranks"]["fp32"] == {"a": 1}
+    record = json.loads((paths[1] / "queries.jsonl").read_text(encoding="utf-8"))
+    record["memory_access_errors"] = 1
+    (paths[1] / "queries.jsonl").write_text(json.dumps(record) + "\n", encoding="utf-8")
+    with sqlite3.connect(paths[1] / "results.sqlite") as db:
+        db.execute("UPDATE queries SET payload=?", (json.dumps(record),))
+        db.execute("UPDATE attempts SET payload=?", (json.dumps(record),))
+    assert not precision.compare(*paths, tmp_path / "restricted")["memory_complete"]
+
+
+def test_precision_report_retains_timeout_before_successful_retry(precision_reports, tmp_path):
+    precision, paths = precision_reports
+    with sqlite3.connect(paths[1] / "results.sqlite") as db:
+        success = db.execute("SELECT payload FROM queries").fetchone()[0]
+        failure = json.loads(success)
+        failure.update(
+            status="error",
+            seconds=123.0,
+            error_type="TimeoutError",
+            error="Query encoder exceeded its deadline",
+            memory_access_errors=1,
+        )
+        failure.pop("metrics")
+        db.execute("UPDATE attempts SET payload=?", (json.dumps(failure),))
+        db.execute("INSERT INTO attempts VALUES (?, ?, ?)", ("q", 2, success))
+    report = precision.compare(*paths, tmp_path / "retry-report")
+    history = report["execution_history"]["fp32"]
+    assert history["first_pass_failed"] == 1 and history["total_attempts"] == 2
+    assert history["first_pass_deadline_aware_quality"]["candidate_recall_at_50"] == 0
+    assert history["first_pass_seconds_including_errors"]["max"] == 123.0
+    assert history["failed_attempts"][0]["error_type"] == "TimeoutError"
+    assert not report["memory_complete"]  # Failure sampling cannot be hidden by the retry.
+    assert report["policies"]["fp32"]["failed_queries"] == 0
+
+
+@pytest.mark.parametrize("corruption", ["missing", "divergent", "gap"])
+def test_precision_report_rejects_inconsistent_attempt_history(
+    precision_reports, tmp_path, corruption
+):
+    precision, paths = precision_reports
+    with sqlite3.connect(paths[1] / "results.sqlite") as db:
+        if corruption == "missing":
+            db.execute("DELETE FROM attempts")
+        elif corruption == "divergent":
+            db.execute("UPDATE attempts SET payload='{}'")
+        else:
+            db.execute("UPDATE attempts SET attempt=2")
+    with pytest.raises((ValueError, KeyError)):
+        precision.compare(*paths, tmp_path / "invalid-history")
+
+
+@pytest.mark.parametrize("corruption", ["inventory", "references", "incomplete", "summary"])
+def test_precision_report_rejects_mismatched_evidence(precision_reports, tmp_path, corruption):
+    precision, paths = precision_reports
+    directory = paths[1]
+    if corruption == "inventory":
+        config = precision.read(directory / "config.json")
+        config["snapshot"]["unique_images"] = 4
+        save_json(directory / "config.json", config)
+    elif corruption == "references":
+        (directory / "corpus.json").write_text("{}", encoding="utf-8")
+    elif corruption == "incomplete":
+        (directory / "queries.jsonl").write_text("", encoding="utf-8")
+    else:
+        summary = precision.read(directory / "summary.json")
+        summary["aggregate"]["hybrid/all"]["mrr_at_10"] = 0
+        save_json(directory / "summary.json", summary)
+    with pytest.raises(ValueError):
+        precision.compare(*paths, tmp_path / "invalid")
+
+
 @pytest.mark.parametrize("field", ["source_document", "duplicate_group", "pixel_sha256"])
 def test_leakage_across_document_groups_is_rejected(tmp_path, field):
     corpus, path, rows, bundle = corpus_files(tmp_path)
