@@ -1,0 +1,2216 @@
+{
+  "version": 1,
+  "corpus_sha256": "0234ac2c46a2d2a62f073e982392770add291ce642fd08ed43c85e7896b2526c",
+  "judgments_sha256": "1541edf1e9a36d439055fcad6b7e2d81b007cc06778363d04e7c05b3a3d39af1",
+  "baseline_queries_sha256": "11e2aefb2990e0c78b21d64531eb18636248e6fcecf32202d1be82826596e3a0",
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Codex",
+    "date": "2026-10-20",
+    "method": "Visual inspection of all 125 distinct images in five contact sheets; full-resolution checks of added positives and the bank container diagram. Family intents compared with observed content. No model fitted before review.",
+    "independent_human_review": false
+  },
+  "selection": "For every training translation, the first three unjudged same-split candidates within hybrid top 10; union by family and image. No validation/test pairs reviewed or changed.",
+  "scope": "train-only; labels shared across translations of the same family",
+  "policy": "Grades 2=direct match, 0=explicitly different required content; ambiguous or potential partial matches remain null. Existing labels and validation/test inputs are immutable.",
+  "images": [
+    {
+      "path": "screenshots/synthetic/terminal-017.webp",
+      "observation": "French deployment terminal with connection error"
+    },
+    {
+      "path": "diagrams/c4/SystemContext.png",
+      "observation": "Banking system context diagram without the named API components"
+    },
+    {
+      "path": "diagrams/c4/Containers.png",
+      "observation": "Banking container diagram with backend and database but without the named API components"
+    },
+    {
+      "path": "documents/synthetic/receipt-033.tif",
+      "observation": "French receipt headed RECU Quartz"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/b536d3653f-pie_ccw_true.png",
+      "observation": "Exploded pie chart of animals"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/043104bd5d-pie_linewidth_0.png",
+      "observation": "Pie chart of animals"
+    },
+    {
+      "path": "screenshots/Textualize-textual/9144cdf4c4-scatter.png",
+      "observation": "Dark sine-wave scatter terminal plot"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/c784d7c715-hist_stacked_stepfilled_alpha.png",
+      "observation": "Stacked orange and blue histogram"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/64860a2a02-step_linestyle.png",
+      "observation": "Four step-line plots"
+    },
+    {
+      "path": "challenging/multipage/049.tif",
+      "observation": "Pie charts on Cartesian axes"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/2ba6eab4f0-arc_ellipse.png",
+      "observation": "Two tilted ellipses"
+    },
+    {
+      "path": "screenshots/Textualize-rich/e61d79a6ce-markdown.png",
+      "observation": "Markdown code and rendered text terminal"
+    },
+    {
+      "path": "challenging/rgba/047.png",
+      "observation": "Three stacked spectrograms with green horizontal stripes and vertical bright band"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/c73deb55d6-hlines_basic.png",
+      "observation": "Single plot of green horizontal segments"
+    },
+    {
+      "path": "challenging/crop/045.png",
+      "observation": "Cropped tilted ellipses"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/2cae2fc72e-hist_stacked.png",
+      "observation": "Stacked blue and green histogram"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/2bdcc1bf01-markevery_linear_scales.png",
+      "observation": "Grid of blue sine-wave marker examples"
+    },
+    {
+      "path": "documents/synthetic/receipt-025.png",
+      "observation": "French receipt headed RECU Violet"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/6b8dd11e91-loglog.png",
+      "observation": "Blue diagonal line on logarithmic axes"
+    },
+    {
+      "path": "screenshots/synthetic/mobile-005.png",
+      "observation": "French delivery status form"
+    },
+    {
+      "path": "documents/synthetic/receipt-021.jpg",
+      "observation": "French receipt headed RECU Nimbu"
+    },
+    {
+      "path": "documents/tesseract-ocr-test/4027656568-arabic.tif",
+      "observation": "Single Arabic word"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/eee8466d33-violinplot_vert_showall.png",
+      "observation": "Four vertical light-blue violin distributions"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/4a33907311-nonfinite_limits.png",
+      "observation": "Single blue curved line"
+    },
+    {
+      "path": "challenging/rotated-90/044.png",
+      "observation": "Rotated grid of sine-wave marker plots"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/965fea0a26-markevery_linear_scales_nans.png",
+      "observation": "Grid of blue sine-wave marker examples with gaps"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/f3462f625e-pcolor_datetime_axis.png",
+      "observation": "Four datetime-axis heatmaps"
+    },
+    {
+      "path": "photos/COCO_val2014_000000288150.jpg",
+      "observation": "Person standing on a bench outdoors"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/259b11f5a4-specgram_freqs_linear.png",
+      "observation": "Three green-striped spectrograms without the required bright vertical band"
+    },
+    {
+      "path": "documents/pdf-forms/fss4-page1.png",
+      "observation": "IRS Form SS-4 application for employer identification number"
+    },
+    {
+      "path": "challenging/high-resolution/036.png",
+      "observation": "High-resolution IRS Form 1065 U.S. Return of Partnership Income"
+    },
+    {
+      "path": "documents/pdf-forms/f941-page1.png",
+      "observation": "IRS Form 941 employers quarterly federal tax return"
+    },
+    {
+      "path": "documents/pdf-forms/fw9-page1.png",
+      "observation": "IRS Form W-9 request for taxpayer identification number"
+    },
+    {
+      "path": "challenging/noise/033.png",
+      "observation": "Invoice headed INVOICE Acorn"
+    },
+    {
+      "path": "screenshots/synthetic/mobile-007.webp",
+      "observation": "French delivery status form for Summit"
+    },
+    {
+      "path": "documents/synthetic/receipt-022.webp",
+      "observation": "French receipt headed RECEIPT Delta"
+    },
+    {
+      "path": "documents/synthetic/form-040.png",
+      "observation": "Application form headed FORM Orion"
+    },
+    {
+      "path": "documents/synthetic/form-054.bmp",
+      "observation": "Application form headed FORM Aspen"
+    },
+    {
+      "path": "documents/synthetic/form-056.jpg",
+      "observation": "Application form headed FORM Juniper"
+    },
+    {
+      "path": "challenging/crop/035.png",
+      "observation": "Crop of French order and banking text"
+    },
+    {
+      "path": "challenging/palette/038.png",
+      "observation": "French receipt headed RECU Lark"
+    },
+    {
+      "path": "documents/pdf-forms/fw4-page1.png",
+      "observation": "IRS Form W-4 employee withholding certificate"
+    },
+    {
+      "path": "documents/synthetic/receipt-039.bmp",
+      "observation": "French receipt headed RECU Lark"
+    },
+    {
+      "path": "photos/COCO_val2014_000000093985.jpg",
+      "observation": "Person wearing protective gloves and looking upward outdoors"
+    },
+    {
+      "path": "photos/COCO_val2014_000000075884.jpg",
+      "observation": "Black-and-white photograph of a person holding a bat"
+    },
+    {
+      "path": "photos/COCO_val2014_000000121506.jpg",
+      "observation": "Patio umbrella over a wooden picnic table with no ladder or person"
+    },
+    {
+      "path": "photos/COCO_val2014_000000032965.jpg",
+      "observation": "Person holding two umbrellas outdoors without ladder or wooden deck"
+    },
+    {
+      "path": "photos/COCO_val2014_000000265547.jpg",
+      "observation": "Striped beach umbrella"
+    },
+    {
+      "path": "photos/COCO_val2014_000000289417.jpg",
+      "observation": "Person snowboarding without a visible kite"
+    },
+    {
+      "path": "photos/COCO_val2014_000000475396.jpg",
+      "observation": "Person skiing through snow"
+    },
+    {
+      "path": "photos/COCO_val2014_000000399049.jpg",
+      "observation": "Distant person skiing on a snowy mountain slope"
+    },
+    {
+      "path": "photos/COCO_val2014_000000544444.jpg",
+      "observation": "Person skiing near a tree"
+    },
+    {
+      "path": "photos/COCO_val2014_000000435894.jpg",
+      "observation": "Snowboard and kite fabric on snow with no rider"
+    },
+    {
+      "path": "photos/COCO_val2014_000000485773.jpg",
+      "observation": "Union Station illuminated clock tower at night"
+    },
+    {
+      "path": "photos/COCO_val2014_000000320482.jpg",
+      "observation": "Daytime blue bus on a street"
+    },
+    {
+      "path": "photos/COCO_val2014_000000170545.jpg",
+      "observation": "Nighttime intersection with cars"
+    },
+    {
+      "path": "photos/COCO_val2014_000000571584.jpg",
+      "observation": "Daytime blue bus beside buildings"
+    },
+    {
+      "path": "photos/COCO_val2014_000000116295.jpg",
+      "observation": "Nighttime traffic light and construction site"
+    },
+    {
+      "path": "photos/COCO_val2014_000000416170.jpg",
+      "observation": "Weathered window with no flowers"
+    },
+    {
+      "path": "photos/COCO_val2014_000000462802.jpg",
+      "observation": "Red roses in a red vase beside a window"
+    },
+    {
+      "path": "photos/COCO_val2014_000000254237.jpg",
+      "observation": "Flowers in a vase on an outdoor table near a window"
+    },
+    {
+      "path": "photos/COCO_val2014_000000366152.jpg",
+      "observation": "Yellow flowers in a blue glass vase beside a window"
+    },
+    {
+      "path": "photos/COCO_val2014_000000028022.jpg",
+      "observation": "Toilet partly obscured by a wall; seat details unclear"
+    },
+    {
+      "path": "photos/COCO_val2014_000000440299.jpg",
+      "observation": "White toilet with lid raised and visible dark hole below"
+    },
+    {
+      "path": "photos/COCO_val2014_000000120157.jpg",
+      "observation": "White toilet bowl seen from above; raised lid not established"
+    },
+    {
+      "path": "photos/COCO_val2014_000000406201.jpg",
+      "observation": "White bidet-style toilet with lid raised and visible hole below"
+    },
+    {
+      "path": "photos/COCO_val2014_000000131108.jpg",
+      "observation": "Black-and-white street scene"
+    },
+    {
+      "path": "photos/COCO_val2014_000000249550.jpg",
+      "observation": "Bed with floral duvet beside a window"
+    },
+    {
+      "path": "photos/COCO_val2014_000000329080.jpg",
+      "observation": "Two beds with green-gray covers"
+    },
+    {
+      "path": "photos/COCO_val2014_000000052627.jpg",
+      "observation": "Shoes hanging from a chain outdoors"
+    },
+    {
+      "path": "photos/COCO_val2014_000000225715.jpg",
+      "observation": "Bed with red patterned cover beside windows"
+    },
+    {
+      "path": "photos/COCO_val2014_000000357567.jpg",
+      "observation": "Shower curtain and part of a toilet"
+    },
+    {
+      "path": "photos/COCO_val2014_000000142386.jpg",
+      "observation": "People in a kitchen by an open refrigerator"
+    },
+    {
+      "path": "photos/COCO_val2014_000000516750.jpg",
+      "observation": "Kayaks at a beach"
+    },
+    {
+      "path": "photos/COCO_val2014_000000192154.jpg",
+      "observation": "Person carrying bags and a yellow item"
+    },
+    {
+      "path": "photos/COCO_val2014_000000256031.jpg",
+      "observation": "Surfer wearing dark clothing on water"
+    },
+    {
+      "path": "photos/COCO_val2014_000000118740.jpg",
+      "observation": "Distant surfer inside a breaking wave; shirt color unclear"
+    },
+    {
+      "path": "photos/COCO_val2014_000000460997.jpg",
+      "observation": "Surfer in black on a wave"
+    },
+    {
+      "path": "photos/COCO_val2014_000000022304.jpg",
+      "observation": "Surfer in white and black on a wave"
+    },
+    {
+      "path": "photos/COCO_val2014_000000010684.jpg",
+      "observation": "Surfer at a breaking wave; no clear yellow shirt"
+    },
+    {
+      "path": "photos/COCO_val2014_000000248069.jpg",
+      "observation": "Child beside an elephant enclosure"
+    },
+    {
+      "path": "photos/COCO_val2014_000000445041.jpg",
+      "observation": "One helmeted rider on a motorcycle"
+    },
+    {
+      "path": "photos/COCO_val2014_000000133002.jpg",
+      "observation": "Two people on one motorcycle"
+    },
+    {
+      "path": "photos/COCO_val2014_000000045110.jpg",
+      "observation": "One rider and motorcycle beside a truck"
+    },
+    {
+      "path": "photos/COCO_val2014_000000408449.jpg",
+      "observation": "Skateboarder on a city sidewalk"
+    },
+    {
+      "path": "photos/COCO_val2014_000000184324.jpg",
+      "observation": "City street with pedestrians"
+    },
+    {
+      "path": "photos/COCO_val2014_000000434204.jpg",
+      "observation": "People carrying skateboards on a sidewalk"
+    },
+    {
+      "path": "photos/COCO_val2014_000000472795.jpg",
+      "observation": "Brown dog walking past a storefront"
+    },
+    {
+      "path": "photos/COCO_val2014_000000347950.jpg",
+      "observation": "Brown dog carrying a disc on grass"
+    },
+    {
+      "path": "documents/tesseract-ocr-test/600a8d0019-phototest.tif",
+      "observation": "OCR test page of English text"
+    },
+    {
+      "path": "photos/COCO_val2014_000000561116.jpg",
+      "observation": "Brown dog sitting on a couch without the required seated people"
+    },
+    {
+      "path": "documents/tesseract-ocr-test/96b77b778d-eurotext.tif",
+      "observation": "Multilingual OCR test text page"
+    },
+    {
+      "path": "photos/COCO_val2014_000000143769.jpg",
+      "observation": "Horse standing outdoors"
+    },
+    {
+      "path": "screenshots/streamlit-docs/edf6779c3b-radio.jpg",
+      "observation": "Radio-button interface with Cat selected"
+    },
+    {
+      "path": "photos/COCO_val2014_000000330986.jpg",
+      "observation": "Person with skis on snow; bib 32 not visible"
+    },
+    {
+      "path": "photos/COCO_val2014_000000315162.jpg",
+      "observation": "Surfer on water"
+    },
+    {
+      "path": "photos/COCO_val2014_000000258023.jpg",
+      "observation": "Adult and child learning to ski"
+    },
+    {
+      "path": "photos/COCO_val2014_000000045433.jpg",
+      "observation": "Person skiing on snow with poles; bib 32 not visible"
+    },
+    {
+      "path": "photos/COCO_val2014_000000285664.jpg",
+      "observation": "Open oven with oven-settings label"
+    },
+    {
+      "path": "photos/COCO_val2014_000000126110.jpg",
+      "observation": "Person seen through a bus window"
+    },
+    {
+      "path": "photos/COCO_val2014_000000123622.jpg",
+      "observation": "Person reaching into an open refrigerator"
+    },
+    {
+      "path": "photos/COCO_val2014_000000430677.jpg",
+      "observation": "Open refrigerator with a few bottles"
+    },
+    {
+      "path": "photos/COCO_val2014_000000571876.jpg",
+      "observation": "Open refrigerator filled with carrots and packaged food"
+    },
+    {
+      "path": "screenshots/streamlit-docs/fab57db696-menu_button.jpg",
+      "observation": "Export menu with CSV JSON PDF"
+    },
+    {
+      "path": "screenshots/Textualize-rich/30984606b1-inspect.png",
+      "observation": "Rich inspect terminal showing object properties"
+    },
+    {
+      "path": "screenshots/Textualize-rich/71c582e92a-where_there_is_a_will.png",
+      "observation": "Terminal printing a sentence"
+    },
+    {
+      "path": "screenshots/Textualize-textual/121bf3c196-demo.png",
+      "observation": "Dark Textual application with multiple panels"
+    },
+    {
+      "path": "screenshots/Textualize-rich/6f9f8a7602-print.png",
+      "observation": "Python terminal showing colored console output"
+    },
+    {
+      "path": "screenshots/Textualize-rich/c9aeefcdc3-log.png",
+      "observation": "Terminal logging and code example"
+    },
+    {
+      "path": "screenshots/Textualize-rich/beab138e84-features.png",
+      "observation": "Dense Rich features terminal including panels and syntax"
+    },
+    {
+      "path": "challenging/palette/018.png",
+      "observation": "Palette-encoded Rich features terminal"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/64cf5a1c74-hist_step_horiz.png",
+      "observation": "Orange and blue horizontal histogram"
+    },
+    {
+      "path": "challenging/compression/022.jpg",
+      "observation": "Dark terminal plots and colored bars; requested Grid Information headings unclear"
+    },
+    {
+      "path": "screenshots/Textualize-textual/84bd0dbd57-calcinline.png",
+      "observation": "Calculator terminal interface"
+    },
+    {
+      "path": "screenshots/Textualize-textual/bfbc3ddac9-demo3.png",
+      "observation": "Dark terminal plots and colored bars; requested Grid Information headings unclear"
+    },
+    {
+      "path": "screenshots/synthetic/dashboard-013.tif",
+      "observation": "French dashboard with deployment messages"
+    },
+    {
+      "path": "screenshots/synthetic/dashboard-011.jpg",
+      "observation": "French dashboard with deployment messages"
+    },
+    {
+      "path": "screenshots/Textualize-textual/729e40b514-demo4.png",
+      "observation": "Dark terminal with colored geometrical line figures"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/853cdcfbb6-hist2d_transpose.png",
+      "observation": "Heatmap with vertical bright stripe"
+    },
+    {
+      "path": "diagrams/matplotlib-matplotlib/20edbd076d-hist2d.png",
+      "observation": "Two-dimensional histogram heatmap"
+    },
+    {
+      "path": "documents/synthetic/receipt-024.bmp",
+      "observation": "Receipt headed RECEIPT Willow"
+    },
+    {
+      "path": "challenging/compression/032.jpg",
+      "observation": "Compressed receipt headed RECEIPT Delta"
+    },
+    {
+      "path": "documents/synthetic/receipt-028.tif",
+      "observation": "Receipt headed RECEIPT Sierra"
+    },
+    {
+      "path": "screenshots/Textualize-rich/dc2a461f12-traceback.png",
+      "observation": "Python traceback terminal"
+    },
+    {
+      "path": "documents/synthetic/receipt-023.tif",
+      "observation": "Receipt headed RECEIPT Cedar"
+    }
+  ],
+  "pairs": [
+    {
+      "family": "diagrams-00",
+      "image_id": "22ba70f5d47f59c10d6db292e0e0200ae97855cb3a352b261de8108ca69358fe",
+      "path": "screenshots/synthetic/terminal-017.webp",
+      "grade": 0,
+      "observation": "French deployment terminal with connection error",
+      "reason": "French deployment terminal with connection error. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-00",
+      "image_id": "7ad1e8928211e999b08079bcc1c52f4bc3eb86b1616ed21f253d669c996e4eb9",
+      "path": "diagrams/c4/SystemContext.png",
+      "grade": null,
+      "observation": "Banking system context diagram without the named API components",
+      "reason": "Banking system context diagram without the named API components. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "diagrams-00",
+      "image_id": "56ba3243f58eb63b84e7a146520da8c0e49fff66f754e5a880dd15b6df772e68",
+      "path": "diagrams/c4/Containers.png",
+      "grade": null,
+      "observation": "Banking container diagram with backend and database but without the named API components",
+      "reason": "Banking container diagram with backend and database but without the named API components. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "diagrams-00",
+      "image_id": "3a346b1c94caf2a32fef8df7a6de7ed27898ad8d28a3670833486ce555457a3c",
+      "path": "documents/synthetic/receipt-033.tif",
+      "grade": 0,
+      "observation": "French receipt headed RECU Quartz",
+      "reason": "French receipt headed RECU Quartz. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-01",
+      "image_id": "81ba6aeeddf585d1963ad71ba7b9b3f0d6e14981a4c274c3f43b0bad56d58697",
+      "path": "diagrams/matplotlib-matplotlib/b536d3653f-pie_ccw_true.png",
+      "grade": 0,
+      "observation": "Exploded pie chart of animals",
+      "reason": "Exploded pie chart of animals. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-01",
+      "image_id": "78d076c629c2a4fc70b79013cb93ee798ff07ebc5ea14dfe747eec1a280811fb",
+      "path": "diagrams/matplotlib-matplotlib/043104bd5d-pie_linewidth_0.png",
+      "grade": 0,
+      "observation": "Pie chart of animals",
+      "reason": "Pie chart of animals. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-01",
+      "image_id": "6306e0bd43b9a8089e31d6292ea6d666c662fb244919a837ced4522db00b9b4c",
+      "path": "screenshots/Textualize-textual/9144cdf4c4-scatter.png",
+      "grade": 0,
+      "observation": "Dark sine-wave scatter terminal plot",
+      "reason": "Dark sine-wave scatter terminal plot. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-01",
+      "image_id": "411fa4e8cccdfe91fcda72dbc4aca6c60dbd6b8e13cfc45b2acab6b778c08d2a",
+      "path": "diagrams/matplotlib-matplotlib/c784d7c715-hist_stacked_stepfilled_alpha.png",
+      "grade": 0,
+      "observation": "Stacked orange and blue histogram",
+      "reason": "Stacked orange and blue histogram. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-01",
+      "image_id": "43d71de43a58d10db84c4fe13af148522c4fcabfe800ce6eff1991d0ba0fba83",
+      "path": "diagrams/matplotlib-matplotlib/64860a2a02-step_linestyle.png",
+      "grade": 0,
+      "observation": "Four step-line plots",
+      "reason": "Four step-line plots. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-01",
+      "image_id": "9b6ee655026dbc97bb47be611cf0ea3ce6bc2dd2308ebc794aa3248a65cb8768",
+      "path": "challenging/multipage/049.tif",
+      "grade": 0,
+      "observation": "Pie charts on Cartesian axes",
+      "reason": "Pie charts on Cartesian axes. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-01",
+      "image_id": "e4372e687c28562e6416d508a956af98ecd407c810a32f6e5edf7ce12a1fe2d9",
+      "path": "diagrams/matplotlib-matplotlib/2ba6eab4f0-arc_ellipse.png",
+      "grade": 0,
+      "observation": "Two tilted ellipses",
+      "reason": "Two tilted ellipses. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-02",
+      "image_id": "e4372e687c28562e6416d508a956af98ecd407c810a32f6e5edf7ce12a1fe2d9",
+      "path": "diagrams/matplotlib-matplotlib/2ba6eab4f0-arc_ellipse.png",
+      "grade": 0,
+      "observation": "Two tilted ellipses",
+      "reason": "Two tilted ellipses. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-02",
+      "image_id": "4a75de0654a616e080be7300b7895626b8e9f2350785821a16041c74f98b5ab6",
+      "path": "screenshots/Textualize-rich/e61d79a6ce-markdown.png",
+      "grade": 0,
+      "observation": "Markdown code and rendered text terminal",
+      "reason": "Markdown code and rendered text terminal. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-02",
+      "image_id": "54115cb1a271654271f0d49aca55507c75f207686b0748ed6d65ff9b3ff3081f",
+      "path": "challenging/rgba/047.png",
+      "grade": 0,
+      "observation": "Three stacked spectrograms with green horizontal stripes and vertical bright band",
+      "reason": "Three stacked spectrograms with green horizontal stripes and vertical bright band. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-02",
+      "image_id": "a3bb383c15e480dfdf51be608ddc14d1d4a8ac0416d9b653ddf505badd5ba261",
+      "path": "diagrams/matplotlib-matplotlib/c73deb55d6-hlines_basic.png",
+      "grade": 0,
+      "observation": "Single plot of green horizontal segments",
+      "reason": "Single plot of green horizontal segments. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-02",
+      "image_id": "5a204665e2954e673b2d8412b1c02aa32af28356d590e2a7bb1ba2d7474ce02f",
+      "path": "challenging/crop/045.png",
+      "grade": 0,
+      "observation": "Cropped tilted ellipses",
+      "reason": "Cropped tilted ellipses. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-02",
+      "image_id": "b8c257faa1ca20f5cd89476dafb871d875132373695dc9b89e51c0719b81b2a8",
+      "path": "diagrams/matplotlib-matplotlib/2cae2fc72e-hist_stacked.png",
+      "grade": 0,
+      "observation": "Stacked blue and green histogram",
+      "reason": "Stacked blue and green histogram. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-03",
+      "image_id": "e7401c59aab9a1f13dc33fea01e18b997a701a3e43681384ffc1fd060be7f90e",
+      "path": "diagrams/matplotlib-matplotlib/2bdcc1bf01-markevery_linear_scales.png",
+      "grade": 0,
+      "observation": "Grid of blue sine-wave marker examples",
+      "reason": "Grid of blue sine-wave marker examples. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-03",
+      "image_id": "5a5ccd53b131eb6cb87fafda1dc3d86032cf47c9873c802d41d4a46e5ff782ff",
+      "path": "documents/synthetic/receipt-025.png",
+      "grade": 0,
+      "observation": "French receipt headed RECU Violet",
+      "reason": "French receipt headed RECU Violet. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-03",
+      "image_id": "54115cb1a271654271f0d49aca55507c75f207686b0748ed6d65ff9b3ff3081f",
+      "path": "challenging/rgba/047.png",
+      "grade": 0,
+      "observation": "Three stacked spectrograms with green horizontal stripes and vertical bright band",
+      "reason": "Three stacked spectrograms with green horizontal stripes and vertical bright band. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-03",
+      "image_id": "9b25ffa3e64bad11b99485d9af5da5bbb15e8809bdc03ecb3abf8a182fd8a92a",
+      "path": "diagrams/matplotlib-matplotlib/6b8dd11e91-loglog.png",
+      "grade": 0,
+      "observation": "Blue diagonal line on logarithmic axes",
+      "reason": "Blue diagonal line on logarithmic axes. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-03",
+      "image_id": "27d2baea647c1412be30469970c53a58d2da57253f6b1c1a335d1f2129001c73",
+      "path": "screenshots/synthetic/mobile-005.png",
+      "grade": 0,
+      "observation": "French delivery status form",
+      "reason": "French delivery status form. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-03",
+      "image_id": "b8c257faa1ca20f5cd89476dafb871d875132373695dc9b89e51c0719b81b2a8",
+      "path": "diagrams/matplotlib-matplotlib/2cae2fc72e-hist_stacked.png",
+      "grade": 0,
+      "observation": "Stacked blue and green histogram",
+      "reason": "Stacked blue and green histogram. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-04",
+      "image_id": "596e36fe7cc539a1fc9dc52babe754e08ecf4d1695bacb4af616b001f787bc20",
+      "path": "documents/synthetic/receipt-021.jpg",
+      "grade": 0,
+      "observation": "French receipt headed RECU Nimbu",
+      "reason": "French receipt headed RECU Nimbu. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-04",
+      "image_id": "4f8c01596b9793caf43ef5a2c6ad5cd74390a27defecd58d88c905562ccf006c",
+      "path": "documents/tesseract-ocr-test/4027656568-arabic.tif",
+      "grade": 0,
+      "observation": "Single Arabic word",
+      "reason": "Single Arabic word. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-04",
+      "image_id": "c039a48327636f3558268cce116d72e2942a1449875d0f3b0a94ccc643da4061",
+      "path": "diagrams/matplotlib-matplotlib/eee8466d33-violinplot_vert_showall.png",
+      "grade": 0,
+      "observation": "Four vertical light-blue violin distributions",
+      "reason": "Four vertical light-blue violin distributions. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-04",
+      "image_id": "e7401c59aab9a1f13dc33fea01e18b997a701a3e43681384ffc1fd060be7f90e",
+      "path": "diagrams/matplotlib-matplotlib/2bdcc1bf01-markevery_linear_scales.png",
+      "grade": 0,
+      "observation": "Grid of blue sine-wave marker examples",
+      "reason": "Grid of blue sine-wave marker examples. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-04",
+      "image_id": "eadfe8864bad0c0985c106307dced4d69c3b1065e7dcd0783182ddb0e435fbd0",
+      "path": "diagrams/matplotlib-matplotlib/4a33907311-nonfinite_limits.png",
+      "grade": 0,
+      "observation": "Single blue curved line",
+      "reason": "Single blue curved line. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-04",
+      "image_id": "9b25ffa3e64bad11b99485d9af5da5bbb15e8809bdc03ecb3abf8a182fd8a92a",
+      "path": "diagrams/matplotlib-matplotlib/6b8dd11e91-loglog.png",
+      "grade": 0,
+      "observation": "Blue diagonal line on logarithmic axes",
+      "reason": "Blue diagonal line on logarithmic axes. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-04",
+      "image_id": "b8c257faa1ca20f5cd89476dafb871d875132373695dc9b89e51c0719b81b2a8",
+      "path": "diagrams/matplotlib-matplotlib/2cae2fc72e-hist_stacked.png",
+      "grade": 0,
+      "observation": "Stacked blue and green histogram",
+      "reason": "Stacked blue and green histogram. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-05",
+      "image_id": "82c03e5fee3de7e365160fa593245e0d9e3737a583e183e3982768312676a6bc",
+      "path": "challenging/rotated-90/044.png",
+      "grade": 0,
+      "observation": "Rotated grid of sine-wave marker plots",
+      "reason": "Rotated grid of sine-wave marker plots. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-05",
+      "image_id": "9b25ffa3e64bad11b99485d9af5da5bbb15e8809bdc03ecb3abf8a182fd8a92a",
+      "path": "diagrams/matplotlib-matplotlib/6b8dd11e91-loglog.png",
+      "grade": 0,
+      "observation": "Blue diagonal line on logarithmic axes",
+      "reason": "Blue diagonal line on logarithmic axes. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-05",
+      "image_id": "b8c257faa1ca20f5cd89476dafb871d875132373695dc9b89e51c0719b81b2a8",
+      "path": "diagrams/matplotlib-matplotlib/2cae2fc72e-hist_stacked.png",
+      "grade": 0,
+      "observation": "Stacked blue and green histogram",
+      "reason": "Stacked blue and green histogram. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-05",
+      "image_id": "6306e0bd43b9a8089e31d6292ea6d666c662fb244919a837ced4522db00b9b4c",
+      "path": "screenshots/Textualize-textual/9144cdf4c4-scatter.png",
+      "grade": 0,
+      "observation": "Dark sine-wave scatter terminal plot",
+      "reason": "Dark sine-wave scatter terminal plot. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-05",
+      "image_id": "c039a48327636f3558268cce116d72e2942a1449875d0f3b0a94ccc643da4061",
+      "path": "diagrams/matplotlib-matplotlib/eee8466d33-violinplot_vert_showall.png",
+      "grade": null,
+      "observation": "Four vertical light-blue violin distributions",
+      "reason": "Four vertical light-blue violin distributions. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "diagrams-05",
+      "image_id": "27d2baea647c1412be30469970c53a58d2da57253f6b1c1a335d1f2129001c73",
+      "path": "screenshots/synthetic/mobile-005.png",
+      "grade": 0,
+      "observation": "French delivery status form",
+      "reason": "French delivery status form. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-05",
+      "image_id": "eadfe8864bad0c0985c106307dced4d69c3b1065e7dcd0783182ddb0e435fbd0",
+      "path": "diagrams/matplotlib-matplotlib/4a33907311-nonfinite_limits.png",
+      "grade": 0,
+      "observation": "Single blue curved line",
+      "reason": "Single blue curved line. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-06",
+      "image_id": "e7401c59aab9a1f13dc33fea01e18b997a701a3e43681384ffc1fd060be7f90e",
+      "path": "diagrams/matplotlib-matplotlib/2bdcc1bf01-markevery_linear_scales.png",
+      "grade": 0,
+      "observation": "Grid of blue sine-wave marker examples",
+      "reason": "Grid of blue sine-wave marker examples. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-06",
+      "image_id": "9b25ffa3e64bad11b99485d9af5da5bbb15e8809bdc03ecb3abf8a182fd8a92a",
+      "path": "diagrams/matplotlib-matplotlib/6b8dd11e91-loglog.png",
+      "grade": 0,
+      "observation": "Blue diagonal line on logarithmic axes",
+      "reason": "Blue diagonal line on logarithmic axes. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-06",
+      "image_id": "859da8d7236cc6a2281ef263e112aa4f3fb56ef0e5447c15212ab32b0cfd42bb",
+      "path": "diagrams/matplotlib-matplotlib/965fea0a26-markevery_linear_scales_nans.png",
+      "grade": 0,
+      "observation": "Grid of blue sine-wave marker examples with gaps",
+      "reason": "Grid of blue sine-wave marker examples with gaps. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-06",
+      "image_id": "6306e0bd43b9a8089e31d6292ea6d666c662fb244919a837ced4522db00b9b4c",
+      "path": "screenshots/Textualize-textual/9144cdf4c4-scatter.png",
+      "grade": 0,
+      "observation": "Dark sine-wave scatter terminal plot",
+      "reason": "Dark sine-wave scatter terminal plot. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-06",
+      "image_id": "38a74e6be9f24159eb3895fcb62c1a4bed45adfd5c5f4b96aeb80c4b683d7c19",
+      "path": "diagrams/matplotlib-matplotlib/f3462f625e-pcolor_datetime_axis.png",
+      "grade": 0,
+      "observation": "Four datetime-axis heatmaps",
+      "reason": "Four datetime-axis heatmaps. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-06",
+      "image_id": "27d2baea647c1412be30469970c53a58d2da57253f6b1c1a335d1f2129001c73",
+      "path": "screenshots/synthetic/mobile-005.png",
+      "grade": 0,
+      "observation": "French delivery status form",
+      "reason": "French delivery status form. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-06",
+      "image_id": "b8c257faa1ca20f5cd89476dafb871d875132373695dc9b89e51c0719b81b2a8",
+      "path": "diagrams/matplotlib-matplotlib/2cae2fc72e-hist_stacked.png",
+      "grade": 0,
+      "observation": "Stacked blue and green histogram",
+      "reason": "Stacked blue and green histogram. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-07",
+      "image_id": "b8c257faa1ca20f5cd89476dafb871d875132373695dc9b89e51c0719b81b2a8",
+      "path": "diagrams/matplotlib-matplotlib/2cae2fc72e-hist_stacked.png",
+      "grade": 0,
+      "observation": "Stacked blue and green histogram",
+      "reason": "Stacked blue and green histogram. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-07",
+      "image_id": "b82dee2dcb646e45bde73bc7d4a2ae233cb1cfb5cb9e5d2a2404f2500a8326bb",
+      "path": "photos/COCO_val2014_000000288150.jpg",
+      "grade": 0,
+      "observation": "Person standing on a bench outdoors",
+      "reason": "Person standing on a bench outdoors. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "diagrams-07",
+      "image_id": "54115cb1a271654271f0d49aca55507c75f207686b0748ed6d65ff9b3ff3081f",
+      "path": "challenging/rgba/047.png",
+      "grade": 2,
+      "observation": "Three stacked spectrograms with green horizontal stripes and vertical bright band",
+      "reason": "Three stacked spectrograms with green horizontal stripes and vertical bright band. Directly satisfies the frozen intent."
+    },
+    {
+      "family": "diagrams-07",
+      "image_id": "dab03ac6eca558ac8a199e14e27e83e79690346cd8f0a3c7b45115669b7ccb1f",
+      "path": "diagrams/matplotlib-matplotlib/259b11f5a4-specgram_freqs_linear.png",
+      "grade": null,
+      "observation": "Three green-striped spectrograms without the required bright vertical band",
+      "reason": "Three green-striped spectrograms without the required bright vertical band. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "diagrams-07",
+      "image_id": "a3bb383c15e480dfdf51be608ddc14d1d4a8ac0416d9b653ddf505badd5ba261",
+      "path": "diagrams/matplotlib-matplotlib/c73deb55d6-hlines_basic.png",
+      "grade": 0,
+      "observation": "Single plot of green horizontal segments",
+      "reason": "Single plot of green horizontal segments. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-00",
+      "image_id": "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+      "path": "documents/pdf-forms/fss4-page1.png",
+      "grade": 0,
+      "observation": "IRS Form SS-4 application for employer identification number",
+      "reason": "IRS Form SS-4 application for employer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-00",
+      "image_id": "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+      "path": "challenging/high-resolution/036.png",
+      "grade": 0,
+      "observation": "High-resolution IRS Form 1065 U.S. Return of Partnership Income",
+      "reason": "High-resolution IRS Form 1065 U.S. Return of Partnership Income. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-00",
+      "image_id": "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+      "path": "documents/pdf-forms/f941-page1.png",
+      "grade": 0,
+      "observation": "IRS Form 941 employers quarterly federal tax return",
+      "reason": "IRS Form 941 employers quarterly federal tax return. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-00",
+      "image_id": "0270d8d168b7c8154b89067e8240ac71a93f0d5815fe23d0731855f3487630d6",
+      "path": "documents/pdf-forms/fw9-page1.png",
+      "grade": 0,
+      "observation": "IRS Form W-9 request for taxpayer identification number",
+      "reason": "IRS Form W-9 request for taxpayer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-01",
+      "image_id": "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+      "path": "challenging/high-resolution/036.png",
+      "grade": 2,
+      "observation": "High-resolution IRS Form 1065 U.S. Return of Partnership Income",
+      "reason": "High-resolution IRS Form 1065 U.S. Return of Partnership Income. Directly satisfies the frozen intent."
+    },
+    {
+      "family": "documents-01",
+      "image_id": "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+      "path": "documents/pdf-forms/f941-page1.png",
+      "grade": 0,
+      "observation": "IRS Form 941 employers quarterly federal tax return",
+      "reason": "IRS Form 941 employers quarterly federal tax return. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-01",
+      "image_id": "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+      "path": "documents/pdf-forms/fss4-page1.png",
+      "grade": 0,
+      "observation": "IRS Form SS-4 application for employer identification number",
+      "reason": "IRS Form SS-4 application for employer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-02",
+      "image_id": "68a6c742d6f993d88747d2482483997877be2d4ab4dd8f054cacd5c6ca089cdd",
+      "path": "challenging/noise/033.png",
+      "grade": 0,
+      "observation": "Invoice headed INVOICE Acorn",
+      "reason": "Invoice headed INVOICE Acorn. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-02",
+      "image_id": "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+      "path": "documents/pdf-forms/f941-page1.png",
+      "grade": 0,
+      "observation": "IRS Form 941 employers quarterly federal tax return",
+      "reason": "IRS Form 941 employers quarterly federal tax return. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-02",
+      "image_id": "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+      "path": "challenging/high-resolution/036.png",
+      "grade": 0,
+      "observation": "High-resolution IRS Form 1065 U.S. Return of Partnership Income",
+      "reason": "High-resolution IRS Form 1065 U.S. Return of Partnership Income. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-02",
+      "image_id": "0270d8d168b7c8154b89067e8240ac71a93f0d5815fe23d0731855f3487630d6",
+      "path": "documents/pdf-forms/fw9-page1.png",
+      "grade": 0,
+      "observation": "IRS Form W-9 request for taxpayer identification number",
+      "reason": "IRS Form W-9 request for taxpayer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-03",
+      "image_id": "27d2baea647c1412be30469970c53a58d2da57253f6b1c1a335d1f2129001c73",
+      "path": "screenshots/synthetic/mobile-005.png",
+      "grade": 0,
+      "observation": "French delivery status form",
+      "reason": "French delivery status form. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-03",
+      "image_id": "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+      "path": "documents/pdf-forms/f941-page1.png",
+      "grade": 0,
+      "observation": "IRS Form 941 employers quarterly federal tax return",
+      "reason": "IRS Form 941 employers quarterly federal tax return. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-03",
+      "image_id": "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+      "path": "challenging/high-resolution/036.png",
+      "grade": 0,
+      "observation": "High-resolution IRS Form 1065 U.S. Return of Partnership Income",
+      "reason": "High-resolution IRS Form 1065 U.S. Return of Partnership Income. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-03",
+      "image_id": "2506ea4bc8590fb963284dbce097fd3e1c25d72b949b92cd5253c2fa10dd453c",
+      "path": "screenshots/synthetic/mobile-007.webp",
+      "grade": 0,
+      "observation": "French delivery status form for Summit",
+      "reason": "French delivery status form for Summit. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-04",
+      "image_id": "0270d8d168b7c8154b89067e8240ac71a93f0d5815fe23d0731855f3487630d6",
+      "path": "documents/pdf-forms/fw9-page1.png",
+      "grade": 0,
+      "observation": "IRS Form W-9 request for taxpayer identification number",
+      "reason": "IRS Form W-9 request for taxpayer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-04",
+      "image_id": "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+      "path": "challenging/high-resolution/036.png",
+      "grade": 0,
+      "observation": "High-resolution IRS Form 1065 U.S. Return of Partnership Income",
+      "reason": "High-resolution IRS Form 1065 U.S. Return of Partnership Income. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-04",
+      "image_id": "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+      "path": "documents/pdf-forms/f941-page1.png",
+      "grade": 0,
+      "observation": "IRS Form 941 employers quarterly federal tax return",
+      "reason": "IRS Form 941 employers quarterly federal tax return. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-04",
+      "image_id": "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+      "path": "documents/pdf-forms/fss4-page1.png",
+      "grade": 0,
+      "observation": "IRS Form SS-4 application for employer identification number",
+      "reason": "IRS Form SS-4 application for employer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-05",
+      "image_id": "9ca829ffc7a119cfbf134ad999fe1984d4a322530e48cb33b79c7996053cc4ba",
+      "path": "documents/synthetic/receipt-022.webp",
+      "grade": 0,
+      "observation": "French receipt headed RECEIPT Delta",
+      "reason": "French receipt headed RECEIPT Delta. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-05",
+      "image_id": "68a6c742d6f993d88747d2482483997877be2d4ab4dd8f054cacd5c6ca089cdd",
+      "path": "challenging/noise/033.png",
+      "grade": 0,
+      "observation": "Invoice headed INVOICE Acorn",
+      "reason": "Invoice headed INVOICE Acorn. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-05",
+      "image_id": "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+      "path": "documents/pdf-forms/f941-page1.png",
+      "grade": 0,
+      "observation": "IRS Form 941 employers quarterly federal tax return",
+      "reason": "IRS Form 941 employers quarterly federal tax return. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-05",
+      "image_id": "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+      "path": "documents/pdf-forms/fss4-page1.png",
+      "grade": 0,
+      "observation": "IRS Form SS-4 application for employer identification number",
+      "reason": "IRS Form SS-4 application for employer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-05",
+      "image_id": "0270d8d168b7c8154b89067e8240ac71a93f0d5815fe23d0731855f3487630d6",
+      "path": "documents/pdf-forms/fw9-page1.png",
+      "grade": 0,
+      "observation": "IRS Form W-9 request for taxpayer identification number",
+      "reason": "IRS Form W-9 request for taxpayer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-05",
+      "image_id": "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+      "path": "challenging/high-resolution/036.png",
+      "grade": 0,
+      "observation": "High-resolution IRS Form 1065 U.S. Return of Partnership Income",
+      "reason": "High-resolution IRS Form 1065 U.S. Return of Partnership Income. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-06",
+      "image_id": "68a6c742d6f993d88747d2482483997877be2d4ab4dd8f054cacd5c6ca089cdd",
+      "path": "challenging/noise/033.png",
+      "grade": 0,
+      "observation": "Invoice headed INVOICE Acorn",
+      "reason": "Invoice headed INVOICE Acorn. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-06",
+      "image_id": "c22e4d8ea15e12bf04442ee85e65e8a2b6ea5934d37182e62e6b85982663fc9b",
+      "path": "documents/synthetic/form-040.png",
+      "grade": 0,
+      "observation": "Application form headed FORM Orion",
+      "reason": "Application form headed FORM Orion. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-06",
+      "image_id": "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+      "path": "documents/pdf-forms/fss4-page1.png",
+      "grade": 0,
+      "observation": "IRS Form SS-4 application for employer identification number",
+      "reason": "IRS Form SS-4 application for employer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-06",
+      "image_id": "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+      "path": "documents/pdf-forms/f941-page1.png",
+      "grade": 0,
+      "observation": "IRS Form 941 employers quarterly federal tax return",
+      "reason": "IRS Form 941 employers quarterly federal tax return. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-06",
+      "image_id": "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+      "path": "challenging/high-resolution/036.png",
+      "grade": 0,
+      "observation": "High-resolution IRS Form 1065 U.S. Return of Partnership Income",
+      "reason": "High-resolution IRS Form 1065 U.S. Return of Partnership Income. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-06",
+      "image_id": "65675ef616092e58176bcd149486f1d55adf6bfd058d371dd30c7599be03d9ec",
+      "path": "documents/synthetic/form-054.bmp",
+      "grade": 0,
+      "observation": "Application form headed FORM Aspen",
+      "reason": "Application form headed FORM Aspen. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-07",
+      "image_id": "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+      "path": "challenging/high-resolution/036.png",
+      "grade": 0,
+      "observation": "High-resolution IRS Form 1065 U.S. Return of Partnership Income",
+      "reason": "High-resolution IRS Form 1065 U.S. Return of Partnership Income. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-07",
+      "image_id": "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+      "path": "documents/pdf-forms/fss4-page1.png",
+      "grade": 0,
+      "observation": "IRS Form SS-4 application for employer identification number",
+      "reason": "IRS Form SS-4 application for employer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-07",
+      "image_id": "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+      "path": "documents/pdf-forms/f941-page1.png",
+      "grade": 0,
+      "observation": "IRS Form 941 employers quarterly federal tax return",
+      "reason": "IRS Form 941 employers quarterly federal tax return. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-08",
+      "image_id": "93ae683e2a848b5cdf8e95894db8c626500031a32b62bd2f1a61753216055243",
+      "path": "documents/synthetic/form-056.jpg",
+      "grade": 0,
+      "observation": "Application form headed FORM Juniper",
+      "reason": "Application form headed FORM Juniper. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-08",
+      "image_id": "68a6c742d6f993d88747d2482483997877be2d4ab4dd8f054cacd5c6ca089cdd",
+      "path": "challenging/noise/033.png",
+      "grade": 0,
+      "observation": "Invoice headed INVOICE Acorn",
+      "reason": "Invoice headed INVOICE Acorn. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-08",
+      "image_id": "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+      "path": "challenging/high-resolution/036.png",
+      "grade": 0,
+      "observation": "High-resolution IRS Form 1065 U.S. Return of Partnership Income",
+      "reason": "High-resolution IRS Form 1065 U.S. Return of Partnership Income. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-08",
+      "image_id": "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+      "path": "documents/pdf-forms/f941-page1.png",
+      "grade": 0,
+      "observation": "IRS Form 941 employers quarterly federal tax return",
+      "reason": "IRS Form 941 employers quarterly federal tax return. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-08",
+      "image_id": "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+      "path": "documents/pdf-forms/fss4-page1.png",
+      "grade": 0,
+      "observation": "IRS Form SS-4 application for employer identification number",
+      "reason": "IRS Form SS-4 application for employer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-08",
+      "image_id": "b5482c00c8ca32af56d37ce284ca6d98f1b37d16a1c6b0c40f1fb756b3e76a1b",
+      "path": "challenging/crop/035.png",
+      "grade": 0,
+      "observation": "Crop of French order and banking text",
+      "reason": "Crop of French order and banking text. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-08",
+      "image_id": "2506ea4bc8590fb963284dbce097fd3e1c25d72b949b92cd5253c2fa10dd453c",
+      "path": "screenshots/synthetic/mobile-007.webp",
+      "grade": 0,
+      "observation": "French delivery status form for Summit",
+      "reason": "French delivery status form for Summit. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-08",
+      "image_id": "115d04c307fb94976b45ed4406692c6bcac7bf35c7545ce38e29a04140a33309",
+      "path": "challenging/palette/038.png",
+      "grade": 0,
+      "observation": "French receipt headed RECU Lark",
+      "reason": "French receipt headed RECU Lark. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-09",
+      "image_id": "68a6c742d6f993d88747d2482483997877be2d4ab4dd8f054cacd5c6ca089cdd",
+      "path": "challenging/noise/033.png",
+      "grade": 0,
+      "observation": "Invoice headed INVOICE Acorn",
+      "reason": "Invoice headed INVOICE Acorn. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-09",
+      "image_id": "9ca829ffc7a119cfbf134ad999fe1984d4a322530e48cb33b79c7996053cc4ba",
+      "path": "documents/synthetic/receipt-022.webp",
+      "grade": 0,
+      "observation": "French receipt headed RECEIPT Delta",
+      "reason": "French receipt headed RECEIPT Delta. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-09",
+      "image_id": "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+      "path": "documents/pdf-forms/f941-page1.png",
+      "grade": 0,
+      "observation": "IRS Form 941 employers quarterly federal tax return",
+      "reason": "IRS Form 941 employers quarterly federal tax return. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-09",
+      "image_id": "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+      "path": "challenging/high-resolution/036.png",
+      "grade": 0,
+      "observation": "High-resolution IRS Form 1065 U.S. Return of Partnership Income",
+      "reason": "High-resolution IRS Form 1065 U.S. Return of Partnership Income. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-09",
+      "image_id": "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+      "path": "documents/pdf-forms/fss4-page1.png",
+      "grade": 0,
+      "observation": "IRS Form SS-4 application for employer identification number",
+      "reason": "IRS Form SS-4 application for employer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-10",
+      "image_id": "757130bcd5a57feedfc5658d82f9101b5e30954e0ce7fdcd7be24f5a72072b7c",
+      "path": "documents/pdf-forms/fw4-page1.png",
+      "grade": 0,
+      "observation": "IRS Form W-4 employee withholding certificate",
+      "reason": "IRS Form W-4 employee withholding certificate. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-10",
+      "image_id": "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+      "path": "documents/pdf-forms/fss4-page1.png",
+      "grade": 0,
+      "observation": "IRS Form SS-4 application for employer identification number",
+      "reason": "IRS Form SS-4 application for employer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-10",
+      "image_id": "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+      "path": "challenging/high-resolution/036.png",
+      "grade": 0,
+      "observation": "High-resolution IRS Form 1065 U.S. Return of Partnership Income",
+      "reason": "High-resolution IRS Form 1065 U.S. Return of Partnership Income. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-10",
+      "image_id": "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+      "path": "documents/pdf-forms/f941-page1.png",
+      "grade": 0,
+      "observation": "IRS Form 941 employers quarterly federal tax return",
+      "reason": "IRS Form 941 employers quarterly federal tax return. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-11",
+      "image_id": "68a6c742d6f993d88747d2482483997877be2d4ab4dd8f054cacd5c6ca089cdd",
+      "path": "challenging/noise/033.png",
+      "grade": 0,
+      "observation": "Invoice headed INVOICE Acorn",
+      "reason": "Invoice headed INVOICE Acorn. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-11",
+      "image_id": "93ae683e2a848b5cdf8e95894db8c626500031a32b62bd2f1a61753216055243",
+      "path": "documents/synthetic/form-056.jpg",
+      "grade": 0,
+      "observation": "Application form headed FORM Juniper",
+      "reason": "Application form headed FORM Juniper. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-11",
+      "image_id": "9ca829ffc7a119cfbf134ad999fe1984d4a322530e48cb33b79c7996053cc4ba",
+      "path": "documents/synthetic/receipt-022.webp",
+      "grade": 0,
+      "observation": "French receipt headed RECEIPT Delta",
+      "reason": "French receipt headed RECEIPT Delta. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-11",
+      "image_id": "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+      "path": "challenging/high-resolution/036.png",
+      "grade": 0,
+      "observation": "High-resolution IRS Form 1065 U.S. Return of Partnership Income",
+      "reason": "High-resolution IRS Form 1065 U.S. Return of Partnership Income. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-11",
+      "image_id": "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+      "path": "documents/pdf-forms/fss4-page1.png",
+      "grade": 0,
+      "observation": "IRS Form SS-4 application for employer identification number",
+      "reason": "IRS Form SS-4 application for employer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-11",
+      "image_id": "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+      "path": "documents/pdf-forms/f941-page1.png",
+      "grade": 0,
+      "observation": "IRS Form 941 employers quarterly federal tax return",
+      "reason": "IRS Form 941 employers quarterly federal tax return. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-11",
+      "image_id": "2506ea4bc8590fb963284dbce097fd3e1c25d72b949b92cd5253c2fa10dd453c",
+      "path": "screenshots/synthetic/mobile-007.webp",
+      "grade": 0,
+      "observation": "French delivery status form for Summit",
+      "reason": "French delivery status form for Summit. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "documents-11",
+      "image_id": "35b11344a5e98a494a9f9178638f6d98b0ba597151abf724cb2a17e0214e8ea5",
+      "path": "documents/synthetic/receipt-039.bmp",
+      "grade": 0,
+      "observation": "French receipt headed RECU Lark",
+      "reason": "French receipt headed RECU Lark. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "fresh-00",
+      "image_id": "75771ae542bc576243695a977b0fa71a4fd807514ffd6f11a3c6584c76bab252",
+      "path": "photos/COCO_val2014_000000093985.jpg",
+      "grade": 0,
+      "observation": "Person wearing protective gloves and looking upward outdoors",
+      "reason": "Person wearing protective gloves and looking upward outdoors. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "fresh-00",
+      "image_id": "97d089a60f61bc5e5beb50058745e212578dbc5bbd7ce8dba4e08ee88cf9a2ba",
+      "path": "photos/COCO_val2014_000000075884.jpg",
+      "grade": 0,
+      "observation": "Black-and-white photograph of a person holding a bat",
+      "reason": "Black-and-white photograph of a person holding a bat. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "fresh-00",
+      "image_id": "0270d8d168b7c8154b89067e8240ac71a93f0d5815fe23d0731855f3487630d6",
+      "path": "documents/pdf-forms/fw9-page1.png",
+      "grade": 0,
+      "observation": "IRS Form W-9 request for taxpayer identification number",
+      "reason": "IRS Form W-9 request for taxpayer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "fresh-00",
+      "image_id": "c343589eeba3701c2e6bc2b7f7f6c65eaaf9b2d998fd0402b90d82bdc69a0325",
+      "path": "photos/COCO_val2014_000000121506.jpg",
+      "grade": null,
+      "observation": "Patio umbrella over a wooden picnic table with no ladder or person",
+      "reason": "Patio umbrella over a wooden picnic table with no ladder or person. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "fresh-00",
+      "image_id": "a60d50e9e8ee3a4c467363a4c6091628f029588c8d4a554fb53113ffaae60f37",
+      "path": "photos/COCO_val2014_000000032965.jpg",
+      "grade": null,
+      "observation": "Person holding two umbrellas outdoors without ladder or wooden deck",
+      "reason": "Person holding two umbrellas outdoors without ladder or wooden deck. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "fresh-00",
+      "image_id": "463bf604c0d4f7e908b36b85ba417886832715b779193ada7f2b1f6c8b2bbe90",
+      "path": "photos/COCO_val2014_000000265547.jpg",
+      "grade": 0,
+      "observation": "Striped beach umbrella",
+      "reason": "Striped beach umbrella. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "fresh-01",
+      "image_id": "a098e0cfd6702bf227c3b5d9e98d4321bc803c3cf8ffab4d867e86c9b5d7e13d",
+      "path": "photos/COCO_val2014_000000289417.jpg",
+      "grade": null,
+      "observation": "Person snowboarding without a visible kite",
+      "reason": "Person snowboarding without a visible kite. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "fresh-01",
+      "image_id": "9a6d6d704440fb12534a0268c9af5dabb7f7d87f50e19207458d4d88c47ad3eb",
+      "path": "photos/COCO_val2014_000000475396.jpg",
+      "grade": null,
+      "observation": "Person skiing through snow",
+      "reason": "Person skiing through snow. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "fresh-01",
+      "image_id": "22b375a631bbc8ec4c2ba97fcc1a649ed9317398bf443925991e1a02f972f085",
+      "path": "photos/COCO_val2014_000000399049.jpg",
+      "grade": null,
+      "observation": "Distant person skiing on a snowy mountain slope",
+      "reason": "Distant person skiing on a snowy mountain slope. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "fresh-01",
+      "image_id": "e208eb88ca5bb9a93ee044f18e775949281ec207153e1acf5f9a5abba705eaf8",
+      "path": "photos/COCO_val2014_000000544444.jpg",
+      "grade": null,
+      "observation": "Person skiing near a tree",
+      "reason": "Person skiing near a tree. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "fresh-01",
+      "image_id": "b15451aa98cb6caec64fe6119b4b2c9066ef32e7490620a1b40b72421e08a580",
+      "path": "photos/COCO_val2014_000000435894.jpg",
+      "grade": null,
+      "observation": "Snowboard and kite fabric on snow with no rider",
+      "reason": "Snowboard and kite fabric on snow with no rider. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "fresh-02",
+      "image_id": "f9a580b7f9a633bf1f372edb1602b24f9c39c157dbd09be68bcc5eae6ce8311e",
+      "path": "photos/COCO_val2014_000000485773.jpg",
+      "grade": 0,
+      "observation": "Union Station illuminated clock tower at night",
+      "reason": "Union Station illuminated clock tower at night. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "fresh-02",
+      "image_id": "27d2baea647c1412be30469970c53a58d2da57253f6b1c1a335d1f2129001c73",
+      "path": "screenshots/synthetic/mobile-005.png",
+      "grade": 0,
+      "observation": "French delivery status form",
+      "reason": "French delivery status form. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "fresh-02",
+      "image_id": "cdaf252fe1ad5bb3150edadf94909eb7146bab1bcb4e4208e9dfa55ad0a041f2",
+      "path": "photos/COCO_val2014_000000320482.jpg",
+      "grade": null,
+      "observation": "Daytime blue bus on a street",
+      "reason": "Daytime blue bus on a street. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "fresh-02",
+      "image_id": "2ebd83983d8d2c97bbb5d4c08f998384b810c81680e99cb410201218eecb7493",
+      "path": "photos/COCO_val2014_000000170545.jpg",
+      "grade": 0,
+      "observation": "Nighttime intersection with cars",
+      "reason": "Nighttime intersection with cars. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "fresh-02",
+      "image_id": "b7b17262935a9d4fcc5b0f609d931532eb059aa957b9badc48681516b7d20a66",
+      "path": "photos/COCO_val2014_000000571584.jpg",
+      "grade": null,
+      "observation": "Daytime blue bus beside buildings",
+      "reason": "Daytime blue bus beside buildings. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "fresh-02",
+      "image_id": "ef2f0587ff19c1e3e225d6b601a90259e6f78584208d0b86a449854d11f734d4",
+      "path": "photos/COCO_val2014_000000116295.jpg",
+      "grade": 0,
+      "observation": "Nighttime traffic light and construction site",
+      "reason": "Nighttime traffic light and construction site. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "fresh-03",
+      "image_id": "a10cd4ca3fe91c84be1a6dee21ffc4c2df620effa4a5662195060163d79321e6",
+      "path": "photos/COCO_val2014_000000416170.jpg",
+      "grade": 0,
+      "observation": "Weathered window with no flowers",
+      "reason": "Weathered window with no flowers. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "fresh-03",
+      "image_id": "d19fd4e89298a5fab12905ba16fed6a121c3a77aba13d513b8b1f8244d874743",
+      "path": "photos/COCO_val2014_000000462802.jpg",
+      "grade": null,
+      "observation": "Red roses in a red vase beside a window",
+      "reason": "Red roses in a red vase beside a window. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "fresh-03",
+      "image_id": "a1670b9f91522c2c61793a6897898300cafeee7f156529c52c6b0bf4b56dff87",
+      "path": "photos/COCO_val2014_000000254237.jpg",
+      "grade": null,
+      "observation": "Flowers in a vase on an outdoor table near a window",
+      "reason": "Flowers in a vase on an outdoor table near a window. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "fresh-03",
+      "image_id": "38ec1fd96f8ff148578275ac3623d1937e5c124ef8410a22489796473f1673d7",
+      "path": "photos/COCO_val2014_000000366152.jpg",
+      "grade": null,
+      "observation": "Yellow flowers in a blue glass vase beside a window",
+      "reason": "Yellow flowers in a blue glass vase beside a window. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-00",
+      "image_id": "197dc3dc5355b0980e2717635631e3289f732afc30fd7c79987e844984b70000",
+      "path": "photos/COCO_val2014_000000028022.jpg",
+      "grade": null,
+      "observation": "Toilet partly obscured by a wall; seat details unclear",
+      "reason": "Toilet partly obscured by a wall; seat details unclear. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-00",
+      "image_id": "55e1a22e9f1a1cee4bdf3c8bbab6caa61377a5aeb6c4b60ed69151804e8ff81a",
+      "path": "photos/COCO_val2014_000000440299.jpg",
+      "grade": 2,
+      "observation": "White toilet with lid raised and visible dark hole below",
+      "reason": "White toilet with lid raised and visible dark hole below. Directly satisfies the frozen intent."
+    },
+    {
+      "family": "photos-00",
+      "image_id": "91ea6da9707b248b2f6cd3d2487febc97d146ae76f9810797b84e46a389e4c3d",
+      "path": "photos/COCO_val2014_000000120157.jpg",
+      "grade": null,
+      "observation": "White toilet bowl seen from above; raised lid not established",
+      "reason": "White toilet bowl seen from above; raised lid not established. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-00",
+      "image_id": "766f712fe8e30f82b75ce87090b6b38b7472fe0e9680d7fe6779d7a7890717e1",
+      "path": "photos/COCO_val2014_000000406201.jpg",
+      "grade": 2,
+      "observation": "White bidet-style toilet with lid raised and visible hole below",
+      "reason": "White bidet-style toilet with lid raised and visible hole below. Directly satisfies the frozen intent."
+    },
+    {
+      "family": "photos-02",
+      "image_id": "e7401c59aab9a1f13dc33fea01e18b997a701a3e43681384ffc1fd060be7f90e",
+      "path": "diagrams/matplotlib-matplotlib/2bdcc1bf01-markevery_linear_scales.png",
+      "grade": 0,
+      "observation": "Grid of blue sine-wave marker examples",
+      "reason": "Grid of blue sine-wave marker examples. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-02",
+      "image_id": "01711de146c24be35b64610144abfc37be2ac8c38b09d29b2d04225cbe361daf",
+      "path": "photos/COCO_val2014_000000131108.jpg",
+      "grade": 0,
+      "observation": "Black-and-white street scene",
+      "reason": "Black-and-white street scene. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-02",
+      "image_id": "6a90e01daf6db959c532186281e4f75775ed72f0b5e511bbd69b7bee9b5e7784",
+      "path": "photos/COCO_val2014_000000249550.jpg",
+      "grade": null,
+      "observation": "Bed with floral duvet beside a window",
+      "reason": "Bed with floral duvet beside a window. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-02",
+      "image_id": "52eabab8da99db60a5f3e356ba6a1b7a418ede74e873aeb180586925590e27e6",
+      "path": "photos/COCO_val2014_000000329080.jpg",
+      "grade": null,
+      "observation": "Two beds with green-gray covers",
+      "reason": "Two beds with green-gray covers. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-02",
+      "image_id": "85a798e8c07a6116a755c1dd68ac4b1b8e1e0ae026941008d951a16cc891df1f",
+      "path": "photos/COCO_val2014_000000052627.jpg",
+      "grade": 0,
+      "observation": "Shoes hanging from a chain outdoors",
+      "reason": "Shoes hanging from a chain outdoors. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-02",
+      "image_id": "4114b4718ab34db0c48969522287ba998a86bb33333aa8e73fac9102d7361276",
+      "path": "photos/COCO_val2014_000000225715.jpg",
+      "grade": null,
+      "observation": "Bed with red patterned cover beside windows",
+      "reason": "Bed with red patterned cover beside windows. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-02",
+      "image_id": "a3ef4377e4e197497a39d30eeeca7ae759b96003f5546c23aec913f7ab251557",
+      "path": "photos/COCO_val2014_000000357567.jpg",
+      "grade": 0,
+      "observation": "Shower curtain and part of a toilet",
+      "reason": "Shower curtain and part of a toilet. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-04",
+      "image_id": "2a3cdac029e51c7124075d9c561c22771637fb040c8e5482950df6e2b82b52ae",
+      "path": "photos/COCO_val2014_000000142386.jpg",
+      "grade": 0,
+      "observation": "People in a kitchen by an open refrigerator",
+      "reason": "People in a kitchen by an open refrigerator. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-04",
+      "image_id": "74b977a708863d22b33fe68c561b5adc94f872f7377de4af71790a2e68d74f57",
+      "path": "photos/COCO_val2014_000000516750.jpg",
+      "grade": 0,
+      "observation": "Kayaks at a beach",
+      "reason": "Kayaks at a beach. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-04",
+      "image_id": "e1e85db2740030cdd697e19c986be90eebfbe4bedeb6a0bc34839428749177dc",
+      "path": "photos/COCO_val2014_000000192154.jpg",
+      "grade": 0,
+      "observation": "Person carrying bags and a yellow item",
+      "reason": "Person carrying bags and a yellow item. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-04",
+      "image_id": "0ac9b4e393a8e7494293c7c5e15754b84cda5c16bdff004fcaa93837dac80e5d",
+      "path": "photos/COCO_val2014_000000256031.jpg",
+      "grade": null,
+      "observation": "Surfer wearing dark clothing on water",
+      "reason": "Surfer wearing dark clothing on water. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-04",
+      "image_id": "206c26c3e3eb2756371e39da28b4f3eb91aa7f53c053580e0fa88cefeacf36c1",
+      "path": "photos/COCO_val2014_000000118740.jpg",
+      "grade": null,
+      "observation": "Distant surfer inside a breaking wave; shirt color unclear",
+      "reason": "Distant surfer inside a breaking wave; shirt color unclear. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-04",
+      "image_id": "43381d9a062b8197370859c517f11b1be3d2c170c5cd94a68abc763e0f481967",
+      "path": "photos/COCO_val2014_000000460997.jpg",
+      "grade": null,
+      "observation": "Surfer in black on a wave",
+      "reason": "Surfer in black on a wave. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-04",
+      "image_id": "2d8030b1987f308c4e99c00d6316e71ea08f52751ad4bf501a10f9e9ab8978e9",
+      "path": "photos/COCO_val2014_000000022304.jpg",
+      "grade": null,
+      "observation": "Surfer in white and black on a wave",
+      "reason": "Surfer in white and black on a wave. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-04",
+      "image_id": "ab086256f13a3ae3b5de0308289bc88e72a3825a625e3e780fc652c0609d7d77",
+      "path": "photos/COCO_val2014_000000010684.jpg",
+      "grade": null,
+      "observation": "Surfer at a breaking wave; no clear yellow shirt",
+      "reason": "Surfer at a breaking wave; no clear yellow shirt. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-05",
+      "image_id": "900e7a154d7fa850ea9b8e1b5f197b8ee6ae7083e8550aeecbb3c73245a83485",
+      "path": "photos/COCO_val2014_000000248069.jpg",
+      "grade": 0,
+      "observation": "Child beside an elephant enclosure",
+      "reason": "Child beside an elephant enclosure. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-05",
+      "image_id": "97d089a60f61bc5e5beb50058745e212578dbc5bbd7ce8dba4e08ee88cf9a2ba",
+      "path": "photos/COCO_val2014_000000075884.jpg",
+      "grade": 0,
+      "observation": "Black-and-white photograph of a person holding a bat",
+      "reason": "Black-and-white photograph of a person holding a bat. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-05",
+      "image_id": "43d71de43a58d10db84c4fe13af148522c4fcabfe800ce6eff1991d0ba0fba83",
+      "path": "diagrams/matplotlib-matplotlib/64860a2a02-step_linestyle.png",
+      "grade": 0,
+      "observation": "Four step-line plots",
+      "reason": "Four step-line plots. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-05",
+      "image_id": "bfd2fc68c3f298896a58972bb19e71f09b3bf9ccdf8c98f6743c2d79118fd2c4",
+      "path": "photos/COCO_val2014_000000445041.jpg",
+      "grade": null,
+      "observation": "One helmeted rider on a motorcycle",
+      "reason": "One helmeted rider on a motorcycle. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-05",
+      "image_id": "2faaf88a46ebc6fd016fe60fabc0e9b05da83d44165c44ec63e9c82730dc69e9",
+      "path": "photos/COCO_val2014_000000133002.jpg",
+      "grade": null,
+      "observation": "Two people on one motorcycle",
+      "reason": "Two people on one motorcycle. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-05",
+      "image_id": "12366d9ea32de5f1a64e7c67b0683a8f905e2a7642e578a0cb6c132d06cd997b",
+      "path": "photos/COCO_val2014_000000045110.jpg",
+      "grade": null,
+      "observation": "One rider and motorcycle beside a truck",
+      "reason": "One rider and motorcycle beside a truck. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-05",
+      "image_id": "00899ada7e22b9cb1a197e854c584a51ae97d0cf84365429aeadf0019aefbec1",
+      "path": "photos/COCO_val2014_000000408449.jpg",
+      "grade": 0,
+      "observation": "Skateboarder on a city sidewalk",
+      "reason": "Skateboarder on a city sidewalk. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-05",
+      "image_id": "5bfec85c40197744fc7fa8262a0a0e14ad1a6fc0e11cee4b7b0c5df97a146107",
+      "path": "photos/COCO_val2014_000000184324.jpg",
+      "grade": 0,
+      "observation": "City street with pedestrians",
+      "reason": "City street with pedestrians. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-05",
+      "image_id": "b0580bb47eee47184ec9aeef06ff9c7fd9e4b17c1187343069245d3e425e9744",
+      "path": "photos/COCO_val2014_000000434204.jpg",
+      "grade": 0,
+      "observation": "People carrying skateboards on a sidewalk",
+      "reason": "People carrying skateboards on a sidewalk. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-07",
+      "image_id": "35121758144544ad72c14685e9299ed99a7ae4ff0ea2ea17496a49f965beffc2",
+      "path": "photos/COCO_val2014_000000472795.jpg",
+      "grade": null,
+      "observation": "Brown dog walking past a storefront",
+      "reason": "Brown dog walking past a storefront. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-07",
+      "image_id": "16c011baec3b0d9448e648a57e86b0e977e0ead33ab1862921cefcf24369321d",
+      "path": "photos/COCO_val2014_000000347950.jpg",
+      "grade": null,
+      "observation": "Brown dog carrying a disc on grass",
+      "reason": "Brown dog carrying a disc on grass. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-07",
+      "image_id": "d2241a1eb6d6cd2eb6544b8e228c2862c852b7467d16ed636caa32179b780692",
+      "path": "documents/tesseract-ocr-test/600a8d0019-phototest.tif",
+      "grade": 0,
+      "observation": "OCR test page of English text",
+      "reason": "OCR test page of English text. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-07",
+      "image_id": "cee8685dbd6449befa12df283da5bb4dc32284e4ff2d3288e74814e16d22bfec",
+      "path": "photos/COCO_val2014_000000561116.jpg",
+      "grade": null,
+      "observation": "Brown dog sitting on a couch without the required seated people",
+      "reason": "Brown dog sitting on a couch without the required seated people. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-07",
+      "image_id": "7b9bd14aba7d5e30df686fbb6f71782a97f48f81b32dc201a1b75afe6de747d6",
+      "path": "documents/tesseract-ocr-test/96b77b778d-eurotext.tif",
+      "grade": 0,
+      "observation": "Multilingual OCR test text page",
+      "reason": "Multilingual OCR test text page. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-07",
+      "image_id": "cb553d7c25ddda5fe404e5f806d3d2f36bc61dd69808b417361cbc436825c1ff",
+      "path": "photos/COCO_val2014_000000143769.jpg",
+      "grade": 0,
+      "observation": "Horse standing outdoors",
+      "reason": "Horse standing outdoors. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-07",
+      "image_id": "81833dee462a4062ffe890022c113dbf35f136918ef64ab4ccbcef61140e72be",
+      "path": "screenshots/streamlit-docs/edf6779c3b-radio.jpg",
+      "grade": 0,
+      "observation": "Radio-button interface with Cat selected",
+      "reason": "Radio-button interface with Cat selected. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-08",
+      "image_id": "b247bc880f39904648a3161ad001623904bfa41eb4fa07ee4a9776f72b1d9f7d",
+      "path": "photos/COCO_val2014_000000330986.jpg",
+      "grade": null,
+      "observation": "Person with skis on snow; bib 32 not visible",
+      "reason": "Person with skis on snow; bib 32 not visible. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-08",
+      "image_id": "63f4ab64efad45877f7a8fdb6ca26ea4c1b88021c69ce5ce56ee5e217eee15be",
+      "path": "photos/COCO_val2014_000000315162.jpg",
+      "grade": 0,
+      "observation": "Surfer on water",
+      "reason": "Surfer on water. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-08",
+      "image_id": "dbbc722659da2d03b273fd21c243636d7969e242985fb295e570b4d71808cffc",
+      "path": "photos/COCO_val2014_000000258023.jpg",
+      "grade": null,
+      "observation": "Adult and child learning to ski",
+      "reason": "Adult and child learning to ski. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-08",
+      "image_id": "711eeb82a1dab0ab7ad2012775d2949a5669370e58ddca6d8a9f42e12eb83c25",
+      "path": "photos/COCO_val2014_000000045433.jpg",
+      "grade": null,
+      "observation": "Person skiing on snow with poles; bib 32 not visible",
+      "reason": "Person skiing on snow with poles; bib 32 not visible. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-08",
+      "image_id": "22b375a631bbc8ec4c2ba97fcc1a649ed9317398bf443925991e1a02f972f085",
+      "path": "photos/COCO_val2014_000000399049.jpg",
+      "grade": null,
+      "observation": "Distant person skiing on a snowy mountain slope",
+      "reason": "Distant person skiing on a snowy mountain slope. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-10",
+      "image_id": "e7401c59aab9a1f13dc33fea01e18b997a701a3e43681384ffc1fd060be7f90e",
+      "path": "diagrams/matplotlib-matplotlib/2bdcc1bf01-markevery_linear_scales.png",
+      "grade": 0,
+      "observation": "Grid of blue sine-wave marker examples",
+      "reason": "Grid of blue sine-wave marker examples. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-10",
+      "image_id": "033cdb7512c7fa00013cfbcf9cfc24f14a39b0027e445aa13a78e9c0362c6a7e",
+      "path": "photos/COCO_val2014_000000285664.jpg",
+      "grade": 0,
+      "observation": "Open oven with oven-settings label",
+      "reason": "Open oven with oven-settings label. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-10",
+      "image_id": "68f6289ad123cea10bf3111a6776409bf571d0b57a1453475debe54e1a36e961",
+      "path": "photos/COCO_val2014_000000126110.jpg",
+      "grade": 0,
+      "observation": "Person seen through a bus window",
+      "reason": "Person seen through a bus window. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "photos-10",
+      "image_id": "e8f1fbe76f1a2bbf9c96cc71649811e29348d78fb5feb3a461edcc7dd94ee754",
+      "path": "photos/COCO_val2014_000000123622.jpg",
+      "grade": null,
+      "observation": "Person reaching into an open refrigerator",
+      "reason": "Person reaching into an open refrigerator. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-10",
+      "image_id": "7e6cb66c60e9fa2686ffbefa5a0df2701b0651504caa4d38360d1ff8bb43162a",
+      "path": "photos/COCO_val2014_000000430677.jpg",
+      "grade": null,
+      "observation": "Open refrigerator with a few bottles",
+      "reason": "Open refrigerator with a few bottles. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "photos-10",
+      "image_id": "3edd7a337597aeeb342e02107c9539bf6490cfe499aa11d2c1fa8406cf990614",
+      "path": "photos/COCO_val2014_000000571876.jpg",
+      "grade": null,
+      "observation": "Open refrigerator filled with carrots and packaged food",
+      "reason": "Open refrigerator filled with carrots and packaged food. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "screenshots-02",
+      "image_id": "8f4586b7b4f31a81146bcb0a9c7528a39fec8e2db986245d6c54dd487c11c89f",
+      "path": "screenshots/streamlit-docs/fab57db696-menu_button.jpg",
+      "grade": 0,
+      "observation": "Export menu with CSV JSON PDF",
+      "reason": "Export menu with CSV JSON PDF. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-02",
+      "image_id": "10390ff434da437389d084357e9f3dcf394aa81885726abfbfdfafe4e9715709",
+      "path": "screenshots/Textualize-rich/30984606b1-inspect.png",
+      "grade": 0,
+      "observation": "Rich inspect terminal showing object properties",
+      "reason": "Rich inspect terminal showing object properties. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-02",
+      "image_id": "defd75b64f13e7020f2c60393955d95d2918693660dfa4c26eed34dfbdd1f425",
+      "path": "screenshots/Textualize-rich/71c582e92a-where_there_is_a_will.png",
+      "grade": 0,
+      "observation": "Terminal printing a sentence",
+      "reason": "Terminal printing a sentence. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-02",
+      "image_id": "4a75de0654a616e080be7300b7895626b8e9f2350785821a16041c74f98b5ab6",
+      "path": "screenshots/Textualize-rich/e61d79a6ce-markdown.png",
+      "grade": 0,
+      "observation": "Markdown code and rendered text terminal",
+      "reason": "Markdown code and rendered text terminal. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-02",
+      "image_id": "c4dcbe6ac6d2a894b3c3bbc11391f018ff8e193f73926193bc86dbba97813ac0",
+      "path": "screenshots/Textualize-textual/121bf3c196-demo.png",
+      "grade": 0,
+      "observation": "Dark Textual application with multiple panels",
+      "reason": "Dark Textual application with multiple panels. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-02",
+      "image_id": "0270d8d168b7c8154b89067e8240ac71a93f0d5815fe23d0731855f3487630d6",
+      "path": "documents/pdf-forms/fw9-page1.png",
+      "grade": 0,
+      "observation": "IRS Form W-9 request for taxpayer identification number",
+      "reason": "IRS Form W-9 request for taxpayer identification number. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-02",
+      "image_id": "27d2baea647c1412be30469970c53a58d2da57253f6b1c1a335d1f2129001c73",
+      "path": "screenshots/synthetic/mobile-005.png",
+      "grade": 0,
+      "observation": "French delivery status form",
+      "reason": "French delivery status form. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-02",
+      "image_id": "2506ea4bc8590fb963284dbce097fd3e1c25d72b949b92cd5253c2fa10dd453c",
+      "path": "screenshots/synthetic/mobile-007.webp",
+      "grade": 0,
+      "observation": "French delivery status form for Summit",
+      "reason": "French delivery status form for Summit. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-02",
+      "image_id": "3a346b1c94caf2a32fef8df7a6de7ed27898ad8d28a3670833486ce555457a3c",
+      "path": "documents/synthetic/receipt-033.tif",
+      "grade": 0,
+      "observation": "French receipt headed RECU Quartz",
+      "reason": "French receipt headed RECU Quartz. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-03",
+      "image_id": "54173bf385c8360d66e15ca7d210d789cd11a781f1549d326a7f4f5c65f8cb7f",
+      "path": "screenshots/Textualize-rich/6f9f8a7602-print.png",
+      "grade": 0,
+      "observation": "Python terminal showing colored console output",
+      "reason": "Python terminal showing colored console output. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-03",
+      "image_id": "68cf3b05488f8e00e1f2be72b1eaeb6edb34f4d9c24f41615fced3ed3bf71e61",
+      "path": "screenshots/Textualize-rich/c9aeefcdc3-log.png",
+      "grade": 0,
+      "observation": "Terminal logging and code example",
+      "reason": "Terminal logging and code example. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-03",
+      "image_id": "c4dcbe6ac6d2a894b3c3bbc11391f018ff8e193f73926193bc86dbba97813ac0",
+      "path": "screenshots/Textualize-textual/121bf3c196-demo.png",
+      "grade": 0,
+      "observation": "Dark Textual application with multiple panels",
+      "reason": "Dark Textual application with multiple panels. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-03",
+      "image_id": "4a75de0654a616e080be7300b7895626b8e9f2350785821a16041c74f98b5ab6",
+      "path": "screenshots/Textualize-rich/e61d79a6ce-markdown.png",
+      "grade": 0,
+      "observation": "Markdown code and rendered text terminal",
+      "reason": "Markdown code and rendered text terminal. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-03",
+      "image_id": "691df8673887414ba0c9bd8801880f894e77d78579dfa3cb7d2b6896f7f72730",
+      "path": "screenshots/Textualize-rich/beab138e84-features.png",
+      "grade": null,
+      "observation": "Dense Rich features terminal including panels and syntax",
+      "reason": "Dense Rich features terminal including panels and syntax. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "screenshots-03",
+      "image_id": "3f4ba80ee66534f8684b426d71e95b328ee56f1888cc02b40f4ac222ed52e20b",
+      "path": "challenging/palette/018.png",
+      "grade": null,
+      "observation": "Palette-encoded Rich features terminal",
+      "reason": "Palette-encoded Rich features terminal. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "screenshots-04",
+      "image_id": "411fa4e8cccdfe91fcda72dbc4aca6c60dbd6b8e13cfc45b2acab6b778c08d2a",
+      "path": "diagrams/matplotlib-matplotlib/c784d7c715-hist_stacked_stepfilled_alpha.png",
+      "grade": 0,
+      "observation": "Stacked orange and blue histogram",
+      "reason": "Stacked orange and blue histogram. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-04",
+      "image_id": "9b25ffa3e64bad11b99485d9af5da5bbb15e8809bdc03ecb3abf8a182fd8a92a",
+      "path": "diagrams/matplotlib-matplotlib/6b8dd11e91-loglog.png",
+      "grade": 0,
+      "observation": "Blue diagonal line on logarithmic axes",
+      "reason": "Blue diagonal line on logarithmic axes. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-04",
+      "image_id": "704b424f001f680dcf47637ba55339a59cbbc8bc541104cb6ab341b7682dce5e",
+      "path": "diagrams/matplotlib-matplotlib/64cf5a1c74-hist_step_horiz.png",
+      "grade": 0,
+      "observation": "Orange and blue horizontal histogram",
+      "reason": "Orange and blue horizontal histogram. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-04",
+      "image_id": "2121cba124ee2973e257d529c3e896489d78386393fa617740812a00bf47ce75",
+      "path": "challenging/compression/022.jpg",
+      "grade": null,
+      "observation": "Dark terminal plots and colored bars; requested Grid Information headings unclear",
+      "reason": "Dark terminal plots and colored bars; requested Grid Information headings unclear. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "screenshots-04",
+      "image_id": "a93af723fd0d0b58e0a68814536d8293d996b7ea6c9c7676f14e14dab4d41d01",
+      "path": "screenshots/Textualize-textual/84bd0dbd57-calcinline.png",
+      "grade": 0,
+      "observation": "Calculator terminal interface",
+      "reason": "Calculator terminal interface. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-04",
+      "image_id": "93940f5443925963160da2a99269786d6c70c678cf2eb7010d5e2ae65e0bda75",
+      "path": "screenshots/Textualize-textual/bfbc3ddac9-demo3.png",
+      "grade": null,
+      "observation": "Dark terminal plots and colored bars; requested Grid Information headings unclear",
+      "reason": "Dark terminal plots and colored bars; requested Grid Information headings unclear. Potential partial match or unclear required detail; retain as unjudged."
+    },
+    {
+      "family": "screenshots-04",
+      "image_id": "dd17c37dad1c1cf2beb828b90846cac82f7776d87448ab3c30609d81ed5c3206",
+      "path": "screenshots/synthetic/dashboard-013.tif",
+      "grade": 0,
+      "observation": "French dashboard with deployment messages",
+      "reason": "French dashboard with deployment messages. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-04",
+      "image_id": "82b7aedcd1ea348f9a5f8bd8a5a9aa19829208a01fb24c253ef47cba0f475f5b",
+      "path": "screenshots/synthetic/dashboard-011.jpg",
+      "grade": 0,
+      "observation": "French dashboard with deployment messages",
+      "reason": "French dashboard with deployment messages. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-04",
+      "image_id": "3a346b1c94caf2a32fef8df7a6de7ed27898ad8d28a3670833486ce555457a3c",
+      "path": "documents/synthetic/receipt-033.tif",
+      "grade": 0,
+      "observation": "French receipt headed RECU Quartz",
+      "reason": "French receipt headed RECU Quartz. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-08",
+      "image_id": "4a75de0654a616e080be7300b7895626b8e9f2350785821a16041c74f98b5ab6",
+      "path": "screenshots/Textualize-rich/e61d79a6ce-markdown.png",
+      "grade": 0,
+      "observation": "Markdown code and rendered text terminal",
+      "reason": "Markdown code and rendered text terminal. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-08",
+      "image_id": "9767328d4e44d1381266113266662307e28e9cf28874a2044d7225fb3f87182c",
+      "path": "screenshots/Textualize-textual/729e40b514-demo4.png",
+      "grade": 0,
+      "observation": "Dark terminal with colored geometrical line figures",
+      "reason": "Dark terminal with colored geometrical line figures. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-08",
+      "image_id": "5a5ccd53b131eb6cb87fafda1dc3d86032cf47c9873c802d41d4a46e5ff782ff",
+      "path": "documents/synthetic/receipt-025.png",
+      "grade": 0,
+      "observation": "French receipt headed RECU Violet",
+      "reason": "French receipt headed RECU Violet. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-08",
+      "image_id": "9bbc92914799ebf8c6f387c1f5997bd866815f357da2219d6cc391282693c952",
+      "path": "diagrams/matplotlib-matplotlib/853cdcfbb6-hist2d_transpose.png",
+      "grade": 0,
+      "observation": "Heatmap with vertical bright stripe",
+      "reason": "Heatmap with vertical bright stripe. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-08",
+      "image_id": "a40fd195c797d0168962220c5310109555aa0c5572d698aff20800d53fb65852",
+      "path": "diagrams/matplotlib-matplotlib/20edbd076d-hist2d.png",
+      "grade": 0,
+      "observation": "Two-dimensional histogram heatmap",
+      "reason": "Two-dimensional histogram heatmap. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-09",
+      "image_id": "3950288d5dd012334b0257e42eb24f096ccf5b26449e1b2698202da27313cf2c",
+      "path": "documents/synthetic/receipt-024.bmp",
+      "grade": 0,
+      "observation": "Receipt headed RECEIPT Willow",
+      "reason": "Receipt headed RECEIPT Willow. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-09",
+      "image_id": "d45c2df37f36f6907ba7d06719cb03414dcb8b99beb6e2a5e4c41fd6456756ed",
+      "path": "challenging/compression/032.jpg",
+      "grade": 0,
+      "observation": "Compressed receipt headed RECEIPT Delta",
+      "reason": "Compressed receipt headed RECEIPT Delta. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-09",
+      "image_id": "a2ec15a63e2c9d9e6b498622a48f9b1eb5eefe1cfd7ded5f962a6cdb2256cc1c",
+      "path": "documents/synthetic/receipt-028.tif",
+      "grade": 0,
+      "observation": "Receipt headed RECEIPT Sierra",
+      "reason": "Receipt headed RECEIPT Sierra. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-09",
+      "image_id": "4a75de0654a616e080be7300b7895626b8e9f2350785821a16041c74f98b5ab6",
+      "path": "screenshots/Textualize-rich/e61d79a6ce-markdown.png",
+      "grade": 0,
+      "observation": "Markdown code and rendered text terminal",
+      "reason": "Markdown code and rendered text terminal. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-09",
+      "image_id": "a93af723fd0d0b58e0a68814536d8293d996b7ea6c9c7676f14e14dab4d41d01",
+      "path": "screenshots/Textualize-textual/84bd0dbd57-calcinline.png",
+      "grade": 0,
+      "observation": "Calculator terminal interface",
+      "reason": "Calculator terminal interface. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-09",
+      "image_id": "e125bdcaae65152ab4f4abd2ef56ce6995031b583af2f175cfd6f450c2541107",
+      "path": "screenshots/Textualize-rich/dc2a461f12-traceback.png",
+      "grade": 0,
+      "observation": "Python traceback terminal",
+      "reason": "Python traceback terminal. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-09",
+      "image_id": "3a346b1c94caf2a32fef8df7a6de7ed27898ad8d28a3670833486ce555457a3c",
+      "path": "documents/synthetic/receipt-033.tif",
+      "grade": 0,
+      "observation": "French receipt headed RECU Quartz",
+      "reason": "French receipt headed RECU Quartz. Distinct required content: not a match for the frozen intent."
+    },
+    {
+      "family": "screenshots-09",
+      "image_id": "e424793ee3a5440a5f493e72ea1f55c59ea66b079069e5155a39a850ecfad8bd",
+      "path": "documents/synthetic/receipt-023.tif",
+      "grade": 0,
+      "observation": "Receipt headed RECEIPT Cedar",
+      "reason": "Receipt headed RECEIPT Cedar. Distinct required content: not a match for the frozen intent."
+    }
+  ]
+}
