@@ -6,6 +6,9 @@ For the larger, resumable per-image suite, see the
 For evaluation through production saved collections, see the
 [saved-collection retrieval guide](retrieval-evaluation.md).
 
+For train-only reviewed additions, logistic fitting, and opt-in production
+comparison, see the [logistic reranker guide](logistic-reranker.md).
+
 This harness tests local CPU inference and retrieval independently of the
 [persistent collection workflow](collections.md). It does not train a model or
 establish production hardware support.

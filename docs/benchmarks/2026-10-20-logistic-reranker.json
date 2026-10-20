@@ -1,0 +1,3069 @@
+{
+  "version": 1,
+  "date": "2026-10-20",
+  "status": "experimental; hybrid remains default",
+  "dataset": {
+    "images": 2000,
+    "queries": 180,
+    "families": 60,
+    "languages": [
+      "en",
+      "fr",
+      "ar"
+    ],
+    "split_queries": {
+      "train": 108,
+      "validation": 30,
+      "test": 42
+    },
+    "positive_source_components_after_training_review": {
+      "train": 18,
+      "validation": 7,
+      "test": 11
+    }
+  },
+  "review": {
+    "reviewed_family_image_pairs": 212,
+    "distinct_images_inspected": 125,
+    "direct_matches": 4,
+    "negative_decisions": 165,
+    "ambiguous_unjudged_decisions": 43,
+    "added_translated_judgments": 507,
+    "independent_human_review": false,
+    "validation_test_labels_unchanged": true
+  },
+  "training": {
+    "version": 1,
+    "model_sha256": "8fbfdc08324849b480da3809f15fb5962384f3113e71b974aa713c22f01ea4bb",
+    "selected_l2": 0.01,
+    "training_pairs": 1352,
+    "training_positives": 116,
+    "review_decisions": {
+      "0": 165,
+      "None": 43,
+      "2": 4
+    },
+    "rerank_only_median_per_query_ms": {
+      "count": 180,
+      "mean": 0.12411186212880744,
+      "median": 0.13245828449726105,
+      "p95": 0.1459621562389657,
+      "p99": 0.14777802221942693,
+      "max": 0.15156250447034836
+    },
+    "training_and_replay_seconds": 0.36256470810621977,
+    "sampled_process_tree_peak_mib": 104.6875,
+    "memory_samples": 11,
+    "model_bytes": 4931,
+    "parameter_array_bytes": 336,
+    "pool_recall_by_split": {
+      "train": 0.9691358024691357,
+      "validation": 1.0,
+      "test": 0.8833333333333334
+    }
+  },
+  "selection": {
+    "trials": [
+      {
+        "l2": 0.001,
+        "validation": {
+          "candidate_recall_at_50": 0.9666666666666667,
+          "mrr_at_10": 0.5458730158730157,
+          "ndcg_at_10": 0.5893602146055082,
+          "judged_fraction_at_10": 0.09333333333333335
+        },
+        "model": "trial-l2-0.001.json"
+      },
+      {
+        "l2": 0.01,
+        "validation": {
+          "candidate_recall_at_50": 0.9666666666666667,
+          "mrr_at_10": 0.5513888888888888,
+          "ndcg_at_10": 0.5938254332061063,
+          "judged_fraction_at_10": 0.09333333333333335
+        },
+        "model": "trial-l2-0.01.json"
+      },
+      {
+        "l2": 0.1,
+        "validation": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.5151322751322751,
+          "ndcg_at_10": 0.5666878648876527,
+          "judged_fraction_at_10": 0.09000000000000002
+        },
+        "model": "trial-l2-0.1.json"
+      },
+      {
+        "l2": 1.0,
+        "validation": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.536521164021164,
+          "ndcg_at_10": 0.5895784050326774,
+          "judged_fraction_at_10": 0.08666666666666667
+        },
+        "model": "trial-l2-1.json"
+      }
+    ],
+    "selected": {
+      "l2": 0.01,
+      "validation": {
+        "candidate_recall_at_50": 0.9666666666666667,
+        "mrr_at_10": 0.5513888888888888,
+        "ndcg_at_10": 0.5938254332061063,
+        "judged_fraction_at_10": 0.09333333333333335
+      },
+      "model": "trial-l2-0.01.json"
+    },
+    "frozen_model_sha256": "8fbfdc08324849b480da3809f15fb5962384f3113e71b974aa713c22f01ea4bb"
+  },
+  "quality": {
+    "hybrid/all": {
+      "candidate_recall_at_50": 0.9414814814814815,
+      "mrr_at_10": 0.6241490299823633,
+      "ndcg_at_10": 0.669326997489713,
+      "judged_fraction_at_10": 0.405,
+      "known_positives": 1.5333333333333334,
+      "queries": 180
+    },
+    "hybrid/exposure:legacy-benchmark": {
+      "candidate_recall_at_50": 0.9407407407407408,
+      "mrr_at_10": 0.6595182980599648,
+      "ndcg_at_10": 0.7010785578149008,
+      "judged_fraction_at_10": 0.47500000000000003,
+      "known_positives": 1.6666666666666667,
+      "queries": 144
+    },
+    "hybrid/exposure:new-scale": {
+      "candidate_recall_at_50": 0.9444444444444444,
+      "mrr_at_10": 0.4826719576719577,
+      "ndcg_at_10": 0.5423207561889617,
+      "judged_fraction_at_10": 0.125,
+      "known_positives": 1.0,
+      "queries": 36
+    },
+    "hybrid/family:diagrams-00": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.27499999999999997,
+      "ndcg_at_10": 0.44441581253057594,
+      "judged_fraction_at_10": 0.20000000000000004,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:diagrams-01": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.7539531690476382,
+      "judged_fraction_at_10": 0.5666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:diagrams-02": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.1365079365079365,
+      "ndcg_at_10": 0.3262017822530811,
+      "judged_fraction_at_10": 0.6999999999999998,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:diagrams-03": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.6333333333333333,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:diagrams-04": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.6333333333333333,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:diagrams-05": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.27777777777777773,
+      "ndcg_at_10": 0.3769765845238191,
+      "judged_fraction_at_10": 0.6,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:diagrams-06": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.611111111111111,
+      "ndcg_at_10": 0.7103099178571525,
+      "judged_fraction_at_10": 0.6333333333333333,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:diagrams-07": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.7037037037037037,
+      "ndcg_at_10": 0.7014321619759185,
+      "judged_fraction_at_10": 0.5666666666666667,
+      "known_positives": 2.0,
+      "queries": 3
+    },
+    "hybrid/family:diagrams-08": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:diagrams-09": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.5,
+      "ndcg_at_10": 0.6309297535714574,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:diagrams-10": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.75,
+      "ndcg_at_10": 0.8102255193577976,
+      "judged_fraction_at_10": 0.13333333333333333,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:diagrams-11": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.7777777777777778,
+      "ndcg_at_10": 0.8333333333333334,
+      "judged_fraction_at_10": 0.13333333333333333,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:documents-00": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.25,
+      "ndcg_at_10": 0.4306765580733931,
+      "judged_fraction_at_10": 1.0,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:documents-01": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.9,
+      "known_positives": 2.0,
+      "queries": 3
+    },
+    "hybrid/family:documents-02": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 1.0,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:documents-03": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 1.0,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:documents-04": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.3333333333333333,
+      "ndcg_at_10": 0.5,
+      "judged_fraction_at_10": 1.0,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:documents-05": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.8333333333333334,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:documents-06": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.9666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:documents-07": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 1.0,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:documents-08": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.6666666666666666,
+      "judged_fraction_at_10": 0.7666666666666666,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:documents-09": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.7222222222222222,
+      "ndcg_at_10": 0.7854023957026741,
+      "judged_fraction_at_10": 0.9,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:documents-10": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.9666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:documents-11": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.9,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:fresh-00": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.8333333333333334,
+      "ndcg_at_10": 0.8769765845238191,
+      "judged_fraction_at_10": 0.3666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:fresh-01": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.5,
+      "ndcg_at_10": 0.5436432511904857,
+      "judged_fraction_at_10": 0.06666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:fresh-02": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.2253968253968254,
+      "ndcg_at_10": 0.40672871352262496,
+      "judged_fraction_at_10": 0.3666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:fresh-03": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.4444444444444444,
+      "ndcg_at_10": 0.5872865023809716,
+      "judged_fraction_at_10": 0.20000000000000004,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:fresh-04": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.17777777777777778,
+      "ndcg_at_10": 0.29561760241151386,
+      "judged_fraction_at_10": 0.06666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:fresh-05": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "judged_fraction_at_10": 0.0,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:fresh-06": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:fresh-07": {
+      "candidate_recall_at_50": 0.6666666666666666,
+      "mrr_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "judged_fraction_at_10": 0.0,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:fresh-08": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.7539531690476382,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:fresh-09": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.4444444444444444,
+      "ndcg_at_10": 0.5,
+      "judged_fraction_at_10": 0.06666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:fresh-10": {
+      "candidate_recall_at_50": 0.6666666666666666,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.6666666666666666,
+      "judged_fraction_at_10": 0.06666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:fresh-11": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.8333333333333334,
+      "ndcg_at_10": 0.8769765845238191,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:operations-reports": {
+      "candidate_recall_at_50": 0.6,
+      "mrr_at_10": 0.7333333333333334,
+      "ndcg_at_10": 0.6738407764808897,
+      "judged_fraction_at_10": 0.6666666666666666,
+      "known_positives": 20.0,
+      "queries": 3
+    },
+    "hybrid/family:photos-00": {
+      "candidate_recall_at_50": 0.8888888888888888,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.513022083819235,
+      "judged_fraction_at_10": 0.16666666666666666,
+      "known_positives": 3.0,
+      "queries": 3
+    },
+    "hybrid/family:photos-01": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "judged_fraction_at_10": 0.0,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:photos-02": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.27777777777777773,
+      "ndcg_at_10": 0.3769765845238191,
+      "judged_fraction_at_10": 0.2333333333333333,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:photos-03": {
+      "candidate_recall_at_50": 0.0,
+      "mrr_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "judged_fraction_at_10": 0.0,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:photos-04": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.8333333333333334,
+      "ndcg_at_10": 0.8769765845238191,
+      "judged_fraction_at_10": 0.20000000000000004,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:photos-05": {
+      "candidate_recall_at_50": 0.0,
+      "mrr_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "judged_fraction_at_10": 0.19999999999999998,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:photos-06": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.7539531690476382,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:photos-07": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.19999999999999998,
+      "ndcg_at_10": 0.3817573378086367,
+      "judged_fraction_at_10": 0.4000000000000001,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:photos-08": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.5,
+      "ndcg_at_10": 0.5436432511904857,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:photos-09": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.8333333333333334,
+      "ndcg_at_10": 0.8769765845238191,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:photos-10": {
+      "candidate_recall_at_50": 0.6666666666666666,
+      "mrr_at_10": 0.5,
+      "ndcg_at_10": 0.5436432511904857,
+      "judged_fraction_at_10": 0.16666666666666666,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:photos-11": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.45555555555555555,
+      "ndcg_at_10": 0.5810199981141879,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:screenshots-00": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.3333333333333333,
+      "ndcg_at_10": 0.3333333333333333,
+      "judged_fraction_at_10": 0.13333333333333333,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:screenshots-01": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.43333333333333335,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:screenshots-02": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.041666666666666664,
+      "ndcg_at_10": 0.10515495892857624,
+      "judged_fraction_at_10": 0.5,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:screenshots-03": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.4000000000000001,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:screenshots-04": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.7777777777777778,
+      "ndcg_at_10": 0.8333333333333334,
+      "judged_fraction_at_10": 0.4666666666666666,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:screenshots-05": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:screenshots-06": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.26666666666666666,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:screenshots-07": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.3333333333333333,
+      "ndcg_at_10": 0.5,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:screenshots-08": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.5,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:screenshots-09": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.43333333333333335,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "hybrid/family:service-workflows": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.8333333333333334,
+      "ndcg_at_10": 0.7876158734034714,
+      "judged_fraction_at_10": 0.8000000000000002,
+      "known_positives": 10.0,
+      "queries": 3
+    },
+    "hybrid/kind:diagrams": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.6562983312983314,
+      "ndcg_at_10": 0.7211841467580189,
+      "judged_fraction_at_10": 0.4461538461538461,
+      "known_positives": 1.7692307692307692,
+      "queries": 39
+    },
+    "hybrid/kind:documents": {
+      "candidate_recall_at_50": 0.9692307692307691,
+      "mrr_at_10": 0.8235042735042735,
+      "ndcg_at_10": 0.8505066459172017,
+      "judged_fraction_at_10": 0.9153846153846155,
+      "known_positives": 2.5384615384615383,
+      "queries": 39
+    },
+    "hybrid/kind:photos": {
+      "candidate_recall_at_50": 0.8703703703703703,
+      "mrr_at_10": 0.4468915343915344,
+      "ndcg_at_10": 0.4981590799587361,
+      "judged_fraction_at_10": 0.13611111111111113,
+      "known_positives": 1.0833333333333333,
+      "queries": 72
+    },
+    "hybrid/kind:screenshots": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.7486111111111111,
+      "ndcg_at_10": 0.7771821625595243,
+      "judged_fraction_at_10": 0.3333333333333333,
+      "known_positives": 1.0,
+      "queries": 30
+    },
+    "hybrid/language:ar": {
+      "candidate_recall_at_50": 0.9027777777777778,
+      "mrr_at_10": 0.5361772486772486,
+      "ndcg_at_10": 0.5775449937686911,
+      "judged_fraction_at_10": 0.39166666666666666,
+      "known_positives": 1.5333333333333334,
+      "queries": 60
+    },
+    "hybrid/language:en": {
+      "candidate_recall_at_50": 0.9633333333333333,
+      "mrr_at_10": 0.7383531746031746,
+      "ndcg_at_10": 0.7737065794779104,
+      "judged_fraction_at_10": 0.4233333333333333,
+      "known_positives": 1.5333333333333334,
+      "queries": 60
+    },
+    "hybrid/language:fr": {
+      "candidate_recall_at_50": 0.9583333333333334,
+      "mrr_at_10": 0.5979166666666667,
+      "ndcg_at_10": 0.6567294192225375,
+      "judged_fraction_at_10": 0.4,
+      "known_positives": 1.5333333333333334,
+      "queries": 60
+    },
+    "hybrid/split:test": {
+      "candidate_recall_at_50": 0.8761904761904761,
+      "mrr_at_10": 0.6674603174603175,
+      "ndcg_at_10": 0.6945225826448054,
+      "judged_fraction_at_10": 0.21666666666666665,
+      "known_positives": 3.0,
+      "queries": 42
+    },
+    "hybrid/split:train": {
+      "candidate_recall_at_50": 0.9598765432098766,
+      "mrr_at_10": 0.6512051734273956,
+      "ndcg_at_10": 0.7023660412657559,
+      "judged_fraction_at_10": 0.5703703703703704,
+      "known_positives": 1.1111111111111112,
+      "queries": 108
+    },
+    "hybrid/split:validation": {
+      "candidate_recall_at_50": 0.9666666666666667,
+      "mrr_at_10": 0.4661111111111111,
+      "ndcg_at_10": 0.515112620678829,
+      "judged_fraction_at_10": 0.07333333333333333,
+      "known_positives": 1.0,
+      "queries": 30
+    },
+    "logistic/all": {
+      "candidate_recall_at_50": 0.9189814814814814,
+      "mrr_at_10": 0.6974537037037037,
+      "ndcg_at_10": 0.7131767579499976,
+      "judged_fraction_at_10": 0.28111111111111114,
+      "known_positives": 1.5333333333333334,
+      "queries": 180
+    },
+    "logistic/exposure:legacy-benchmark": {
+      "candidate_recall_at_50": 0.9126157407407407,
+      "mrr_at_10": 0.7315393518518518,
+      "ndcg_at_10": 0.7397468944564346,
+      "judged_fraction_at_10": 0.3236111111111111,
+      "known_positives": 1.6666666666666667,
+      "queries": 144
+    },
+    "logistic/exposure:new-scale": {
+      "candidate_recall_at_50": 0.9444444444444444,
+      "mrr_at_10": 0.5611111111111111,
+      "ndcg_at_10": 0.6068962119242495,
+      "judged_fraction_at_10": 0.1111111111111111,
+      "known_positives": 1.0,
+      "queries": 36
+    },
+    "logistic/family:diagrams-00": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.13333333333333333,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:diagrams-01": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.7777777777777778,
+      "ndcg_at_10": 0.8333333333333334,
+      "judged_fraction_at_10": 0.5666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:diagrams-02": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.06666666666666667,
+      "ndcg_at_10": 0.1289509357448472,
+      "judged_fraction_at_10": 0.6,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:diagrams-03": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.6,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:diagrams-04": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.6,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:diagrams-05": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.2222222222222222,
+      "ndcg_at_10": 0.3333333333333333,
+      "judged_fraction_at_10": 0.5,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:diagrams-06": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.7539531690476382,
+      "judged_fraction_at_10": 0.5666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:diagrams-07": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.5989787014954123,
+      "judged_fraction_at_10": 0.4666666666666666,
+      "known_positives": 2.0,
+      "queries": 3
+    },
+    "logistic/family:diagrams-08": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.16666666666666666,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:diagrams-09": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.75,
+      "ndcg_at_10": 0.8102255193577976,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:diagrams-10": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.13333333333333333,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:diagrams-11": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.13333333333333333,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:documents-00": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.20000000000000004,
+      "ndcg_at_10": 0.38685280723454163,
+      "judged_fraction_at_10": 0.7000000000000001,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:documents-01": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 0.9464805260987917,
+      "judged_fraction_at_10": 0.4666666666666666,
+      "known_positives": 2.0,
+      "queries": 3
+    },
+    "logistic/family:documents-02": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.5666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:documents-03": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.6,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:documents-04": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.5,
+      "ndcg_at_10": 0.6309297535714574,
+      "judged_fraction_at_10": 0.8000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:documents-05": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.39999999999999997,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:documents-06": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.5666666666666668,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:documents-07": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.43333333333333335,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:documents-08": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.6666666666666666,
+      "judged_fraction_at_10": 0.43333333333333335,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:documents-09": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.3,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:documents-10": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.4666666666666666,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:documents-11": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.7777777777777778,
+      "ndcg_at_10": 0.8333333333333334,
+      "judged_fraction_at_10": 0.5,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:fresh-00": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.26666666666666666,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:fresh-01": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.6666666666666666,
+      "judged_fraction_at_10": 0.06666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:fresh-02": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.17777777777777778,
+      "ndcg_at_10": 0.29561760241151386,
+      "judged_fraction_at_10": 0.26666666666666666,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:fresh-03": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.4444444444444444,
+      "ndcg_at_10": 0.5872865023809716,
+      "judged_fraction_at_10": 0.16666666666666666,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:fresh-04": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.16666666666666666,
+      "ndcg_at_10": 0.28540239570267406,
+      "judged_fraction_at_10": 0.06666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:fresh-05": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.1111111111111111,
+      "ndcg_at_10": 0.23747145807201478,
+      "judged_fraction_at_10": 0.06666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:fresh-06": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:fresh-07": {
+      "candidate_recall_at_50": 0.6666666666666666,
+      "mrr_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "judged_fraction_at_10": 0.0,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:fresh-08": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.8333333333333334,
+      "ndcg_at_10": 0.8769765845238191,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:fresh-09": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.6666666666666666,
+      "judged_fraction_at_10": 0.06666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:fresh-10": {
+      "candidate_recall_at_50": 0.6666666666666666,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.6666666666666666,
+      "judged_fraction_at_10": 0.06666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:fresh-11": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:operations-reports": {
+      "candidate_recall_at_50": 0.25,
+      "mrr_at_10": 0.3333333333333333,
+      "ndcg_at_10": 0.28573495198795423,
+      "judged_fraction_at_10": 0.26666666666666666,
+      "known_positives": 20.0,
+      "queries": 3
+    },
+    "logistic/family:photos-00": {
+      "candidate_recall_at_50": 0.8888888888888888,
+      "mrr_at_10": 0.8333333333333334,
+      "ndcg_at_10": 0.6467094823009569,
+      "judged_fraction_at_10": 0.2333333333333333,
+      "known_positives": 3.0,
+      "queries": 3
+    },
+    "logistic/family:photos-01": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "judged_fraction_at_10": 0.06666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:photos-02": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.5,
+      "ndcg_at_10": 0.5436432511904857,
+      "judged_fraction_at_10": 0.19999999999999998,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:photos-03": {
+      "candidate_recall_at_50": 0.0,
+      "mrr_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "judged_fraction_at_10": 0.0,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:photos-04": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.20000000000000004,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:photos-05": {
+      "candidate_recall_at_50": 0.0,
+      "mrr_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "judged_fraction_at_10": 0.13333333333333333,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:photos-06": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:photos-07": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.5833333333333334,
+      "ndcg_at_10": 0.6872021038816168,
+      "judged_fraction_at_10": 0.2333333333333333,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:photos-08": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.6666666666666666,
+      "judged_fraction_at_10": 0.06666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:photos-09": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:photos-10": {
+      "candidate_recall_at_50": 0.6666666666666666,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.6666666666666666,
+      "judged_fraction_at_10": 0.16666666666666666,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:photos-11": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.4861111111111111,
+      "ndcg_at_10": 0.6051549589285762,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:screenshots-00": {
+      "candidate_recall_at_50": 0.6666666666666666,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.6666666666666666,
+      "judged_fraction_at_10": 0.13333333333333333,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:screenshots-01": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.16666666666666666,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:screenshots-02": {
+      "candidate_recall_at_50": 0.6666666666666666,
+      "mrr_at_10": 0.0,
+      "ndcg_at_10": 0.0,
+      "judged_fraction_at_10": 0.16666666666666666,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:screenshots-03": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.3333333333333333,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:screenshots-04": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.4166666666666667,
+      "ndcg_at_10": 0.47689218602446437,
+      "judged_fraction_at_10": 0.43333333333333335,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:screenshots-05": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.10000000000000002,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:screenshots-06": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.16666666666666666,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:screenshots-07": {
+      "candidate_recall_at_50": 0.6666666666666666,
+      "mrr_at_10": 0.6666666666666666,
+      "ndcg_at_10": 0.6666666666666666,
+      "judged_fraction_at_10": 0.06666666666666667,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:screenshots-08": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.43333333333333335,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:screenshots-09": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "judged_fraction_at_10": 0.26666666666666666,
+      "known_positives": 1.0,
+      "queries": 3
+    },
+    "logistic/family:service-workflows": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 0.6728092537109847,
+      "judged_fraction_at_10": 0.6,
+      "known_positives": 10.0,
+      "queries": 3
+    },
+    "logistic/kind:diagrams": {
+      "candidate_recall_at_50": 1.0,
+      "mrr_at_10": 0.7807692307692308,
+      "ndcg_at_10": 0.7793526343094882,
+      "judged_fraction_at_10": 0.3974358974358974,
+      "known_positives": 1.7692307692307692,
+      "queries": 39
+    },
+    "logistic/kind:documents": {
+      "candidate_recall_at_50": 0.9423076923076923,
+      "mrr_at_10": 0.805982905982906,
+      "ndcg_at_10": 0.8269229260686728,
+      "judged_fraction_at_10": 0.5,
+      "known_positives": 2.5384615384615383,
+      "queries": 39
+    },
+    "logistic/kind:photos": {
+      "candidate_recall_at_50": 0.8703703703703703,
+      "mrr_at_10": 0.5612268518518518,
+      "ndcg_at_10": 0.5874499030302485,
+      "judged_fraction_at_10": 0.12222222222222223,
+      "known_positives": 1.0833333333333333,
+      "queries": 72
+    },
+    "logistic/kind:screenshots": {
+      "candidate_recall_at_50": 0.9,
+      "mrr_at_10": 0.775,
+      "ndcg_at_10": 0.7810225519357797,
+      "judged_fraction_at_10": 0.22666666666666666,
+      "known_positives": 1.0,
+      "queries": 30
+    },
+    "logistic/language:ar": {
+      "candidate_recall_at_50": 0.8961111111111111,
+      "mrr_at_10": 0.5970833333333334,
+      "ndcg_at_10": 0.6175570624416717,
+      "judged_fraction_at_10": 0.25666666666666665,
+      "known_positives": 1.5333333333333334,
+      "queries": 60
+    },
+    "logistic/language:en": {
+      "candidate_recall_at_50": 0.9583333333333334,
+      "mrr_at_10": 0.8025,
+      "ndcg_at_10": 0.8137904047342025,
+      "judged_fraction_at_10": 0.3333333333333333,
+      "known_positives": 1.5333333333333334,
+      "queries": 60
+    },
+    "logistic/language:fr": {
+      "candidate_recall_at_50": 0.9025,
+      "mrr_at_10": 0.6927777777777778,
+      "ndcg_at_10": 0.7081828066741184,
+      "judged_fraction_at_10": 0.2533333333333333,
+      "known_positives": 1.5333333333333334,
+      "queries": 60
+    },
+    "logistic/split:test": {
+      "candidate_recall_at_50": 0.8035714285714286,
+      "mrr_at_10": 0.7738095238095238,
+      "ndcg_at_10": 0.7501562469206732,
+      "judged_fraction_at_10": 0.14523809523809525,
+      "known_positives": 3.0,
+      "queries": 42
+    },
+    "logistic/split:train": {
+      "candidate_recall_at_50": 0.9506172839506173,
+      "mrr_at_10": 0.7083333333333334,
+      "ndcg_at_10": 0.7319489913347046,
+      "judged_fraction_at_10": 0.3861111111111111,
+      "known_positives": 1.1111111111111112,
+      "queries": 108
+    },
+    "logistic/split:validation": {
+      "candidate_recall_at_50": 0.9666666666666667,
+      "mrr_at_10": 0.5513888888888889,
+      "ndcg_at_10": 0.5938254332061063,
+      "judged_fraction_at_10": 0.09333333333333334,
+      "known_positives": 1.0,
+      "queries": 30
+    }
+  },
+  "test_by_language": {
+    "en": {
+      "hybrid": {
+        "mrr_at_10": 0.880952380952381,
+        "ndcg_at_10": 0.8797564424822572,
+        "candidate_recall_at_50": 0.9142857142857144
+      },
+      "logistic": {
+        "mrr_at_10": 0.9285714285714286,
+        "ndcg_at_10": 0.8986684072708568,
+        "candidate_recall_at_50": 0.8928571428571429
+      }
+    },
+    "fr": {
+      "hybrid": {
+        "mrr_at_10": 0.619047619047619,
+        "ndcg_at_10": 0.6590319584174121,
+        "candidate_recall_at_50": 0.8928571428571429
+      },
+      "logistic": {
+        "mrr_at_10": 0.7142857142857143,
+        "ndcg_at_10": 0.6932719653477039,
+        "candidate_recall_at_50": 0.725
+      }
+    },
+    "ar": {
+      "hybrid": {
+        "mrr_at_10": 0.5023809523809524,
+        "ndcg_at_10": 0.5447793470347468,
+        "candidate_recall_at_50": 0.8214285714285714
+      },
+      "logistic": {
+        "mrr_at_10": 0.6785714285714286,
+        "ndcg_at_10": 0.6585283681434589,
+        "candidate_recall_at_50": 0.7928571428571428
+      }
+    }
+  },
+  "uncertainty": {
+    "clusters": 11,
+    "queries": 42,
+    "seed": 20261020,
+    "resamples": 5000,
+    "method": "paired source/duplicate-component cluster percentile bootstrap; exploratory with 11 clusters; no model selection",
+    "metrics": {
+      "mrr_at_10": {
+        "delta": 0.10634920634920635,
+        "cluster_bootstrap_95_interval": [
+          0.00277777777777778,
+          0.18055555555555558
+        ]
+      },
+      "ndcg_at_10": {
+        "delta": 0.055633664275867765,
+        "cluster_bootstrap_95_interval": [
+          -0.039525008566461815,
+          0.12786085057023847
+        ]
+      },
+      "candidate_recall_at_50": {
+        "delta": -0.07261904761904761,
+        "cluster_bootstrap_95_interval": [
+          -0.13205128205128205,
+          0.0
+        ]
+      }
+    }
+  },
+  "production": {
+    "successful_queries": 180,
+    "failed_queries": 0,
+    "request_mode": "hybrid+logistic",
+    "exports": {
+      "candidates": 23122,
+      "train_positive": 116,
+      "train_negative": 1236,
+      "validation_positive": 30,
+      "validation_negative": 24,
+      "test_positive": 104,
+      "test_negative": 158
+    },
+    "reranked_end_to_end_seconds": {
+      "count": 180,
+      "mean": 1.566317394918426,
+      "median": 1.5440128545160405,
+      "p95": 1.6498571753094438,
+      "p99": 2.026780094309943,
+      "max": 2.2301700840471312
+    },
+    "peak_tree_rss_mib": {
+      "count": 180,
+      "mean": 1066.5502604166666,
+      "median": 1075.8984375,
+      "p95": 1112.625,
+      "p99": 1123.5775,
+      "max": 1146.609375
+    },
+    "candidate_pool_recall": {
+      "count": 180,
+      "mean": 0.9542592592592591,
+      "median": 1.0,
+      "p95": 1.0,
+      "p99": 1.0,
+      "max": 1.0
+    }
+  },
+  "model": {
+    "sha256": "8fbfdc08324849b480da3809f15fb5962384f3113e71b974aa713c22f01ea4bb",
+    "features": [
+      "visual_cosine",
+      "semantic_cosine",
+      "semantic_missing",
+      "lexical_evidence",
+      "semantic_strength",
+      "bm25_log",
+      "lexical_missing",
+      "visual_reciprocal_rank",
+      "semantic_reciprocal_rank",
+      "lexical_reciprocal_rank",
+      "hybrid_score",
+      "log_ocr_characters",
+      "visual_lexical_interaction",
+      "visual_semantic_interaction"
+    ],
+    "weights": [
+      0.39806920100674903,
+      0.13936218766038136,
+      0.12773181830048627,
+      0.32089561553794715,
+      -0.06340686791409607,
+      -0.33294915559567884,
+      0.8076497060735752,
+      0.4769508201297908,
+      0.31560467436983863,
+      1.0637638606336637,
+      0.45777842117371675,
+      -0.7266818121987112,
+      0.17704545149581527,
+      0.5036046076003218
+    ],
+    "intercept": -1.7587867563196464,
+    "mean": [
+      0.09894237801010346,
+      0.7819083562264075,
+      0.03476331360946745,
+      0.290170422912241,
+      0.05204188138893137,
+      1.0464061099169164,
+      0.4341715976331361,
+      0.1538182578562344,
+      0.06002796565175076,
+      0.10111489340011609,
+      0.14592075771019303,
+      6.243315291233478,
+      0.031896183929944075,
+      0.07719373664568947
+    ],
+    "scale": [
+      0.03665892539215273,
+      0.1534987720348009,
+      0.18317976317365517,
+      0.44506546564100286,
+      0.14732857530728252,
+      1.0220196411689229,
+      0.49564767874148963,
+      0.2531614942404429,
+      0.18553442052694075,
+      0.21623744983527732,
+      0.08601571131209507,
+      2.444031837448432,
+      0.05022615626358424,
+      0.03315172037172661
+    ],
+    "training_diagnostics": {
+      "l2": 0.01,
+      "rows": 1352,
+      "positives": 116,
+      "families": 36,
+      "steps": 6,
+      "gradient_max_abs": 2.8043855667802403e-08,
+      "loss_history": [
+        0.6931471805599454,
+        0.4153385261691463,
+        0.3622862932995761,
+        0.3486757613039478,
+        0.3473278510120189,
+        0.34730396613855596,
+        0.34730395296102723
+      ],
+      "weighting": "equal family/translation mass and per-query balanced classes"
+    }
+  },
+  "provenance": {
+    "corpus_sha256": "0234ac2c46a2d2a62f073e982392770add291ce642fd08ed43c85e7896b2526c",
+    "evaluated_judgments_sha256": "d7ea32764b47a772a501b0b83e2907abf510fb5d3d50c028d4da6a400d503ff3",
+    "canonical_judgments_sha256": "1541edf1e9a36d439055fcad6b7e2d81b007cc06778363d04e7c05b3a3d39af1",
+    "training_review_sha256": "df8ef6de16ffa096ba59313aa74b16d986857d4580b78538b2b06ee6f39a2080",
+    "engine_sha256": "2622bdb3e9ec3a69d2af4f3cdac585be36ef9c5b9c5c88e75a9eca0cd4fbe279",
+    "harness_sha256": "27597b0a109462b11041ecbc4c297d0335e9a77987ee02943542802e00004ff5",
+    "generation": "5d66a8133f664d1a9256ec28bc7b8df3",
+    "host": {
+      "system": "Darwin",
+      "machine": "arm64",
+      "python": "3.12.11 (main, Aug 18 2025, 19:02:39) [Clang 20.1.4 ]"
+    },
+    "packages": {
+      "numpy": "2.5.4",
+      "onnxruntime": "1.31.0",
+      "tokenizers": "0.22.2",
+      "Pillow": "12.3.0",
+      "psutil": "7.2.2"
+    },
+    "model_registry": {
+      "schema_version": 1,
+      "models": {
+        "siglip2": {
+          "repo": "onnx-community/siglip2-base-patch16-224-ONNX",
+          "revision": "ba1f3b0843f24bc5417d38e19c37b287d719b2f4",
+          "files": {
+            "tokenizer": {
+              "path": "tokenizer.json",
+              "sha256": "cb9140fae3ac5122c972d37adf83e1248471a38147ad76f8215c8872c6fd8322",
+              "size": 34363039
+            },
+            "vision_int8": {
+              "path": "onnx/vision_model_int8.onnx",
+              "sha256": "0dd31785a2713f1113ef2272472165c69d580473dae38d7b47568ac587795e70",
+              "size": 94553333
+            },
+            "text_int8": {
+              "path": "onnx/text_model_int8.onnx",
+              "sha256": "3a0603d3a00c05a80a6ded4743c16aaac7b1e62cdcc7e362e7ce418659b96400",
+              "size": 283438275
+            },
+            "vision_fp32": {
+              "path": "onnx/vision_model.onnx",
+              "sha256": "c0573e3f4140c3a7c4e9cc5912bd6b26a033b46a6a8e8af26cbea262b163bcad",
+              "size": 371807752
+            },
+            "text_fp32": {
+              "path": "onnx/text_model.onnx",
+              "sha256": "baf12d941beabafafb14f7b4adb38dc15be18681b964a84410ec53d9d65e6293",
+              "size": 1129469657
+            }
+          }
+        },
+        "e5": {
+          "repo": "Xenova/multilingual-e5-small",
+          "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+          "files": {
+            "tokenizer": {
+              "path": "tokenizer.json",
+              "sha256": "0b44a9d7b51c3c62626640cda0e2c2f70fdacdc25bbbd68038369d14ebdf4c39",
+              "size": 17082730
+            },
+            "text_int8": {
+              "path": "onnx/model_quantized.onnx",
+              "sha256": "f80102d3f2a1229f387d3c81909990d8945513e347b0eab049f7de3c6f98c193",
+              "size": 118308185
+            },
+            "text_fp32": {
+              "path": "onnx/model.onnx",
+              "sha256": "4aa845c27760e06e9a686b9d8b5d440eae4b6612cd09e5b522b716d3941f77ff",
+              "size": 470268533
+            }
+          }
+        }
+      }
+    },
+    "threads": 2,
+    "offline_verification": "macOS sandbox-exec deny network* for training, production evaluation and manual searches"
+  },
+  "verification": {
+    "queries": 180,
+    "all_queries_successful": true,
+    "all_candidates_identical_to_original": true,
+    "all_original_channel_rankings_preserved": true,
+    "all_logistic_rankings_equal_replay": true,
+    "all_quality_equal_replay": true,
+    "heldout_query_judgments_exactly_unchanged": true,
+    "identical_model_from_repeated_training": true,
+    "production_matches_current_engine": true,
+    "production_matches_current_harness": true,
+    "resume_had_no_inference": true,
+    "query_rows": 180,
+    "query_attempts": 180,
+    "changed_model_rejected": true,
+    "actual_personal_cli_searches_succeeded": true
+  },
+  "failures": [
+    {
+      "query_id": "operations-reports-fr",
+      "metrics": {
+        "hybrid": {
+          "candidate_recall_at_50": 0.5,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 0.866947989864271,
+          "judged_fraction_at_10": 0.8,
+          "known_positives": 20
+        },
+        "logistic": {
+          "candidate_recall_at_50": 0.15,
+          "mrr_at_10": 0.0,
+          "ndcg_at_10": 0.0,
+          "judged_fraction_at_10": 0.0,
+          "known_positives": 20
+        }
+      },
+      "positives": [
+        {
+          "image_id": "0293e019aed60613fd2424df47b253f6946a1ad544d02d954fdc9d8b2526a9cb",
+          "path": "documents/synthetic/report-063.tif",
+          "hybrid_rank": 1,
+          "logistic_rank": 30,
+          "score": -1.523553390671582,
+          "negative_contributions": [
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "bm25_log",
+              -0.45963934752769675
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.23091596643401296
+            ]
+          ],
+          "raw_features": {
+            "image_id": "0293e019aed60613fd2424df47b253f6946a1ad544d02d954fdc9d8b2526a9cb",
+            "visual_cosine": 0.10183632373809814,
+            "semantic_cosine": 0.8393716812133789,
+            "lexical_evidence": 0.5,
+            "semantic_strength": 0,
+            "hybrid_score": 0.18183632373809816,
+            "lexical_bm25": -10.67340935610989,
+            "channel_ranks": {
+              "visual": 32,
+              "semantic": null,
+              "lexical": 3,
+              "hybrid": 1
+            },
+            "ocr_characters": 557,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "88336fd76eae747f938095fdd44516b79220748be29c818855e0854a1eaffe1a",
+          "path": "documents/synthetic/report-073.tif",
+          "hybrid_rank": 2,
+          "logistic_rank": 87,
+          "score": -2.736780539058545,
+          "negative_contributions": [
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "bm25_log",
+              -0.45963934752769675
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.24148315370957465
+            ]
+          ],
+          "raw_features": {
+            "image_id": "88336fd76eae747f938095fdd44516b79220748be29c818855e0854a1eaffe1a",
+            "visual_cosine": 0.10014910250902176,
+            "semantic_cosine": 0.8407382965087891,
+            "lexical_evidence": 0.5,
+            "semantic_strength": 0,
+            "hybrid_score": 0.18014910250902177,
+            "lexical_bm25": -10.67340935610989,
+            "channel_ranks": {
+              "visual": 39,
+              "semantic": null,
+              "lexical": 10,
+              "hybrid": 2
+            },
+            "ocr_characters": 569,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "2faa737312038e120f206e86ed2b69f0d1e65f98ab41ccbfe5e8aecc1d49a0d7",
+          "path": "documents/synthetic/report-077.webp",
+          "hybrid_rank": 3,
+          "logistic_rank": 56,
+          "score": -2.2373963564030546,
+          "negative_contributions": [
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "bm25_log",
+              -0.45963934752769675
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.2513417540832765
+            ]
+          ],
+          "raw_features": {
+            "image_id": "2faa737312038e120f206e86ed2b69f0d1e65f98ab41ccbfe5e8aecc1d49a0d7",
+            "visual_cosine": 0.09853927791118622,
+            "semantic_cosine": 0.8487840890884399,
+            "lexical_evidence": 0.5,
+            "semantic_strength": 0,
+            "hybrid_score": 0.17853927791118623,
+            "lexical_bm25": -10.67340935610989,
+            "channel_ranks": {
+              "visual": 49,
+              "semantic": 29,
+              "lexical": 5,
+              "hybrid": 3
+            },
+            "ocr_characters": 591,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "8009da0dd311de1862c3dfbfd89b00ea97abf159c76e1509fc02aeb5603e6651",
+          "path": "documents/synthetic/report-065.png",
+          "hybrid_rank": 4,
+          "logistic_rank": 82,
+          "score": -2.674764465884499,
+          "negative_contributions": [
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "bm25_log",
+              -0.45963934752769675
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.25211072491242525
+            ]
+          ],
+          "raw_features": {
+            "image_id": "8009da0dd311de1862c3dfbfd89b00ea97abf159c76e1509fc02aeb5603e6651",
+            "visual_cosine": 0.0984930545091629,
+            "semantic_cosine": 0.8407387733459473,
+            "lexical_evidence": 0.5,
+            "semantic_strength": 0,
+            "hybrid_score": 0.17849305450916292,
+            "lexical_bm25": -10.67340935610989,
+            "channel_ranks": {
+              "visual": 50,
+              "semantic": null,
+              "lexical": 8,
+              "hybrid": 4
+            },
+            "ocr_characters": 568,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "4409dc8ea93b2baa9e383d8aa13f3111207df967b9119eda63303ad6bd3aaaac",
+          "path": "documents/synthetic/report-067.webp",
+          "hybrid_rank": 5,
+          "logistic_rank": 80,
+          "score": -2.640080758671429,
+          "negative_contributions": [
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "bm25_log",
+              -0.45963934752769675
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.2897902955407137
+            ]
+          ],
+          "raw_features": {
+            "image_id": "4409dc8ea93b2baa9e383d8aa13f3111207df967b9119eda63303ad6bd3aaaac",
+            "visual_cosine": 0.09797816723585129,
+            "semantic_cosine": 0.8408769369125366,
+            "lexical_evidence": 0.5,
+            "semantic_strength": 0,
+            "hybrid_score": 0.1779781672358513,
+            "lexical_bm25": -10.67340935610989,
+            "channel_ranks": {
+              "visual": null,
+              "semantic": null,
+              "lexical": 7,
+              "hybrid": 5
+            },
+            "ocr_characters": 568,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "8118ac26002af5dc574cca268f84caa906f7dc739533258b96194bfa908522d2",
+          "path": "documents/synthetic/report-075.png",
+          "hybrid_rank": 6,
+          "logistic_rank": 93,
+          "score": -2.8135913548968086,
+          "negative_contributions": [
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "bm25_log",
+              -0.45963934752769675
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.2897902955407137
+            ]
+          ],
+          "raw_features": {
+            "image_id": "8118ac26002af5dc574cca268f84caa906f7dc739533258b96194bfa908522d2",
+            "visual_cosine": 0.09725916385650635,
+            "semantic_cosine": 0.8430859446525574,
+            "lexical_evidence": 0.5,
+            "semantic_strength": 0,
+            "hybrid_score": 0.17725916385650636,
+            "lexical_bm25": -10.67340935610989,
+            "channel_ranks": {
+              "visual": null,
+              "semantic": null,
+              "lexical": 9,
+              "hybrid": 6
+            },
+            "ocr_characters": 569,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "f343ca364103710df841684aeaec0918f8be8644351d89f691d33ff88784e21c",
+          "path": "documents/synthetic/report-079.bmp",
+          "hybrid_rank": 7,
+          "logistic_rank": 98,
+          "score": -3.0225966467524987,
+          "negative_contributions": [
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "bm25_log",
+              -0.45963934752769675
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.2897902955407137
+            ]
+          ],
+          "raw_features": {
+            "image_id": "f343ca364103710df841684aeaec0918f8be8644351d89f691d33ff88784e21c",
+            "visual_cosine": 0.09471507370471954,
+            "semantic_cosine": 0.8431214690208435,
+            "lexical_evidence": 0.5,
+            "semantic_strength": 0,
+            "hybrid_score": 0.17471507370471956,
+            "lexical_bm25": -10.67340935610989,
+            "channel_ranks": {
+              "visual": null,
+              "semantic": null,
+              "lexical": 12,
+              "hybrid": 7
+            },
+            "ocr_characters": 558,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "107793a9eb43dad528b3fd2f2b979f358095e62fe6a03262f82ba00a192f9b9c",
+          "path": "documents/synthetic/report-069.bmp",
+          "hybrid_rank": 9,
+          "logistic_rank": 62,
+          "score": -2.32493430549426,
+          "negative_contributions": [
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "bm25_log",
+              -0.45963934752769675
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.2897902955407137
+            ]
+          ],
+          "raw_features": {
+            "image_id": "107793a9eb43dad528b3fd2f2b979f358095e62fe6a03262f82ba00a192f9b9c",
+            "visual_cosine": 0.09095409512519836,
+            "semantic_cosine": 0.8427747488021851,
+            "lexical_evidence": 0.5,
+            "semantic_strength": 0,
+            "hybrid_score": 0.17095409512519838,
+            "lexical_bm25": -10.67340935610989,
+            "channel_ranks": {
+              "visual": null,
+              "semantic": null,
+              "lexical": 4,
+              "hybrid": 9
+            },
+            "ocr_characters": 569,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "b8847d979482328519f9d0f6c8cd1f0027e31e399e1c9094eebbf363192fe4c3",
+          "path": "documents/synthetic/report-071.jpg",
+          "hybrid_rank": 14,
+          "logistic_rank": 105,
+          "score": -3.169680042219458,
+          "negative_contributions": [
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "bm25_log",
+              -0.45963934752769675
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.2897902955407137
+            ]
+          ],
+          "raw_features": {
+            "image_id": "b8847d979482328519f9d0f6c8cd1f0027e31e399e1c9094eebbf363192fe4c3",
+            "visual_cosine": 0.08891182392835617,
+            "semantic_cosine": 0.8430763483047485,
+            "lexical_evidence": 0.5,
+            "semantic_strength": 0,
+            "hybrid_score": 0.1689118239283562,
+            "lexical_bm25": -10.67340935610989,
+            "channel_ranks": {
+              "visual": null,
+              "semantic": null,
+              "lexical": 11,
+              "hybrid": 14
+            },
+            "ocr_characters": 569,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "427facaa1487fdf5079cc3711f0c71117770be9ad76bc52d92f9ff8d42623f2a",
+          "path": "documents/synthetic/report-061.jpg",
+          "hybrid_rank": 15,
+          "logistic_rank": 94,
+          "score": -2.8394557018188333,
+          "negative_contributions": [
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "bm25_log",
+              -0.45963934752769675
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.2897902955407137
+            ]
+          ],
+          "raw_features": {
+            "image_id": "427facaa1487fdf5079cc3711f0c71117770be9ad76bc52d92f9ff8d42623f2a",
+            "visual_cosine": 0.08807358145713806,
+            "semantic_cosine": 0.8354153633117676,
+            "lexical_evidence": 0.5,
+            "semantic_strength": 0,
+            "hybrid_score": 0.16807358145713808,
+            "lexical_bm25": -10.67340935610989,
+            "channel_ranks": {
+              "visual": null,
+              "semantic": null,
+              "lexical": 6,
+              "hybrid": 15
+            },
+            "ocr_characters": 568,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "22721d03f1881ff963a3f73e8f0f35eec45df20908bc7cf5f52cd40cebf74b94",
+          "path": "documents/synthetic/report-070.png",
+          "hybrid_rank": 68,
+          "logistic_rank": 38,
+          "score": -1.7684851958773247,
+          "negative_contributions": [
+            [
+              "lexical_reciprocal_rank",
+              -0.49742710826827813
+            ],
+            [
+              "hybrid_score",
+              -0.24239630342749358
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.2388719568538374
+            ]
+          ],
+          "raw_features": {
+            "image_id": "22721d03f1881ff963a3f73e8f0f35eec45df20908bc7cf5f52cd40cebf74b94",
+            "visual_cosine": 0.10037494450807571,
+            "semantic_cosine": 0.8310596942901611,
+            "lexical_evidence": 0,
+            "semantic_strength": 0,
+            "hybrid_score": 0.10037494450807571,
+            "lexical_bm25": null,
+            "channel_ranks": {
+              "visual": 37,
+              "semantic": null,
+              "lexical": null,
+              "hybrid": null
+            },
+            "ocr_characters": 555,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "c7b3986dc874c1935892989e91413485353bb7b074255a52c876b0e8c541cc3b",
+          "path": "documents/synthetic/report-078.tif",
+          "hybrid_rank": 71,
+          "logistic_rank": 41,
+          "score": -1.8148566592950188,
+          "negative_contributions": [
+            [
+              "lexical_reciprocal_rank",
+              -0.49742710826827813
+            ],
+            [
+              "hybrid_score",
+              -0.24775653193019068
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.24493366384037027
+            ]
+          ],
+          "raw_features": {
+            "image_id": "c7b3986dc874c1935892989e91413485353bb7b074255a52c876b0e8c541cc3b",
+            "visual_cosine": 0.09936776757240295,
+            "semantic_cosine": 0.8287957906723022,
+            "lexical_evidence": 0,
+            "semantic_strength": 0,
+            "hybrid_score": 0.09936776757240295,
+            "lexical_bm25": null,
+            "channel_ranks": {
+              "visual": 42,
+              "semantic": null,
+              "lexical": null,
+              "hybrid": null
+            },
+            "ocr_characters": 566,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        }
+      ],
+      "top_logistic_path": "screenshots/synthetic/dashboard-011.jpg"
+    },
+    {
+      "query_id": "operations-reports-ar",
+      "metrics": {
+        "hybrid": {
+          "candidate_recall_at_50": 0.5,
+          "mrr_at_10": 0.2,
+          "ndcg_at_10": 0.15457433957839825,
+          "judged_fraction_at_10": 0.2,
+          "known_positives": 20
+        },
+        "logistic": {
+          "candidate_recall_at_50": 0.1,
+          "mrr_at_10": 0.0,
+          "ndcg_at_10": 0.0,
+          "judged_fraction_at_10": 0.0,
+          "known_positives": 20
+        }
+      },
+      "positives": [
+        {
+          "image_id": "20989d31f63335be34d599268b4e284bc2a5fd5f248cf450e84f238981ce5ce3",
+          "path": "documents/synthetic/report-062.webp",
+          "hybrid_rank": 5,
+          "logistic_rank": 20,
+          "score": -1.6673350542520575,
+          "negative_contributions": [
+            [
+              "lexical_reciprocal_rank",
+              -0.49742710826827813
+            ],
+            [
+              "hybrid_score",
+              -0.2704006532976775
+            ],
+            [
+              "lexical_evidence",
+              -0.20921510128228563
+            ]
+          ],
+          "raw_features": {
+            "image_id": "20989d31f63335be34d599268b4e284bc2a5fd5f248cf450e84f238981ce5ce3",
+            "visual_cosine": 0.09511297941207886,
+            "semantic_cosine": 0.7997390031814575,
+            "lexical_evidence": 0,
+            "semantic_strength": 0,
+            "hybrid_score": 0.09511297941207886,
+            "lexical_bm25": null,
+            "channel_ranks": {
+              "visual": 5,
+              "semantic": null,
+              "lexical": null,
+              "hybrid": 5
+            },
+            "ocr_characters": 554,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "427facaa1487fdf5079cc3711f0c71117770be9ad76bc52d92f9ff8d42623f2a",
+          "path": "documents/synthetic/report-061.jpg",
+          "hybrid_rank": 8,
+          "logistic_rank": 37,
+          "score": -1.877495881405861,
+          "negative_contributions": [
+            [
+              "lexical_reciprocal_rank",
+              -0.49742710826827813
+            ],
+            [
+              "hybrid_score",
+              -0.2778509906515125
+            ],
+            [
+              "lexical_evidence",
+              -0.20921510128228563
+            ]
+          ],
+          "raw_features": {
+            "image_id": "427facaa1487fdf5079cc3711f0c71117770be9ad76bc52d92f9ff8d42623f2a",
+            "visual_cosine": 0.09371307492256165,
+            "semantic_cosine": 0.7903901934623718,
+            "lexical_evidence": 0,
+            "semantic_strength": 0,
+            "hybrid_score": 0.09371307492256165,
+            "lexical_bm25": null,
+            "channel_ranks": {
+              "visual": 8,
+              "semantic": null,
+              "lexical": null,
+              "hybrid": 8
+            },
+            "ocr_characters": 568,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "2faa737312038e120f206e86ed2b69f0d1e65f98ab41ccbfe5e8aecc1d49a0d7",
+          "path": "documents/synthetic/report-077.webp",
+          "hybrid_rank": 12,
+          "logistic_rank": 53,
+          "score": -1.9781539784318614,
+          "negative_contributions": [
+            [
+              "lexical_reciprocal_rank",
+              -0.49742710826827813
+            ],
+            [
+              "hybrid_score",
+              -0.28160692946120075
+            ],
+            [
+              "lexical_evidence",
+              -0.20921510128228563
+            ]
+          ],
+          "raw_features": {
+            "image_id": "2faa737312038e120f206e86ed2b69f0d1e65f98ab41ccbfe5e8aecc1d49a0d7",
+            "visual_cosine": 0.09300734102725983,
+            "semantic_cosine": 0.7944905161857605,
+            "lexical_evidence": 0,
+            "semantic_strength": 0,
+            "hybrid_score": 0.09300734102725983,
+            "lexical_bm25": null,
+            "channel_ranks": {
+              "visual": 12,
+              "semantic": null,
+              "lexical": null,
+              "hybrid": 12
+            },
+            "ocr_characters": 591,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "1a383ee16b54144d43d8d328dcdea0f4cc0a0869e5dfa16333006118a9e2919b",
+          "path": "documents/synthetic/report-076.jpg",
+          "hybrid_rank": 15,
+          "logistic_rank": 55,
+          "score": -2.0047565901379074,
+          "negative_contributions": [
+            [
+              "lexical_reciprocal_rank",
+              -0.49742710826827813
+            ],
+            [
+              "hybrid_score",
+              -0.2828247288396255
+            ],
+            [
+              "lexical_evidence",
+              -0.20921510128228563
+            ]
+          ],
+          "raw_features": {
+            "image_id": "1a383ee16b54144d43d8d328dcdea0f4cc0a0869e5dfa16333006118a9e2919b",
+            "visual_cosine": 0.0927785187959671,
+            "semantic_cosine": 0.7962793707847595,
+            "lexical_evidence": 0,
+            "semantic_strength": 0,
+            "hybrid_score": 0.0927785187959671,
+            "lexical_bm25": null,
+            "channel_ranks": {
+              "visual": 15,
+              "semantic": null,
+              "lexical": null,
+              "hybrid": 15
+            },
+            "ocr_characters": 577,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "b8847d979482328519f9d0f6c8cd1f0027e31e399e1c9094eebbf363192fe4c3",
+          "path": "documents/synthetic/report-071.jpg",
+          "hybrid_rank": 25,
+          "logistic_rank": 60,
+          "score": -2.0956263336304524,
+          "negative_contributions": [
+            [
+              "lexical_reciprocal_rank",
+              -0.49742710826827813
+            ],
+            [
+              "hybrid_score",
+              -0.2902041283487092
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.21443115428413673
+            ]
+          ],
+          "raw_features": {
+            "image_id": "b8847d979482328519f9d0f6c8cd1f0027e31e399e1c9094eebbf363192fe4c3",
+            "visual_cosine": 0.09139194339513779,
+            "semantic_cosine": 0.7938553094863892,
+            "lexical_evidence": 0,
+            "semantic_strength": 0,
+            "hybrid_score": 0.09139194339513779,
+            "lexical_bm25": null,
+            "channel_ranks": {
+              "visual": 25,
+              "semantic": null,
+              "lexical": null,
+              "hybrid": 25
+            },
+            "ocr_characters": 569,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "4409dc8ea93b2baa9e383d8aa13f3111207df967b9119eda63303ad6bd3aaaac",
+          "path": "documents/synthetic/report-067.webp",
+          "hybrid_rank": 27,
+          "logistic_rank": 65,
+          "score": -2.11661513668697,
+          "negative_contributions": [
+            [
+              "lexical_reciprocal_rank",
+              -0.49742710826827813
+            ],
+            [
+              "hybrid_score",
+              -0.2911339732114358
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.22001331289573506
+            ]
+          ],
+          "raw_features": {
+            "image_id": "4409dc8ea93b2baa9e383d8aa13f3111207df967b9119eda63303ad6bd3aaaac",
+            "visual_cosine": 0.09121722728013992,
+            "semantic_cosine": 0.7890616059303284,
+            "lexical_evidence": 0,
+            "semantic_strength": 0,
+            "hybrid_score": 0.09121722728013992,
+            "lexical_bm25": null,
+            "channel_ranks": {
+              "visual": 27,
+              "semantic": null,
+              "lexical": null,
+              "hybrid": 27
+            },
+            "ocr_characters": 568,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "22721d03f1881ff963a3f73e8f0f35eec45df20908bc7cf5f52cd40cebf74b94",
+          "path": "documents/synthetic/report-070.png",
+          "hybrid_rank": 30,
+          "logistic_rank": 61,
+          "score": -2.1024678918674176,
+          "negative_contributions": [
+            [
+              "lexical_reciprocal_rank",
+              -0.49742710826827813
+            ],
+            [
+              "hybrid_score",
+              -0.29255816246237615
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.2269910111602329
+            ]
+          ],
+          "raw_features": {
+            "image_id": "22721d03f1881ff963a3f73e8f0f35eec45df20908bc7cf5f52cd40cebf74b94",
+            "visual_cosine": 0.09094962477684021,
+            "semantic_cosine": 0.798579216003418,
+            "lexical_evidence": 0,
+            "semantic_strength": 0,
+            "hybrid_score": 0.09094962477684021,
+            "lexical_bm25": null,
+            "channel_ranks": {
+              "visual": 30,
+              "semantic": null,
+              "lexical": null,
+              "hybrid": 30
+            },
+            "ocr_characters": 555,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "88336fd76eae747f938095fdd44516b79220748be29c818855e0854a1eaffe1a",
+          "path": "documents/synthetic/report-073.tif",
+          "hybrid_rank": 41,
+          "logistic_rank": 72,
+          "score": -2.1745941332642817,
+          "negative_contributions": [
+            [
+              "lexical_reciprocal_rank",
+              -0.49742710826827813
+            ],
+            [
+              "hybrid_score",
+              -0.29693453976106593
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.24383959965255703
+            ]
+          ],
+          "raw_features": {
+            "image_id": "88336fd76eae747f938095fdd44516b79220748be29c818855e0854a1eaffe1a",
+            "visual_cosine": 0.09012731164693832,
+            "semantic_cosine": 0.7877745628356934,
+            "lexical_evidence": 0,
+            "semantic_strength": 0,
+            "hybrid_score": 0.09012731164693832,
+            "lexical_bm25": null,
+            "channel_ranks": {
+              "visual": 41,
+              "semantic": null,
+              "lexical": null,
+              "hybrid": 41
+            },
+            "ocr_characters": 569,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "e345cc10e00a217c7df3e556904bdb378fa64726388803770a693cc5d39265da",
+          "path": "documents/synthetic/report-074.bmp",
+          "hybrid_rank": 42,
+          "logistic_rank": 70,
+          "score": -2.156989884608235,
+          "negative_contributions": [
+            [
+              "lexical_reciprocal_rank",
+              -0.49742710826827813
+            ],
+            [
+              "hybrid_score",
+              -0.29694068585717354
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.24493366384037027
+            ]
+          ],
+          "raw_features": {
+            "image_id": "e345cc10e00a217c7df3e556904bdb378fa64726388803770a693cc5d39265da",
+            "visual_cosine": 0.0901261568069458,
+            "semantic_cosine": 0.7927533984184265,
+            "lexical_evidence": 0,
+            "semantic_strength": 0,
+            "hybrid_score": 0.0901261568069458,
+            "lexical_bm25": null,
+            "channel_ranks": {
+              "visual": 42,
+              "semantic": null,
+              "lexical": null,
+              "hybrid": 42
+            },
+            "ocr_characters": 555,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "8118ac26002af5dc574cca268f84caa906f7dc739533258b96194bfa908522d2",
+          "path": "documents/synthetic/report-075.png",
+          "hybrid_rank": 50,
+          "logistic_rank": 73,
+          "score": -2.2114257772172223,
+          "negative_contributions": [
+            [
+              "lexical_reciprocal_rank",
+              -0.49742710826827813
+            ],
+            [
+              "hybrid_score",
+              -0.3048898483015458
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.25211072491242525
+            ]
+          ],
+          "raw_features": {
+            "image_id": "8118ac26002af5dc574cca268f84caa906f7dc739533258b96194bfa908522d2",
+            "visual_cosine": 0.08863252401351929,
+            "semantic_cosine": 0.7937694787979126,
+            "lexical_evidence": 0,
+            "semantic_strength": 0,
+            "hybrid_score": 0.08863252401351929,
+            "lexical_bm25": null,
+            "channel_ranks": {
+              "visual": 50,
+              "semantic": null,
+              "lexical": null,
+              "hybrid": 50
+            },
+            "ocr_characters": 569,
+            "width": 1200,
+            "height": 2100,
+            "status": "ready"
+          }
+        }
+      ],
+      "top_logistic_path": "documents/tesseract-ocr-test/4027656568-arabic.tif"
+    },
+    {
+      "query_id": "screenshots-00-fr",
+      "metrics": {
+        "hybrid": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.0,
+          "ndcg_at_10": 0.0,
+          "judged_fraction_at_10": 0.0,
+          "known_positives": 1
+        },
+        "logistic": {
+          "candidate_recall_at_50": 0.0,
+          "mrr_at_10": 0.0,
+          "ndcg_at_10": 0.0,
+          "judged_fraction_at_10": 0.0,
+          "known_positives": 1
+        }
+      },
+      "positives": [
+        {
+          "image_id": "6df05495f04a877c52b1fd0dc2be80505435bb5cab18529c83fe29573c224db0",
+          "path": "screenshots/JabRef-jabref/0df3ea4eb7-panel-step.png",
+          "hybrid_rank": 23,
+          "logistic_rank": 92,
+          "score": -2.6471728696524925,
+          "negative_contributions": [
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "bm25_log",
+              -0.3948315671705936
+            ],
+            [
+              "lexical_evidence",
+              -0.20921510128228563
+            ]
+          ],
+          "raw_features": {
+            "image_id": "6df05495f04a877c52b1fd0dc2be80505435bb5cab18529c83fe29573c224db0",
+            "visual_cosine": 0.11736620962619781,
+            "semantic_cosine": 0.8124619126319885,
+            "lexical_evidence": 0.0,
+            "semantic_strength": 0,
+            "hybrid_score": 0.11736620962619781,
+            "lexical_bm25": -8.567575213622227,
+            "channel_ranks": {
+              "visual": 22,
+              "semantic": null,
+              "lexical": 6,
+              "hybrid": 23
+            },
+            "ocr_characters": 290,
+            "width": 1650,
+            "height": 1050,
+            "status": "ready"
+          }
+        }
+      ],
+      "top_logistic_path": "photos/COCO_val2014_000000320480.jpg"
+    },
+    {
+      "query_id": "screenshots-07-fr",
+      "metrics": {
+        "hybrid": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.3333333333333333,
+          "ndcg_at_10": 0.5,
+          "judged_fraction_at_10": 0.1,
+          "known_positives": 1
+        },
+        "logistic": {
+          "candidate_recall_at_50": 0.0,
+          "mrr_at_10": 0.0,
+          "ndcg_at_10": 0.0,
+          "judged_fraction_at_10": 0.0,
+          "known_positives": 1
+        }
+      },
+      "positives": [
+        {
+          "image_id": "7e2c244a661e4294bd02ebfb3feddea510625276ef61fc7efdac1d48d6aec57b",
+          "path": "screenshots/jupyterlab-jupyterlab/de83cbb4e2-4.5-debugger-console.png",
+          "hybrid_rank": 3,
+          "logistic_rank": 57,
+          "score": -1.3817651509170363,
+          "negative_contributions": [
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "bm25_log",
+              -0.23920499287567337
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.21443115428413673
+            ]
+          ],
+          "raw_features": {
+            "image_id": "7e2c244a661e4294bd02ebfb3feddea510625276ef61fc7efdac1d48d6aec57b",
+            "visual_cosine": 0.1203370988368988,
+            "semantic_cosine": 0.8532217741012573,
+            "lexical_evidence": 0.8,
+            "semantic_strength": 0,
+            "hybrid_score": 0.2483370988368988,
+            "lexical_bm25": -4.933824672718129,
+            "channel_ranks": {
+              "visual": 25,
+              "semantic": 21,
+              "lexical": 16,
+              "hybrid": 3
+            },
+            "ocr_characters": 656,
+            "width": 1358,
+            "height": 659,
+            "status": "ready"
+          }
+        }
+      ],
+      "top_logistic_path": "screenshots/JabRef-jabref/ef6bab7c18-12-10-run-single-test-launch-config.png"
+    },
+    {
+      "query_id": "service-workflows-en",
+      "metrics": {
+        "hybrid": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 0.8165901947515999,
+          "judged_fraction_at_10": 0.8,
+          "known_positives": 10
+        },
+        "logistic": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 0.7241528458281338,
+          "judged_fraction_at_10": 0.7,
+          "known_positives": 10
+        }
+      },
+      "positives": [
+        {
+          "image_id": "3545c697cad680c72158637d514769e65b3e1d8d76c08c659ae64c970f3d97db",
+          "path": "diagrams/synthetic/architecture-007.webp",
+          "hybrid_rank": 1,
+          "logistic_rank": 3,
+          "score": 1.5061019226752699,
+          "negative_contributions": [
+            [
+              "bm25_log",
+              -0.7870560331325395
+            ],
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "semantic_strength",
+              -0.11774303785735403
+            ]
+          ],
+          "raw_features": {
+            "image_id": "3545c697cad680c72158637d514769e65b3e1d8d76c08c659ae64c970f3d97db",
+            "visual_cosine": 0.1483730971813202,
+            "semantic_cosine": 0.8495373725891113,
+            "lexical_evidence": 0.8,
+            "semantic_strength": 0.3256228764851895,
+            "hybrid_score": 0.2763730971813202,
+            "lexical_bm25": -30.89185793387563,
+            "channel_ranks": {
+              "visual": 1,
+              "semantic": 6,
+              "lexical": 9,
+              "hybrid": 1
+            },
+            "ocr_characters": 148,
+            "width": 1400,
+            "height": 900,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "d85e543d9df14f256941606501dde1ee6508e757f9887dad1e58b220988f16ed",
+          "path": "diagrams/synthetic/architecture-008.tif",
+          "hybrid_rank": 2,
+          "logistic_rank": 6,
+          "score": 0.3694274856214863,
+          "negative_contributions": [
+            [
+              "bm25_log",
+              -0.7870560331325395
+            ],
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "semantic_strength",
+              -0.11519318100339715
+            ]
+          ],
+          "raw_features": {
+            "image_id": "d85e543d9df14f256941606501dde1ee6508e757f9887dad1e58b220988f16ed",
+            "visual_cosine": 0.14667285978794098,
+            "semantic_cosine": 0.8491818904876709,
+            "lexical_evidence": 0.8,
+            "semantic_strength": 0.3196981747945157,
+            "hybrid_score": 0.274672859787941,
+            "lexical_bm25": -30.89185793387563,
+            "channel_ranks": {
+              "visual": 2,
+              "semantic": 7,
+              "lexical": 11,
+              "hybrid": 2
+            },
+            "ocr_characters": 149,
+            "width": 1400,
+            "height": 900,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "1a06476d5d091cf0c36a412de6ee5fd34507078e7dffff5cba8298bab39a4f33",
+          "path": "diagrams/synthetic/architecture-005.png",
+          "hybrid_rank": 4,
+          "logistic_rank": 8,
+          "score": -0.1893570225883141,
+          "negative_contributions": [
+            [
+              "bm25_log",
+              -0.7870560331325395
+            ],
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "semantic_strength",
+              -0.09985898148562092
+            ]
+          ],
+          "raw_features": {
+            "image_id": "1a06476d5d091cf0c36a412de6ee5fd34507078e7dffff5cba8298bab39a4f33",
+            "visual_cosine": 0.1414995640516281,
+            "semantic_cosine": 0.8470441102981567,
+            "lexical_evidence": 0.8,
+            "semantic_strength": 0.28406850496927966,
+            "hybrid_score": 0.2694995640516281,
+            "lexical_bm25": -30.89185793387563,
+            "channel_ranks": {
+              "visual": 4,
+              "semantic": 12,
+              "lexical": 8,
+              "hybrid": 4
+            },
+            "ocr_characters": 148,
+            "width": 1400,
+            "height": 900,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "47b7a2420cb9e3cbdf64f569ca935dc1edd81500422e799421fae4fb2527e711",
+          "path": "diagrams/synthetic/flowchart-002.webp",
+          "hybrid_rank": 5,
+          "logistic_rank": 4,
+          "score": 0.681351680917387,
+          "negative_contributions": [
+            [
+              "bm25_log",
+              -0.8297583955153093
+            ],
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "semantic_strength",
+              -0.1360118814806903
+            ]
+          ],
+          "raw_features": {
+            "image_id": "47b7a2420cb9e3cbdf64f569ca935dc1edd81500422e799421fae4fb2527e711",
+            "visual_cosine": 0.13177305459976196,
+            "semantic_cosine": 0.8520842790603638,
+            "lexical_evidence": 0.8598522659819205,
+            "semantic_strength": 0.36807131767273016,
+            "hybrid_score": 0.2693494171568692,
+            "lexical_bm25": -35.35856391369585,
+            "channel_ranks": {
+              "visual": 7,
+              "semantic": 4,
+              "lexical": 3,
+              "hybrid": 5
+            },
+            "ocr_characters": 140,
+            "width": 1400,
+            "height": 900,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "06658320fbd23b6bd742c9f190336762ea8bde3f394df3af1113aaa04c642b13",
+          "path": "diagrams/synthetic/architecture-006.jpg",
+          "hybrid_rank": 6,
+          "logistic_rank": 9,
+          "score": -0.22254105568124527,
+          "negative_contributions": [
+            [
+              "bm25_log",
+              -0.7870560331325395
+            ],
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "semantic_strength",
+              -0.11345009475363489
+            ]
+          ],
+          "raw_features": {
+            "image_id": "06658320fbd23b6bd742c9f190336762ea8bde3f394df3af1113aaa04c642b13",
+            "visual_cosine": 0.13855478167533875,
+            "semantic_cosine": 0.8489388823509216,
+            "lexical_evidence": 0.8,
+            "semantic_strength": 0.3156480391820279,
+            "hybrid_score": 0.26655478167533875,
+            "lexical_bm25": -30.89185793387563,
+            "channel_ranks": {
+              "visual": 5,
+              "semantic": 8,
+              "lexical": 7,
+              "hybrid": 6
+            },
+            "ocr_characters": 146,
+            "width": 1400,
+            "height": 900,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "ab7bff34bff069448078b9c5e2f270fd7d86ecd4fd07702644f8aae72090bee4",
+          "path": "diagrams/synthetic/architecture-009.bmp",
+          "hybrid_rank": 8,
+          "logistic_rank": 14,
+          "score": -0.6053536081462401,
+          "negative_contributions": [
+            [
+              "bm25_log",
+              -0.7870560331325395
+            ],
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "semantic_strength",
+              -0.10289238765242575
+            ]
+          ],
+          "raw_features": {
+            "image_id": "ab7bff34bff069448078b9c5e2f270fd7d86ecd4fd07702644f8aae72090bee4",
+            "visual_cosine": 0.13645997643470764,
+            "semantic_cosine": 0.8474670052528381,
+            "lexical_evidence": 0.8,
+            "semantic_strength": 0.2911167542139696,
+            "hybrid_score": 0.26445997643470764,
+            "lexical_bm25": -30.89185793387563,
+            "channel_ranks": {
+              "visual": 6,
+              "semantic": 10,
+              "lexical": 10,
+              "hybrid": 8
+            },
+            "ocr_characters": 149,
+            "width": 1400,
+            "height": 900,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "063d919e4b0e75ef1ad7d24d13554ff57f45953e67722460b21571430afc4da0",
+          "path": "diagrams/synthetic/flowchart-001.jpg",
+          "hybrid_rank": 9,
+          "logistic_rank": 1,
+          "score": 3.455809128939422,
+          "negative_contributions": [
+            [
+              "bm25_log",
+              -0.8297583955153093
+            ],
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "semantic_strength",
+              -0.12965947149811297
+            ]
+          ],
+          "raw_features": {
+            "image_id": "063d919e4b0e75ef1ad7d24d13554ff57f45953e67722460b21571430afc4da0",
+            "visual_cosine": 0.12122765928506851,
+            "semantic_cosine": 0.851198673248291,
+            "lexical_evidence": 0.8598522659819205,
+            "semantic_strength": 0.35331122080485095,
+            "hybrid_score": 0.25880402184217577,
+            "lexical_bm25": -35.35856391369585,
+            "channel_ranks": {
+              "visual": 10,
+              "semantic": 5,
+              "lexical": 1,
+              "hybrid": 9
+            },
+            "ocr_characters": 142,
+            "width": 1400,
+            "height": 900,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "899a9ee07a71222b9b0125e7ab5735ceb42f2c0eb7ed30a9f75c048b7166e49a",
+          "path": "diagrams/synthetic/flowchart-000.png",
+          "hybrid_rank": 10,
+          "logistic_rank": 12,
+          "score": -0.38867918164479964,
+          "negative_contributions": [
+            [
+              "bm25_log",
+              -0.8297583955153093
+            ],
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.11851951995758424
+            ]
+          ],
+          "raw_features": {
+            "image_id": "899a9ee07a71222b9b0125e7ab5735ceb42f2c0eb7ed30a9f75c048b7166e49a",
+            "visual_cosine": 0.12104880064725876,
+            "semantic_cosine": 0.847815752029419,
+            "lexical_evidence": 0.8598522659819205,
+            "semantic_strength": 0.29692920049031646,
+            "hybrid_score": 0.258625163204366,
+            "lexical_bm25": -35.35856391369585,
+            "channel_ranks": {
+              "visual": 11,
+              "semantic": 9,
+              "lexical": 4,
+              "hybrid": 10
+            },
+            "ocr_characters": 140,
+            "width": 1400,
+            "height": 900,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "e7025d2cce1990e4c653ac2d631a251c0c0380414ad80175df89d63f5bc0af16",
+          "path": "diagrams/synthetic/flowchart-004.bmp",
+          "hybrid_rank": 11,
+          "logistic_rank": 13,
+          "score": -0.3910756773679225,
+          "negative_contributions": [
+            [
+              "bm25_log",
+              -0.8297583955153093
+            ],
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "semantic_strength",
+              -0.16886245177422335
+            ]
+          ],
+          "raw_features": {
+            "image_id": "e7025d2cce1990e4c653ac2d631a251c0c0380414ad80175df89d63f5bc0af16",
+            "visual_cosine": 0.11593037843704224,
+            "semantic_cosine": 0.8566640615463257,
+            "lexical_evidence": 0.8598522659819205,
+            "semantic_strength": 0.4444010257720954,
+            "hybrid_score": 0.2535067409941495,
+            "lexical_bm25": -35.35856391369585,
+            "channel_ranks": {
+              "visual": 15,
+              "semantic": 2,
+              "lexical": 6,
+              "hybrid": 11
+            },
+            "ocr_characters": 142,
+            "width": 1400,
+            "height": 900,
+            "status": "ready"
+          }
+        },
+        {
+          "image_id": "ace3bd9dbe92edc616ec21a2c9d936fe74750162fbe420a0e2556879b24f7bea",
+          "path": "diagrams/synthetic/flowchart-003.tif",
+          "hybrid_rank": 12,
+          "logistic_rank": 5,
+          "score": 0.4719899502799152,
+          "negative_contributions": [
+            [
+              "bm25_log",
+              -0.8297583955153093
+            ],
+            [
+              "lexical_missing",
+              -0.7074754472859878
+            ],
+            [
+              "visual_reciprocal_rank",
+              -0.17896802898692404
+            ]
+          ],
+          "raw_features": {
+            "image_id": "ace3bd9dbe92edc616ec21a2c9d936fe74750162fbe420a0e2556879b24f7bea",
+            "visual_cosine": 0.11173173785209656,
+            "semantic_cosine": 0.8578798174858093,
+            "lexical_evidence": 0.8598522659819205,
+            "semantic_strength": 0.46466362476348944,
+            "hybrid_score": 0.24930810040920384,
+            "lexical_bm25": -35.35856391369585,
+            "channel_ranks": {
+              "visual": 17,
+              "semantic": 1,
+              "lexical": 5,
+              "hybrid": 12
+            },
+            "ocr_characters": 140,
+            "width": 1400,
+            "height": 900,
+            "status": "ready"
+          }
+        }
+      ],
+      "top_logistic_path": "diagrams/synthetic/flowchart-001.jpg"
+    }
+  ],
+  "artifacts": {
+    "training": "runs/logistic-reranker-v1/final-training",
+    "repeated_training": "runs/logistic-reranker-v1/final-training-repeat",
+    "production": "runs/logistic-reranker-v1/final-production",
+    "previous_production": "runs/logistic-reranker-v1/production-evaluation",
+    "validation": "runs/logistic-reranker-v1/validation-final.json",
+    "diagnostics": "runs/logistic-reranker-v1/failure-diagnostics.json"
+  },
+  "limitations": [
+    "Candidate replay isolates ranking cost; it is not full search latency.",
+    "Known-judgment metrics; unjudged candidates may be relevant.",
+    "Agent review only, no independent human review.",
+    "Test was previously reported for hybrid and includes a corrected test intent.",
+    "Only 34 original positive source components; validation lacks text-heavy sources.",
+    "Native Windows/Linux inference and 8 GB hardware were not exercised in this study.",
+    "Exploratory cluster intervals use only 11 test components; nDCG delta interval crosses zero.",
+    "No feature, coefficient, regularization or label changes were made in response to inspected test performance."
+  ]
+}

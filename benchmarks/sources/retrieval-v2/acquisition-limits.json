@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "date": "2026-10-20",
+  "plan_sha256": "219e607d07e8a8521f2591f7279559f3244e8e00bddb71b0f6802e1ba9bcfcce",
+  "planned_sources": 55,
+  "acquired_sources": 52,
+  "decision": "Freeze all acquired sources before any new retrieval outcomes. Do not substitute easier images. Preserve the unacquired original plan for later versions.",
+  "deferred": [
+    {
+      "title": "File:FileZilla-3.0-en.png",
+      "split": "train",
+      "category": "screenshots",
+      "content_language": "en",
+      "status": "HTTP429"
+    },
+    {
+      "title": "File:Ubuntu 24.04.1 LTS GNOME Settings Sound - English.png",
+      "split": "validation",
+      "category": "screenshots",
+      "content_language": "en",
+      "status": "not-requested-after-rate-limit"
+    },
+    {
+      "title": "File:VLC Media Player Screenshot.png",
+      "split": "validation",
+      "category": "screenshots",
+      "content_language": "en",
+      "status": "not-requested-after-rate-limit"
+    }
+  ],
+  "last_failure": {
+    "errors": [
+      {
+        "title": "File:FileZilla-3.0-en.png",
+        "error": "HTTP 429 for https://upload.wikimedia.org/wikipedia/commons/f/ff/FileZilla-3.0-en.png; retry after 600 seconds",
+        "transfer_details": ""
+      }
+    ],
+    "complete": 52,
+    "expected": 55
+  },
+  "server_pause": {
+    "not_before": 1792485312.204181,
+    "retry_after_seconds": 600,
+    "error": "HTTP 429 for https://upload.wikimedia.org/wikipedia/commons/f/ff/FileZilla-3.0-en.png; retry after 600 seconds"
+  },
+  "limitation": "Fresh validation software screenshots contain Arabic/French but no English interface source; all three query languages are still evaluated."
+}

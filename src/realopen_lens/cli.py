@@ -213,6 +213,9 @@ def find_images(
     limit: Annotated[int, typer.Option(min=1, max=100)] = 10,
     mode: Annotated[str, typer.Option(help="hybrid, visual, lexical, or semantic")] = "hybrid",
     threads: Annotated[int, typer.Option(min=1, max=8)] = 2,
+    reranker: Annotated[
+        Path | None, typer.Option(help="Experimental local logistic JSON model; hybrid mode only")
+    ] = None,
 ):
     """Search a saved collection after indexing, including across restarts."""
     from dataclasses import asdict
@@ -227,6 +230,7 @@ def find_images(
             limit=limit,
             mode=mode,
             threads=threads,
+            reranker=reranker,
         )
         typer.echo(json.dumps([asdict(r) for r in results], ensure_ascii=False, indent=2))
     except (OSError, ValueError, RuntimeError, TimeoutError, sqlite3.Error) as error:

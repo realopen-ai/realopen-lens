@@ -131,6 +131,12 @@ sequentially in short-lived processes and verify compatibility with the index.
 Cold queries therefore pay model startup costs; a resident API worker is future
 work. Use `--limit` for 1–100 results.
 
+An optional `--reranker PATH` selects an
+[experimental logistic model](logistic-reranker.md) for hybrid candidates.
+It requires a separately trained local JSON model and compatible encoders.
+Without this flag, ranking is unchanged. Text-heavy regressions in the initial
+evaluation prevent making the learned model the default.
+
 Commands return JSON. Each result contains a stable content ID, matching original
 paths, a local thumbnail path, oriented dimensions, an OCR snippet, and visual
 similarity when computed. Similarity is a cosine score, not a calibrated relevance

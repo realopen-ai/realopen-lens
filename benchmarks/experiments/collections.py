@@ -29,6 +29,9 @@ def run(args):
     corpus, bundle = load(args.corpus, args.judgments)
     state = snapshot(args.index_dir, args.collection, corpus)
     verify(args.models, "int8")
+    reranker = getattr(args, "reranker", None)
+    reranker_sha256 = digest(reranker) if reranker is not None else None
+    defer_test = getattr(args, "defer_test_metrics", False)
     root = Path(__file__).resolve().parents[2]
     source_root = root / "src/realopen_lens"
     installed_root = Path(realopen_lens.__file__).parent
@@ -53,6 +56,10 @@ def run(args):
             key: version(key) for key in ("numpy", "onnxruntime", "tokenizers", "Pillow", "psutil")
         },
     }
+    if reranker is not None:
+        identity["reranker_sha256"] = reranker_sha256
+    if defer_test:
+        identity["defer_test_metrics"] = True
     args.output.mkdir(parents=True, exist_ok=True)
     config = args.output / "config.json"
     if config.exists() and json.loads(config.read_text(encoding="utf-8")) != identity:
@@ -60,6 +67,8 @@ def run(args):
     save_json(config, identity)
     save_json(args.output / "corpus.json", corpus)
     save_json(args.output / "judgments.json", bundle)
+    if reranker is not None:
+        shutil.copyfile(reranker, args.output / "reranker.json")
     for source, name in ((source_root, "engine-source"), (root / "benchmarks", "harness-source")):
         if not (args.output / name).exists():
             shutil.copytree(
@@ -90,6 +99,8 @@ def run(args):
                 or source_hash(root / "benchmarks") != identity["harness_sha256"]
             ):
                 raise ValueError("Source changed during evaluation")
+            if reranker is not None and digest(reranker) != reranker_sha256:
+                raise ValueError("Reranker changed during evaluation")
             memory = MemoryMonitor()
             memory.phase = "hybrid_query"
             started = perf_counter()
@@ -109,32 +120,42 @@ def run(args):
                         limit=50,
                         threads=args.threads,
                         trace=trace,
+                        **({"reranker": reranker} if reranker is not None else {}),
                     )
                     if (
                         trace["generation"] != state["generation"]
                         or trace["searchable_images"] != state["unique_images"]
                     ):
                         raise ValueError("Search observed a changed snapshot")
-                    if [r.image_id for r in results] != trace["rankings"]["hybrid"]:
+                    mode = "logistic" if reranker is not None else "hybrid"
+                    if reranker is not None and trace.get("reranker_sha256") != reranker_sha256:
+                        raise ValueError("Search observed a changed reranker")
+                    if [r.image_id for r in results] != trace["rankings"][mode]:
                         raise ValueError("Candidate trace differs from returned ranking")
-                    labels = {r["image_sha256"]: r["grade"] for r in query["judgments"]}
-                    positives = {key for key, value in labels.items() if value > 0}
-                    record.update(
-                        status="ok",
-                        trace=trace,
-                        metrics={
-                            mode: evaluate(ranking, labels)
-                            for mode, ranking in trace["rankings"].items()
-                        },
-                        pool_recall=len({r["image_id"] for r in trace["candidates"]} & positives)
-                        / len(positives),
-                        missed_pool_positives=sorted(
-                            positives - {r["image_id"] for r in trace["candidates"]}
-                        ),
-                        missed_hybrid_top50_positives=sorted(
-                            positives - set(trace["rankings"]["hybrid"])
-                        ),
-                    )
+                    record.update(status="ok", trace=trace, metrics={})
+                    if defer_test and query.get("study_role", query["split"]) == "test":
+                        # Capture production candidates without scoring the fresh holdout.
+                        # The study scores it only after freezing validation selection.
+                        record["quality_deferred"] = True
+                    else:
+                        labels = {r["image_sha256"]: r["grade"] for r in query["judgments"]}
+                        positives = {key for key, value in labels.items() if value > 0}
+                        record.update(
+                            metrics={
+                                mode: evaluate(ranking, labels)
+                                for mode, ranking in trace["rankings"].items()
+                            },
+                            pool_recall=len(
+                                {r["image_id"] for r in trace["candidates"]} & positives
+                            )
+                            / len(positives),
+                            missed_pool_positives=sorted(
+                                positives - {r["image_id"] for r in trace["candidates"]}
+                            ),
+                            missed_hybrid_top50_positives=sorted(
+                                positives - set(trace["rankings"]["hybrid"])
+                            ),
+                        )
             except Exception as error:
                 record.update(
                     status="error", error_type=type(error).__name__, error=str(error)[:2000]
@@ -157,6 +178,8 @@ def run(args):
             print(f"{query['id']}: {record['status']} ({record['seconds']:.2f}s)", flush=True)
         if snapshot(args.index_dir, args.collection, corpus) != state:
             raise ValueError("Collection changed during evaluation")
+        if reranker is not None and digest(reranker) != reranker_sha256:
+            raise ValueError("Reranker changed during evaluation")
         summary = export(args.output, db, corpus, bundle, identity)
         if summary["failed_queries"]:
             raise ValueError(f"{summary['failed_queries']} queries failed; see retained records")
@@ -174,6 +197,12 @@ def main():
     parser.add_argument("--models", type=Path, default=Path("models"))
     parser.add_argument("--threads", type=int, choices=range(1, 9), default=2)
     parser.add_argument("--retry-errors", action="store_true")
+    parser.add_argument(
+        "--defer-test-metrics",
+        action="store_true",
+        help="Capture fresh test candidates without scoring before model freeze",
+    )
+    parser.add_argument("--reranker", type=Path, help="Experimental local logistic JSON model")
     args = parser.parse_args()
     enforce()
     run(args)

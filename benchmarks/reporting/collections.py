@@ -23,6 +23,7 @@ def candidate_rows(record: dict, query: dict, images: dict) -> list[dict]:
                 "language": query["language"],
                 "query_family": query["family"],
                 "query_split": query["split"],
+                "query_role": query.get("study_role", query["split"]),
                 "image_id": key,
                 "image_path": image["path"],
                 "image_split": image["split"],
@@ -75,6 +76,7 @@ def export(output: Path, db: sqlite3.Connection, corpus: dict, bundle: dict, ide
                 for tag in (
                     "all",
                     "split:" + query["split"],
+                    "role:" + query.get("study_role", query["split"]),
                     "language:" + query["language"],
                     "kind:" + query.get("kind", "mixed"),
                     "family:" + query["family"],
@@ -94,18 +96,23 @@ def export(output: Path, db: sqlite3.Connection, corpus: dict, bundle: dict, ide
         for group, values in sorted(groups.items())
     }
     ok = [r for r in records if r["status"] == "ok"]
+    graded = [r for r in ok if not r.get("quality_deferred", False)]
+    learned = bool(identity.get("reranker_sha256"))
+    latency_key = "reranked_end_to_end_seconds" if learned else "hybrid_end_to_end_seconds"
     summary: dict = {
         "identity": identity,
         "expected_queries": len(queries),
         "processed_queries": len(records),
         "successful_queries": len(ok),
         "failed_queries": len(records) - len(ok),
+        "quality_deferred_queries": len(ok) - len(graded),
         "execution_success_rate": len(ok) / len(queries),
         "aggregate": aggregate,
         "exports": dict(counts),
-        "hybrid_end_to_end_seconds": distribution([r["seconds"] for r in records]),
+        "request_mode": "hybrid+logistic" if learned else "hybrid",
+        latency_key: distribution([r["seconds"] for r in records]),
         "peak_tree_rss_mib": distribution([r["peak_tree_rss_mib"] for r in records]),
-        "candidate_pool_recall": distribution([r["pool_recall"] for r in ok]),
+        "candidate_pool_recall": distribution([r["pool_recall"] for r in graded]),
         "limitations": [
             "Relevance uses reviewed known positives; judgments are incomplete.",
             "Unjudged items contribute zero gain to known-judgment metrics, "
@@ -138,12 +145,18 @@ def export(output: Path, db: sqlite3.Connection, corpus: dict, bundle: dict, ide
         "",
         f"Images: {identity['snapshot']['unique_images']}; paths: {identity['snapshot']['paths']}.",
         f"Queries: {len(ok)}/{len(queries)} successful; {len(records) - len(ok)} errors.",
+        f"Quality deferred until model freeze: {len(ok) - len(graded)} queries.",
+        f"Request mode: {summary['request_mode']}.",
         "",
-        "| Mode | Split | Queries | Recall@50 | MRR@10 | nDCG@10 |",
+        "| Mode | Cohort | Queries | Recall@50 | MRR@10 | nDCG@10 |",
         "|---|---|---:|---:|---:|---:|",
     ]
-    for mode in ("visual", "lexical", "semantic", "hybrid"):
-        for split in ("all", "split:train", "split:validation", "split:test"):
+    cohort = "role" if any("study_role" in q for q in queries.values()) else "split"
+    for mode in ("visual", "lexical", "semantic", "hybrid", "logistic"):
+        for split in (
+            "all",
+            *[cohort + ":" + s for s in ("train", "validation", "test", "diagnostic")],
+        ):
             group_metrics = aggregate.get(mode + "/" + split)
             if group_metrics:
                 lines.append(

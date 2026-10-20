@@ -98,7 +98,9 @@ def download_image(row: dict[str, Any], output: Path) -> dict[str, Any]:
 
 def save_json(path: Path, content: Any) -> None:
     temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(json.dumps(content, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    temporary.write_text(
+        json.dumps(content, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
+    )
     os.replace(temporary, path)
 
 

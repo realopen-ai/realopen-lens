@@ -1,0 +1,914 @@
+{
+  "version": 1,
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Codex",
+    "method": "Visual inspection of original-image contact sheets and enlarged originals where details were needed; multilingual intents authored by the same agent before any new retrieval ranking. Distinct required subjects from other reviewed source groups receive explicit negatives; same-work variants and ambiguities remain unjudged.",
+    "date": "2026-10-20",
+    "independent_human_review": false,
+    "independent_native_speaker_review": false
+  },
+  "observations": {
+    "screenshots/commons/gnome/77cb1c90f8099706.png": {
+      "sha256": "9f9ecda1ac508164787a3b21168899c6ce33ac68345fd3e977bde0c9d940a92e",
+      "description": "Arabic GNOME desktop with several overlapping file manager windows."
+    },
+    "screenshots/commons/gnome/c75e360fb00cd9ca.png": {
+      "sha256": "47a3382d4757a4912173b3fd9bc0ea1e87683857f6baf4d95ed6a378caf0da6b",
+      "description": "Green Arabic GNOME desktop with an Arabeyes Wiki browser and file manager."
+    },
+    "screenshots/commons/audacity/8e2c842cc8cf08ae.png": {
+      "sha256": "34fa216e6adb10dd0da87d4dde47d5340dfb3c8172c0ffdb341845df03b8c6b3",
+      "description": "Audacity editor with two waveform tracks and empty dark space below."
+    },
+    "screenshots/commons/audacity/deeaf03a0e415542.png": {
+      "sha256": "dda8828928e527e7993e9bb13ba98a77d17fac918ab6b5743e7cbdc882f10b51",
+      "description": "Audacity Edit Metadata dialog with a Tag and Value table."
+    },
+    "screenshots/commons/audacity/f5d2767683fcc879.png": {
+      "sha256": "13611d20711110cfbafea387bed50e6824fd42c46f9c3ccaf7bb4e1834c1ec37",
+      "description": "Dark Audacity multitrack timeline with orange audio clips."
+    },
+    "screenshots/commons/libreoffice/92fc0b8706be9fc4.png": {
+      "sha256": "aad99ec88b3aec9fcf5be8662bb4bab164e18f6459a9fd89f7ca702f2f40a1f5",
+      "description": "LibreOffice Base form wizard selecting fields from the personnes table."
+    },
+    "screenshots/commons/libreoffice/341c81b9502b48b0.png": {
+      "sha256": "ae1a36f992dff7b6595d4f0cd1732f66d4e25d3b66411c8ab5be83a6c05e27c4",
+      "description": "Database relationship diagram connecting personnes, taches and rendezvous tables."
+    },
+    "screenshots/commons/libreoffice/e6b4d563af714b38.png": {
+      "sha256": "3147694d0184524115e81ce7c7757034347367221e6b22dd4d401eb97ca86f70",
+      "description": "LibreOffice Calc Solver dialog with objective and variable cells over a spreadsheet."
+    },
+    "screenshots/commons/brave/f8c5915bdeeef9d0.png": {
+      "sha256": "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c",
+      "description": "Brave About settings page in Arabic with the red lion logo."
+    },
+    "screenshots/commons/filezilla/bc6a8e36171962a5.png": {
+      "sha256": "c429062a91c9107b0c020f1413f01b48a1a83c1bc8e50cdeab0f3569f80af2c6",
+      "description": "FileZilla FTP client showing local and remote file lists."
+    },
+    "screenshots/commons/filezilla/e2dd8df84b78f301.png": {
+      "sha256": "660623541f225a4c79d2549a51bcc77fea5b54c7c4c6bce891d7fac4174b656a",
+      "description": "FileZilla unknown host key warning for 192.168.116.6:2222."
+    },
+    "screenshots/commons/gimp/4edff6d234c9c1d4.png": {
+      "sha256": "315eb01660ee448bb978d01f69fc4bf09e9e1c65369320b8674e73ecc598917e",
+      "description": "GIMP foreground color dialog showing HTML color 6b8e23 and green sliders."
+    },
+    "screenshots/commons/gimp/4d406b11ee5eb862.png": {
+      "sha256": "45d19ff5ad9e20f7fc720b12d8a2cf584036be86965f29fd99ee23ada15aea9e",
+      "description": "Arabic GIMP editing a beige ornamental geometric pattern."
+    },
+    "screenshots/commons/gimp/821911e5fa83390c.png": {
+      "sha256": "ace11ae609043829d52d07e63a1a2d871ce9690b4009e1e5b8c03d37c187bc51",
+      "description": "GIMP About dialog over a photograph of white flowers."
+    },
+    "screenshots/commons/inkscape/64bc82d3b94bdc7f.png": {
+      "sha256": "c617f72fb7af6af964ce6275837982d014632192ab8011b01f1ec9dc51df2039",
+      "description": "Inkscape blank page with a palette menu listing minuscule, petit, moyen and grand."
+    },
+    "screenshots/commons/inkscape/3b09aa1dd1e0cf86.png": {
+      "sha256": "5ebd9a5cf0c7f427b0ec6b06ab87efcb323252ee5f6d2892211c6bacda684a9f",
+      "description": "Inkscape drawing of a cube with red, green and blue faces."
+    },
+    "screenshots/commons/inkscape/b5a3cf5cde199767.png": {
+      "sha256": "8525e2c260d7f67e3e8b0ca9d259ea7a868fc3dabace15a3fd5d15641d9b2703",
+      "description": "Inkscape Welcome setup screen with a geometric giraffe and appearance options."
+    },
+    "screenshots/commons/inkscape/7e9aeef749d8e7da.png": {
+      "sha256": "925e72f1338dbb9b55bab231326ee11cff90281b5a02b426d61cd77319eda180",
+      "description": "Inkscape Fill and Stroke dialog with a green color wheel and RGBA 5AB532FF."
+    },
+    "screenshots/commons/vlc/df42b7d7d76535f0.png": {
+      "sha256": "bed9fd1754d63211ba81c911001b67c6c6257a935367b22d50c762ca42ddbb6f",
+      "description": "VLC output stream settings saving video.ogg with encapsulation format options."
+    },
+    "screenshots/commons/vlc/0ba1b42abe683c4d.png": {
+      "sha256": "a563b0cdf09ca3c6674ee861e81635da0f26ae0c37fdf82f1c725a77f259500d",
+      "description": "VLC simple preferences for interface language, style and playlist options."
+    },
+    "screenshots/commons/vlc/ae53ea718b4d1746.png": {
+      "sha256": "11ce0401fc4088abcad972616855bc70a23de61e8f71dc5c9b6df3be8ed7b690",
+      "description": "VLC playlist beside brightness, contrast, hue, saturation and gamma sliders."
+    },
+    "screenshots/commons/kde/b17ef78cc0bc07d9.png": {
+      "sha256": "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4",
+      "description": "Arabic KDE desktop with an About KDE window showing a green dragon."
+    },
+    "screenshots/commons/kde/cc4e626f6e613c4f.png": {
+      "sha256": "5a5e86f06e3bc3d2317b3b92c0725174f75d37c5785fe2da2befb37a7c415440",
+      "description": "Arabic KDE desktop with an About KDE window showing a green dragon."
+    },
+    "screenshots/commons/kde/cdf5e7b1e2ed95d9.png": {
+      "sha256": "c8ea03a6b2b5e395ef91dbf4ea8321f42568d9a02a1977b2758b6d2120b72664",
+      "description": "Arabic KDE neon system information beside a file manager."
+    },
+    "documents/commons/palace-hotel-sf-1911/c02afcfd6bb7b851.jpg": {
+      "sha256": "8f4d67a96b09e2f48b9f397d4d81dd6ee6e3a2df58a50306da294a2944817a35",
+      "description": "Old Palace Hotel San Francisco advertisement with a hotel building illustration."
+    },
+    "documents/commons/kalee-hotel-shanghai-1912/2189b793bd043b69.png": {
+      "sha256": "f5366eab4c43804bfe7570fdd15c47db2f6b78d1fd6f7d1eca29b0baa6eee479",
+      "description": "Hotel Kalee Shanghai advertisement mentioning Cuisine Française and electric lights."
+    },
+    "documents/commons/western-union-1930/6a2665073c2e3ebb.jpg": {
+      "sha256": "41769aa03032a5f2f3d47810ebca0495c6ee81579510a6d530bf040b63855aba",
+      "description": "Yellowed Western Union telegram with typed congratulations and a handwritten note."
+    },
+    "documents/commons/job-municipal-order-2022/c5617bd3fd2cd4c5.jpg": {
+      "sha256": "f25452a7c42692c290b9ebfabcec41e5432e311b21b161b36fdae0417520ad1c",
+      "description": "French municipal order posted on a tree with parked cars in the background."
+    },
+    "documents/commons/dc-residency-act-1790/58fa4528c2956cfe.jpg": {
+      "sha256": "c660de74435f9bf50ddd013fe0323cdb2fc940a2163c5a452f966ab7eea8f509",
+      "description": "Faded handwritten Congress act establishing the temporary and permanent seat of government, with signatures below."
+    },
+    "documents/commons/french-birth-record-1860/bf70e664c29fb1a1.jpg": {
+      "sha256": "c04229d98c0d942ba33a60ab66273899ead334bb64f6628c0d25e71dc1018908",
+      "description": "French handwritten birth record with the name William and large signatures below."
+    },
+    "documents/commons/al-arab-first-issue/6ba1c8eefc7425df.png": {
+      "sha256": "9287c2827c0e2a29f574d8679170169091dcad57f0136ab0901dc0215c9baf1e",
+      "description": "Old Arabic newspaper page headed AL-ARAB above dense columns of text."
+    },
+    "documents/commons/al-hoda-first-issue/8f174a22f7a7de6c.jpg": {
+      "sha256": "c62a442a6d9ddb4f6477911d74d7f716ab8074b2822c6ec4bd1a88b374d6db00",
+      "description": "Aged Arabic Al-Hoda newspaper front page with a man’s portrait in the middle."
+    },
+    "documents/commons/al-iqbal-1902/71cc18e544418d27.jpg": {
+      "sha256": "5e871f68a00bf10b8dfbb14bb817d8befac575060e458d4b1afd89fc0c3c3969",
+      "description": "Black and white Arabic newspaper with the large masthead الإقبال."
+    },
+    "documents/commons/syria-mandate-order-1924/5be7f04f81895e5f.png": {
+      "sha256": "b2fd41584574feb569bf1bd1e620ae1c2087b88778c42bc4524db18fee570050",
+      "description": "French printed decree headed Arrêté N° 2980, Portant organisation de l’État de Syrie."
+    },
+    "photos/COCO_val2014_000000314541.jpg": {
+      "sha256": "2488efdc727a1ee1b50136a6b286a09761b2f188ac938fa89b729ad86268d915",
+      "description": "Weathered multicolored park bench on a green lawn with trees behind."
+    },
+    "photos/COCO_val2014_000000536720.jpg": {
+      "sha256": "700570b406d21c24cb96ad4147e1154056a5543654992fbd534a447b37199d2d",
+      "description": "Zoo visitors holding food toward a giraffe beside a metal railing."
+    },
+    "photos/COCO_val2014_000000145873.jpg": {
+      "sha256": "e4e5f84ddaa03aa73c3fe837ee0a3c7f1ce39f2a02bb9e85847ae1aad43e2953",
+      "description": "Truck transporting a helicopter beneath a gantry of road signals."
+    },
+    "photos/COCO_val2014_000000342650.jpg": {
+      "sha256": "2ffa25d9afb7aabe6de8e11d35474450bd525ea12317ca3e56b86dc77be1c1ed",
+      "description": "Man preparing a pizza on a kitchen counter beside the sink."
+    },
+    "photos/COCO_val2014_000000069009.jpg": {
+      "sha256": "a5d73c02e6a69602bcb752fd421380431264730795af77b3bad06eee3a68c8de",
+      "description": "Two children in blue caps watching a bear through zoo glass."
+    },
+    "photos/COCO_val2014_000000304355.jpg": {
+      "sha256": "a903a745d9d62e402052e27a13a37727b68ded1c09584875cf16f47a06a24f8a",
+      "description": "Bathroom with wooden vanity, white sink, toilet and pale shower curtain."
+    },
+    "photos/COCO_val2014_000000350405.jpg": {
+      "sha256": "ea113f2a601d32d5032df428be396854d97bc3f0b35520280ba860a9d29d9c05",
+      "description": "Snowboarder leaning into a turn on white snow under a blue sky."
+    },
+    "photos/COCO_val2014_000000521964.jpg": {
+      "sha256": "37521389cef114b5509936b32396b64694e16da02d21dd48213c03e80f10639a",
+      "description": "Roadside fruit shop with bunches of bananas hanging above the counter."
+    },
+    "photos/COCO_val2014_000000447546.jpg": {
+      "sha256": "35eb14a59dd6c1983eeb359c6bb2fd97f39e0161227461f9f85f6e349cef992a",
+      "description": "Busy cafeteria serving counter with people and trays of green lettuce."
+    },
+    "photos/COCO_val2014_000000144959.jpg": {
+      "sha256": "1be5bcc6fc971df210f392a147f8545d8730952f30cafefc05b0821cc9ab613e",
+      "description": "Food platter with pepperoni mushroom pizza, a sandwich, hummus and vegetables."
+    },
+    "screenshots/commons/gimp/68e3caf6599e39b8.png": {
+      "sha256": "c5bafab6372fb28be5a6c50654f58407d24d09b98e35d3dfab6e42e9132f00e2",
+      "description": "Russian GIMP interface editing a dark blue Debian-style spiral graphic."
+    },
+    "documents/commons/louis-xvi-council-1785/0c80286ca438e9cf.png": {
+      "sha256": "5d4bb0e28ffb4c269dea2f61a545066797fac9a0e51ff0e1ceb4fa513e711c50",
+      "description": "Old French royal council decree with an ornamental banner and the heading Arrêt du Conseil d’État du Roi."
+    },
+    "documents/commons/french-assembly-1790/95a39756541aee14.jpg": {
+      "sha256": "d5a5bf8f2ec70cf8a822bb1937c7d2b582e6ad2512cd16dd58eccb48e4320cc6",
+      "description": "French National Assembly decree with two numbered articles about monastic vows and religious orders."
+    },
+    "screenshots/commons/brave/1e61ac1338c3e705.jpg": {
+      "sha256": "316a3a8f040a1d43543e5955776207dd409a7417db3649d4be2eb8e1e6a95a7d",
+      "description": "Web browser on the multilingual Wikipedia home page with the puzzle globe and language links."
+    },
+    "documents/commons/tunisia-constitution-2022/771460776364cd2b.jpg": {
+      "sha256": "587b2e9c611f0b8de0c68c74db748e210fe273ee72f4d504c99c5cea090bd59a",
+      "description": "Gold-lettered Arabic cover of the Tunisian Republic constitution dated 2022."
+    },
+    "documents/commons/morocco-flag-dahir-1915/579a9cb5ceaf5678.jpg": {
+      "sha256": "f1d424c175639f97aae705a240a2d626a6362968e2aa6b9d3f94a0513f0c5529",
+      "description": "Moroccan royal decree describing a red flag with a green five-pointed star."
+    },
+    "documents/commons/morocco-flag-dahir-1915/f2f2b26192dfa67a.jpg": {
+      "sha256": "011f263664462bbfe195d5c2639f8cd14c9cc98416647fafde078afbaae5bfee",
+      "description": "Moroccan royal decree describing a red flag with a green five-pointed star."
+    },
+    "documents/commons/sale-account/784a7decbe8f346f.jpg": {
+      "sha256": "022b73006477d3cb475f4b4316eb167dc639068656efad9b2aafe19e55f896e5",
+      "description": "Old French sales account headed Le Navire le Bellier with two dense tabular ledgers."
+    },
+    "documents/commons/tunisia-constitution-1861/477e3272cfcc8832.jpg": {
+      "sha256": "7bdaca16754ce69db99f56917cc2682bd39ea5493db3de2b7b05ec2b09acd377",
+      "description": "Aged Arabic handwritten Tunisian state law page with numbered articles."
+    },
+    "documents/commons/lebanese-constitution-1930/00eb54f004893658.png": {
+      "sha256": "1d6ae3b5a41bd3c664ef94106e50dddaa80e2282d5fb020441622f08a128c844",
+      "description": "French cover titled Constitution de la République Libanaise, promulgated 25 May 1926."
+    },
+    "documents/commons/laurore-zola-1898/88b2b135d7b4690c.jpg": {
+      "sha256": "a473718423b7979958edd61335418f11b97c2f2e65a6a2d49b7421228de49ef5",
+      "description": "L’Aurore newspaper front page headed J’Accuse…! Lettre au Président de la République par Émile Zola."
+    },
+    "documents/commons/wellcome-arabic-text/546682726aba9956.jpg": {
+      "sha256": "fb7d4225957a57d2362c53a2a0191d81781dd4cacf5f35591c810fd237ae32d9",
+      "description": "Arabic manuscript page with black calligraphy and red section marks on cream paper."
+    },
+    "documents/commons/syrian-presidential-decrees-2025/0003824b75f93c58.jpg": {
+      "sha256": "1aa058d36003aa7f99e41601af07fbfaed2d3179f3b1b7ace4fb04346649b752",
+      "description": "Arabic Syrian presidential decree number 10 of 2025 appointing a governor of the central bank."
+    },
+    "documents/commons/syrian-presidential-decrees-2025/525451c0ad04c5a3.jpg": {
+      "sha256": "68d000857fdc947239b345518083890b0deb1c31dbb0d23f75976eae123b4c82",
+      "description": "Arabic Syrian presidential decree number 11 of 2025 extending a fact-finding committee on coastal events."
+    },
+    "documents/commons/new-york-herald-titanic-1912/b186fb485ca7acab.jpeg": {
+      "sha256": "4d4f4fae3f402c2b1699a302c25d93b4e203cae27cb42e70fe27d2c6acd01697",
+      "description": "The New York Herald front page about the Titanic sinking, with portraits and ship illustrations."
+    },
+    "screenshots/commons/brave/0b72b873ac60dfe7.png": {
+      "sha256": "bae620c21834f55b2d3ae398549ef4e3dae8dd030c0694c79dd0145dbe32b68f",
+      "description": "Purple Brave search home page with Arabic text and a central search box."
+    },
+    "documents/commons/michigan-statehood-1837/deeeb8ebc3f2f295.jpg": {
+      "sha256": "4b683f0bbe7ebb03cfff1e29a81311079067e9f0421cc053848740428c017051",
+      "description": "Congress act admitting the State of Michigan into the Union, with printed headings and cursive handwriting."
+    },
+    "documents/commons/apollo11-flight-plan/470e01a1e407aa03.jpg": {
+      "sha256": "edb99b662e283a614df2a3cfcd839eb4e02ddcf83cd8e539a0db32f5a76d76e4",
+      "description": "Apollo 11 flight plan page with a drawing of Earth, star alignment instructions and a vertical time scale."
+    }
+  },
+  "intents": [
+    {
+      "id": "v2-gnome-windows",
+      "positives": [
+        "screenshots/commons/gnome/77cb1c90f8099706.png"
+      ],
+      "translations": {
+        "en": "Arabic GNOME desktop with several overlapping file manager windows.",
+        "fr": "Bureau GNOME en arabe avec plusieurs fenêtres de fichiers superposées.",
+        "ar": "سطح مكتب جنوم بالعربية مع عدة نوافذ متداخلة لمدير الملفات."
+      }
+    },
+    {
+      "id": "v2-gnome-wiki",
+      "positives": [
+        "screenshots/commons/gnome/c75e360fb00cd9ca.png"
+      ],
+      "translations": {
+        "en": "Green Arabic GNOME desktop with an Arabeyes Wiki browser and file manager.",
+        "fr": "Bureau GNOME vert en arabe avec le navigateur Arabeyes Wiki et un gestionnaire de fichiers.",
+        "ar": "سطح مكتب جنوم أخضر بالعربية مع متصفح ويكي عرب آيز ومدير الملفات."
+      }
+    },
+    {
+      "id": "v2-audacity-waveforms",
+      "positives": [
+        "screenshots/commons/audacity/8e2c842cc8cf08ae.png"
+      ],
+      "translations": {
+        "en": "Audacity editor with two waveform tracks and empty dark space below.",
+        "fr": "Éditeur Audacity avec deux pistes audio et une zone sombre vide en dessous.",
+        "ar": "محرر أوداسيتي بمسارين صوتيين ومساحة داكنة فارغة تحتهما."
+      }
+    },
+    {
+      "id": "v2-audacity-metadata",
+      "positives": [
+        "screenshots/commons/audacity/deeaf03a0e415542.png"
+      ],
+      "translations": {
+        "en": "Audacity Edit Metadata dialog with a Tag and Value table.",
+        "fr": "Fenêtre Edit Metadata dans Audacity avec les colonnes Tag et Value.",
+        "ar": "نافذة تحرير البيانات الوصفية في أوداسيتي مع جدول للوسوم والقيم."
+      }
+    },
+    {
+      "id": "v2-audacity-dark",
+      "positives": [
+        "screenshots/commons/audacity/f5d2767683fcc879.png"
+      ],
+      "translations": {
+        "en": "Dark Audacity multitrack timeline with orange audio clips.",
+        "fr": "Montage multipiste Audacity en thème sombre avec des clips audio orange.",
+        "ar": "خط زمني متعدد المسارات في أوداسيتي بمظهر داكن ومقاطع صوتية برتقالية."
+      }
+    },
+    {
+      "id": "v2-base-form",
+      "positives": [
+        "screenshots/commons/libreoffice/92fc0b8706be9fc4.png"
+      ],
+      "translations": {
+        "en": "LibreOffice Base form wizard selecting fields from the personnes table.",
+        "fr": "Assistant formulaire LibreOffice Base pour choisir les champs de la table personnes.",
+        "ar": "معالج النماذج في ليبر أوفيس بيس لاختيار حقول جدول personnes."
+      }
+    },
+    {
+      "id": "v2-base-relationships",
+      "positives": [
+        "screenshots/commons/libreoffice/341c81b9502b48b0.png"
+      ],
+      "translations": {
+        "en": "Database relationship diagram connecting personnes, taches and rendezvous tables.",
+        "fr": "Diagramme de relations entre les tables personnes, taches et rendezvous.",
+        "ar": "مخطط علاقات قاعدة بيانات يربط جداول personnes وtaches وrendezvous."
+      }
+    },
+    {
+      "id": "v2-calc-solver",
+      "positives": [
+        "screenshots/commons/libreoffice/e6b4d563af714b38.png"
+      ],
+      "translations": {
+        "en": "LibreOffice Calc Solver dialog with objective and variable cells over a spreadsheet.",
+        "fr": "Boîte de dialogue Solveur de LibreOffice Calc avec cellule cible et cellules variables.",
+        "ar": "نافذة المحلل في ليبر أوفيس كالك مع خلايا الهدف والمتغيرات فوق جدول بيانات."
+      }
+    },
+    {
+      "id": "v2-brave-about",
+      "positives": [
+        "screenshots/commons/brave/f8c5915bdeeef9d0.png"
+      ],
+      "translations": {
+        "en": "Brave About settings page in Arabic with the red lion logo.",
+        "fr": "Page À propos de Brave en arabe avec le logo du lion rouge.",
+        "ar": "صفحة إعدادات حول متصفح بريف بالعربية مع شعار الأسد الأحمر."
+      }
+    },
+    {
+      "id": "v2-filezilla-ftp",
+      "positives": [
+        "screenshots/commons/filezilla/bc6a8e36171962a5.png"
+      ],
+      "translations": {
+        "en": "FileZilla FTP client showing local and remote file lists.",
+        "fr": "Client FTP FileZilla affichant les listes de fichiers locaux et distants.",
+        "ar": "عميل إف تي بي فايلزيلا يعرض قوائم الملفات المحلية والبعيدة."
+      }
+    },
+    {
+      "id": "v2-filezilla-host",
+      "positives": [
+        "screenshots/commons/filezilla/e2dd8df84b78f301.png"
+      ],
+      "translations": {
+        "en": "FileZilla unknown host key warning for 192.168.116.6:2222.",
+        "fr": "Avertissement FileZilla Clé de l’hôte inconnue pour 192.168.116.6:2222.",
+        "ar": "تحذير فايلزيلا من مفتاح مضيف غير معروف للعنوان 192.168.116.6:2222."
+      }
+    },
+    {
+      "id": "v2-gimp-color",
+      "positives": [
+        "screenshots/commons/gimp/4edff6d234c9c1d4.png"
+      ],
+      "translations": {
+        "en": "GIMP foreground color dialog showing HTML color 6b8e23 and green sliders.",
+        "fr": "Sélecteur de couleur de premier plan GIMP avec la notation HTML 6b8e23.",
+        "ar": "نافذة لون المقدمة في جمب تعرض اللون 6b8e23 وأشرطة تمرير خضراء."
+      }
+    },
+    {
+      "id": "v2-gimp-pattern",
+      "positives": [
+        "screenshots/commons/gimp/4d406b11ee5eb862.png"
+      ],
+      "translations": {
+        "en": "Arabic GIMP editing a beige ornamental geometric pattern.",
+        "fr": "GIMP en arabe affichant un motif géométrique décoratif beige.",
+        "ar": "برنامج جمب بالعربية يعرض زخرفة هندسية بلون بيج."
+      }
+    },
+    {
+      "id": "v2-gimp-about",
+      "positives": [
+        "screenshots/commons/gimp/821911e5fa83390c.png"
+      ],
+      "translations": {
+        "en": "GIMP About dialog over a photograph of white flowers.",
+        "fr": "Fenêtre À propos de GIMP devant une photographie de fleurs blanches.",
+        "ar": "نافذة حول برنامج جمب فوق صورة أزهار بيضاء."
+      }
+    },
+    {
+      "id": "v2-inkscape-palette",
+      "positives": [
+        "screenshots/commons/inkscape/64bc82d3b94bdc7f.png"
+      ],
+      "translations": {
+        "en": "Inkscape blank page with a palette menu listing minuscule, petit, moyen and grand.",
+        "fr": "Page vide Inkscape avec un menu de palette proposant minuscule, petit, moyen et grand.",
+        "ar": "صفحة فارغة في إنكسكيب وقائمة لوحة ألوان تتضمن minuscule وpetit وmoyen وgrand."
+      }
+    },
+    {
+      "id": "v2-inkscape-cube",
+      "positives": [
+        "screenshots/commons/inkscape/3b09aa1dd1e0cf86.png"
+      ],
+      "translations": {
+        "en": "Inkscape drawing of a cube with red, green and blue faces.",
+        "fr": "Dessin Inkscape d’un cube aux faces rouge, verte et bleue.",
+        "ar": "رسم في إنكسكيب لمكعب بأوجه حمراء وخضراء وزرقاء."
+      }
+    },
+    {
+      "id": "v2-inkscape-welcome",
+      "positives": [
+        "screenshots/commons/inkscape/b5a3cf5cde199767.png"
+      ],
+      "translations": {
+        "en": "Inkscape Welcome setup screen with a geometric giraffe and appearance options.",
+        "fr": "Écran de bienvenue Inkscape avec une girafe géométrique et les options d’apparence.",
+        "ar": "شاشة الترحيب في إنكسكيب مع زرافة هندسية وخيارات المظهر."
+      }
+    },
+    {
+      "id": "v2-inkscape-fill",
+      "positives": [
+        "screenshots/commons/inkscape/7e9aeef749d8e7da.png"
+      ],
+      "translations": {
+        "en": "Inkscape Fill and Stroke dialog with a green color wheel and RGBA 5AB532FF.",
+        "fr": "Fenêtre Remplissage et contour Inkscape avec une roue verte et la valeur RVBA 5AB532FF.",
+        "ar": "نافذة التعبئة والحدود في إنكسكيب مع عجلة ألوان خضراء والقيمة 5AB532FF."
+      }
+    },
+    {
+      "id": "v2-vlc-stream",
+      "positives": [
+        "screenshots/commons/vlc/df42b7d7d76535f0.png"
+      ],
+      "translations": {
+        "en": "VLC output stream settings saving video.ogg with encapsulation format options.",
+        "fr": "Fenêtre Flux de sortie VLC pour enregistrer video.ogg avec les formats d’encapsulation.",
+        "ar": "إعدادات تدفق الخرج في في إل سي لحفظ video.ogg مع خيارات تنسيق التغليف."
+      }
+    },
+    {
+      "id": "v2-vlc-preferences",
+      "positives": [
+        "screenshots/commons/vlc/0ba1b42abe683c4d.png"
+      ],
+      "translations": {
+        "en": "VLC simple preferences for interface language, style and playlist options.",
+        "fr": "Préférences simples VLC pour la langue de l’interface, le style et la liste de lecture.",
+        "ar": "التفضيلات البسيطة لفي إل سي للغة الواجهة والنمط وخيارات قائمة التشغيل."
+      }
+    },
+    {
+      "id": "v2-vlc-video-controls",
+      "positives": [
+        "screenshots/commons/vlc/ae53ea718b4d1746.png"
+      ],
+      "translations": {
+        "en": "VLC playlist beside brightness, contrast, hue, saturation and gamma sliders.",
+        "fr": "Liste de lecture VLC à côté des curseurs luminosité, contraste, teinte, saturation et gamma.",
+        "ar": "قائمة تشغيل في إل سي بجانب أشرطة السطوع والتباين ودرجة اللون والتشبع وغاما."
+      }
+    },
+    {
+      "id": "v2-kde-about",
+      "positives": [
+        "screenshots/commons/kde/b17ef78cc0bc07d9.png",
+        "screenshots/commons/kde/cc4e626f6e613c4f.png"
+      ],
+      "translations": {
+        "en": "Arabic KDE desktop with an About KDE window showing a green dragon.",
+        "fr": "Bureau KDE en arabe avec une fenêtre À propos de KDE montrant un dragon vert.",
+        "ar": "سطح مكتب كيدي بالعربية مع نافذة حول كيدي التي تعرض تنينا أخضر."
+      }
+    },
+    {
+      "id": "v2-kde-neon",
+      "positives": [
+        "screenshots/commons/kde/cdf5e7b1e2ed95d9.png"
+      ],
+      "translations": {
+        "en": "Arabic KDE neon system information beside a file manager.",
+        "fr": "Informations système KDE neon en arabe à côté d’un gestionnaire de fichiers.",
+        "ar": "معلومات نظام كيدي نيون بالعربية بجانب مدير الملفات."
+      }
+    },
+    {
+      "id": "v2-palace-ad",
+      "positives": [
+        "documents/commons/palace-hotel-sf-1911/c02afcfd6bb7b851.jpg"
+      ],
+      "translations": {
+        "en": "Old Palace Hotel San Francisco advertisement with a hotel building illustration.",
+        "fr": "Ancienne publicité du Palace Hotel à San Francisco avec une illustration du bâtiment.",
+        "ar": "إعلان قديم لفندق بالاس في سان فرانسيسكو مع رسم لمبنى الفندق."
+      }
+    },
+    {
+      "id": "v2-kalee-ad",
+      "positives": [
+        "documents/commons/kalee-hotel-shanghai-1912/2189b793bd043b69.png"
+      ],
+      "translations": {
+        "en": "Hotel Kalee Shanghai advertisement mentioning Cuisine Française and electric lights.",
+        "fr": "Publicité de l’Hotel Kalee à Shanghai mentionnant Cuisine Française et l’éclairage électrique.",
+        "ar": "إعلان فندق كالي في شنغهاي يذكر المطبخ الفرنسي والإضاءة الكهربائية."
+      }
+    },
+    {
+      "id": "v2-telegram",
+      "positives": [
+        "documents/commons/western-union-1930/6a2665073c2e3ebb.jpg"
+      ],
+      "translations": {
+        "en": "Yellowed Western Union telegram with typed congratulations and a handwritten note.",
+        "fr": "Télégramme Western Union jauni avec des félicitations tapées et une note manuscrite.",
+        "ar": "برقية ويسترن يونيون مصفرة مع تهنئة مطبوعة وملاحظة بخط اليد."
+      }
+    },
+    {
+      "id": "v2-municipal-notice",
+      "positives": [
+        "documents/commons/job-municipal-order-2022/c5617bd3fd2cd4c5.jpg"
+      ],
+      "translations": {
+        "en": "French municipal order posted on a tree with parked cars in the background.",
+        "fr": "Arrêté municipal français affiché sur un arbre devant des voitures garées.",
+        "ar": "قرار بلدي فرنسي معلق على شجرة وأمامه سيارات متوقفة."
+      }
+    },
+    {
+      "id": "v2-residence-act",
+      "positives": [
+        "documents/commons/dc-residency-act-1790/58fa4528c2956cfe.jpg"
+      ],
+      "translations": {
+        "en": "Faded handwritten Congress act establishing the temporary and permanent seat of government, with signatures below.",
+        "fr": "Loi manuscrite pâlie du Congrès établissant le siège temporaire et permanent du gouvernement, avec des signatures en bas.",
+        "ar": "قانون باهت بخط اليد للكونغرس ينشئ المقعد المؤقت والدائم للحكومة مع توقيعات في الأسفل."
+      }
+    },
+    {
+      "id": "v2-birth-record",
+      "positives": [
+        "documents/commons/french-birth-record-1860/bf70e664c29fb1a1.jpg"
+      ],
+      "translations": {
+        "en": "French handwritten birth record with the name William and large signatures below.",
+        "fr": "Acte de naissance manuscrit français avec le prénom William et de grandes signatures en bas.",
+        "ar": "سجل ولادة فرنسي بخط اليد يتضمن اسم William وتوقيعات كبيرة في الأسفل."
+      }
+    },
+    {
+      "id": "v2-al-arab",
+      "positives": [
+        "documents/commons/al-arab-first-issue/6ba1c8eefc7425df.png"
+      ],
+      "translations": {
+        "en": "Old Arabic newspaper page headed AL-ARAB above dense columns of text.",
+        "fr": "Ancienne page de journal arabe portant le titre AL-ARAB au-dessus de colonnes de texte.",
+        "ar": "صفحة جريدة عربية قديمة تحمل عنوان AL-ARAB فوق أعمدة نصية كثيفة."
+      }
+    },
+    {
+      "id": "v2-al-hoda",
+      "positives": [
+        "documents/commons/al-hoda-first-issue/8f174a22f7a7de6c.jpg"
+      ],
+      "translations": {
+        "en": "Aged Arabic Al-Hoda newspaper front page with a man’s portrait in the middle.",
+        "fr": "Une ancienne une du journal arabe Al-Hoda avec le portrait d’un homme au centre.",
+        "ar": "صفحة أولى قديمة لجريدة الهدى بالعربية مع صورة رجل في الوسط."
+      }
+    },
+    {
+      "id": "v2-al-iqbal",
+      "positives": [
+        "documents/commons/al-iqbal-1902/71cc18e544418d27.jpg"
+      ],
+      "translations": {
+        "en": "Black and white Arabic newspaper with the large masthead الإقبال.",
+        "fr": "Journal arabe en noir et blanc avec le grand titre الإقبال.",
+        "ar": "جريدة عربية بالأبيض والأسود تحمل ترويسة كبيرة باسم الإقبال."
+      }
+    },
+    {
+      "id": "v2-syria-order",
+      "positives": [
+        "documents/commons/syria-mandate-order-1924/5be7f04f81895e5f.png"
+      ],
+      "translations": {
+        "en": "French printed decree headed Arrêté N° 2980, Portant organisation de l’État de Syrie.",
+        "fr": "Décret imprimé portant le titre Arrêté N° 2980, Portant organisation de l’État de Syrie.",
+        "ar": "مرسوم مطبوع بالفرنسية بعنوان Arrêté N° 2980 بشأن تنظيم دولة سوريا."
+      }
+    },
+    {
+      "id": "v2-painted-bench",
+      "positives": [
+        "photos/COCO_val2014_000000314541.jpg"
+      ],
+      "translations": {
+        "en": "Weathered multicolored park bench on a green lawn with trees behind.",
+        "fr": "Banc de parc multicolore à la peinture usée sur une pelouse verte.",
+        "ar": "مقعد حديقة متعدد الألوان بطلاء متآكل على عشب أخضر وخلفه أشجار."
+      }
+    },
+    {
+      "id": "v2-giraffe-feeding",
+      "positives": [
+        "photos/COCO_val2014_000000536720.jpg"
+      ],
+      "translations": {
+        "en": "Zoo visitors holding food toward a giraffe beside a metal railing.",
+        "fr": "Visiteurs de zoo tendant de la nourriture à une girafe près d’une rambarde métallique.",
+        "ar": "زوار حديقة حيوان يقدمون الطعام لزرافة قرب حاجز معدني."
+      }
+    },
+    {
+      "id": "v2-helicopter-truck",
+      "positives": [
+        "photos/COCO_val2014_000000145873.jpg"
+      ],
+      "translations": {
+        "en": "Truck transporting a helicopter beneath a gantry of road signals.",
+        "fr": "Camion transportant un hélicoptère sous un portique de signalisation routière.",
+        "ar": "شاحنة تحمل مروحية تحت بوابة إشارات مرورية."
+      }
+    },
+    {
+      "id": "v2-preparing-pizza",
+      "positives": [
+        "photos/COCO_val2014_000000342650.jpg"
+      ],
+      "translations": {
+        "en": "Man preparing a pizza on a kitchen counter beside the sink.",
+        "fr": "Homme préparant une pizza sur un plan de travail à côté de l’évier.",
+        "ar": "رجل يحضر بيتزا على سطح عمل المطبخ بجانب الحوض."
+      }
+    },
+    {
+      "id": "v2-children-bear",
+      "positives": [
+        "photos/COCO_val2014_000000069009.jpg"
+      ],
+      "translations": {
+        "en": "Two children in blue caps watching a bear through zoo glass.",
+        "fr": "Deux enfants portant des casquettes bleues observent un ours derrière une vitre au zoo.",
+        "ar": "طفلان بقبعتين زرقاوين يشاهدان دبا خلف زجاج حديقة الحيوان."
+      }
+    },
+    {
+      "id": "v2-bathroom",
+      "positives": [
+        "photos/COCO_val2014_000000304355.jpg"
+      ],
+      "translations": {
+        "en": "Bathroom with wooden vanity, white sink, toilet and pale shower curtain.",
+        "fr": "Salle de bains avec meuble en bois, lavabo blanc, toilettes et rideau de douche clair.",
+        "ar": "حمام بخزانة خشبية وحوض أبيض ومرحاض وستارة دش فاتحة."
+      }
+    },
+    {
+      "id": "v2-snowboarder",
+      "positives": [
+        "photos/COCO_val2014_000000350405.jpg"
+      ],
+      "translations": {
+        "en": "Snowboarder leaning into a turn on white snow under a blue sky.",
+        "fr": "Snowboardeur penché dans un virage sur la neige sous un ciel bleu.",
+        "ar": "متزلج لوح ثلجي يميل في منعطف فوق ثلج أبيض وتحت سماء زرقاء."
+      }
+    },
+    {
+      "id": "v2-banana-stand",
+      "positives": [
+        "photos/COCO_val2014_000000521964.jpg"
+      ],
+      "translations": {
+        "en": "Roadside fruit shop with bunches of bananas hanging above the counter.",
+        "fr": "Étal de fruits au bord de la route avec des régimes de bananes suspendus.",
+        "ar": "محل فواكه بجانب الطريق تتدلى فيه عناقيد موز فوق الطاولة."
+      }
+    },
+    {
+      "id": "v2-cafeteria",
+      "positives": [
+        "photos/COCO_val2014_000000447546.jpg"
+      ],
+      "translations": {
+        "en": "Busy cafeteria serving counter with people and trays of green lettuce.",
+        "fr": "Comptoir de cafétéria animé avec des personnes et des bacs de laitue verte.",
+        "ar": "منضدة تقديم طعام مزدحمة بأشخاص وأوعية خس أخضر."
+      }
+    },
+    {
+      "id": "v2-pizza-platter",
+      "positives": [
+        "photos/COCO_val2014_000000144959.jpg"
+      ],
+      "translations": {
+        "en": "Food platter with pepperoni mushroom pizza, a sandwich, hummus and vegetables.",
+        "fr": "Assiette avec pizza au pepperoni et champignons, sandwich, houmous et légumes.",
+        "ar": "طبق طعام فيه بيتزا بالبيبروني والفطر وشطيرة وحمص وخضروات."
+      }
+    },
+    {
+      "id": "v2-royal-council",
+      "positives": [
+        "documents/commons/louis-xvi-council-1785/0c80286ca438e9cf.png"
+      ],
+      "translations": {
+        "en": "Old French royal council decree with an ornamental banner and the heading Arrêt du Conseil d’État du Roi.",
+        "fr": "Ancien arrêt du Conseil d’État du Roi avec un bandeau ornemental et un grand titre.",
+        "ar": "مرسوم فرنسي قديم لمجلس دولة الملك مع شريط زخرفي وعنوان Arrêt du Conseil d’État du Roi."
+      }
+    },
+    {
+      "id": "v2-monastic-vows",
+      "positives": [
+        "documents/commons/french-assembly-1790/95a39756541aee14.jpg"
+      ],
+      "translations": {
+        "en": "French National Assembly decree with two numbered articles about monastic vows and religious orders.",
+        "fr": "Décret de l’Assemblée nationale avec deux articles numérotés sur les vœux monastiques et les ordres religieux.",
+        "ar": "مرسوم للجمعية الوطنية الفرنسية بمادتين مرقمتين عن النذور الرهبانية والطوائف الدينية."
+      }
+    },
+    {
+      "id": "v2-wikipedia-home",
+      "positives": [
+        "screenshots/commons/brave/1e61ac1338c3e705.jpg"
+      ],
+      "translations": {
+        "en": "Web browser on the multilingual Wikipedia home page with the puzzle globe and language links.",
+        "fr": "Navigateur sur la page d’accueil multilingue de Wikipédia avec le globe et les liens de langues.",
+        "ar": "متصفح يعرض الصفحة الرئيسية متعددة اللغات لويكيبيديا مع الكرة الأرضية وروابط اللغات."
+      }
+    },
+    {
+      "id": "v2-tunisia-modern",
+      "positives": [
+        "documents/commons/tunisia-constitution-2022/771460776364cd2b.jpg"
+      ],
+      "translations": {
+        "en": "Gold-lettered Arabic cover of the Tunisian Republic constitution dated 2022.",
+        "fr": "Couverture en arabe du texte de la Constitution de la République tunisienne datée de 2022, en lettres dorées.",
+        "ar": "غلاف دستور الجمهورية التونسية بالعربية بحروف ذهبية وتاريخ 2022."
+      }
+    },
+    {
+      "id": "v2-moroccan-flag",
+      "positives": [
+        "documents/commons/morocco-flag-dahir-1915/579a9cb5ceaf5678.jpg",
+        "documents/commons/morocco-flag-dahir-1915/f2f2b26192dfa67a.jpg"
+      ],
+      "translations": {
+        "en": "Moroccan royal decree describing a red flag with a green five-pointed star.",
+        "fr": "Dahir marocain décrivant le drapeau rouge avec une étoile verte à cinq branches.",
+        "ar": "ظهير ملكي مغربي يصف العلم الأحمر بنجمة خضراء خماسية."
+      }
+    },
+    {
+      "id": "v2-ship-account",
+      "positives": [
+        "documents/commons/sale-account/784a7decbe8f346f.jpg"
+      ],
+      "translations": {
+        "en": "Old French sales account headed Le Navire le Bellier with two dense tabular ledgers.",
+        "fr": "Ancien compte de vente intitulé Le Navire le Bellier avec deux tableaux comptables détaillés.",
+        "ar": "حساب مبيعات فرنسي قديم بعنوان Le Navire le Bellier مع جدولين محاسبيين كثيفين."
+      }
+    },
+    {
+      "id": "v2-tunisia-historic",
+      "positives": [
+        "documents/commons/tunisia-constitution-1861/477e3272cfcc8832.jpg"
+      ],
+      "translations": {
+        "en": "Aged Arabic handwritten Tunisian state law page with numbered articles.",
+        "fr": "Ancienne page manuscrite en arabe de la loi de l’État tunisien avec des articles numérotés.",
+        "ar": "صفحة قديمة بخط اليد بالعربية من قانون الدولة التونسية مع فصول مرقمة."
+      }
+    },
+    {
+      "id": "v2-lebanon-constitution",
+      "positives": [
+        "documents/commons/lebanese-constitution-1930/00eb54f004893658.png"
+      ],
+      "translations": {
+        "en": "French cover titled Constitution de la République Libanaise, promulgated 25 May 1926.",
+        "fr": "Couverture de la Constitution de la République Libanaise, promulguée le 25 mai 1926.",
+        "ar": "غلاف دستور الجمهورية اللبنانية بالفرنسية الصادر في 25 مايو 1926."
+      }
+    },
+    {
+      "id": "v2-zola-frontpage",
+      "positives": [
+        "documents/commons/laurore-zola-1898/88b2b135d7b4690c.jpg"
+      ],
+      "translations": {
+        "en": "L’Aurore newspaper front page headed J’Accuse…! Lettre au Président de la République par Émile Zola.",
+        "fr": "Une du journal L’Aurore : J’Accuse…! Lettre au Président de la République par Émile Zola.",
+        "ar": "الصفحة الأولى لجريدة L’Aurore بعنوان J’Accuse…! ورسالة إميل زولا إلى رئيس الجمهورية."
+      }
+    },
+    {
+      "id": "v2-arabic-manuscript",
+      "positives": [
+        "documents/commons/wellcome-arabic-text/546682726aba9956.jpg"
+      ],
+      "translations": {
+        "en": "Arabic manuscript page with black calligraphy and red section marks on cream paper.",
+        "fr": "Page de manuscrit arabe en calligraphie noire avec des marques de section rouges sur papier crème.",
+        "ar": "صفحة مخطوط عربي بخط أسود وعلامات أقسام حمراء على ورق كريمي."
+      }
+    },
+    {
+      "id": "v2-central-bank-decree",
+      "positives": [
+        "documents/commons/syrian-presidential-decrees-2025/0003824b75f93c58.jpg"
+      ],
+      "translations": {
+        "en": "Arabic Syrian presidential decree number 10 of 2025 appointing a governor of the central bank.",
+        "fr": "Décret présidentiel syrien en arabe, numéro 10 de 2025, nommant un gouverneur de la banque centrale.",
+        "ar": "قرار رئاسي سوري رقم 10 لعام 2025 بشأن تعيين حاكم لمصرف سوريا المركزي."
+      }
+    },
+    {
+      "id": "v2-coastal-committee-decree",
+      "positives": [
+        "documents/commons/syrian-presidential-decrees-2025/525451c0ad04c5a3.jpg"
+      ],
+      "translations": {
+        "en": "Arabic Syrian presidential decree number 11 of 2025 extending a fact-finding committee on coastal events.",
+        "fr": "Décret présidentiel syrien en arabe, numéro 11 de 2025, prolongeant une commission d’enquête sur les événements du littoral.",
+        "ar": "قرار رئاسي سوري رقم 11 لعام 2025 لتمديد عمل لجنة تقصي الحقائق في أحداث الساحل."
+      }
+    },
+    {
+      "id": "v2-titanic-frontpage",
+      "positives": [
+        "documents/commons/new-york-herald-titanic-1912/b186fb485ca7acab.jpeg"
+      ],
+      "translations": {
+        "en": "The New York Herald front page about the Titanic sinking, with portraits and ship illustrations.",
+        "fr": "Une du New York Herald sur le naufrage du Titanic avec des portraits et des illustrations du navire.",
+        "ar": "الصفحة الأولى لنيويورك هيرالد عن غرق تيتانيك مع صور أشخاص ورسوم السفينة."
+      }
+    },
+    {
+      "id": "v2-brave-search",
+      "positives": [
+        "screenshots/commons/brave/0b72b873ac60dfe7.png"
+      ],
+      "translations": {
+        "en": "Purple Brave search home page with Arabic text and a central search box.",
+        "fr": "Page de recherche Brave violette avec du texte arabe et une barre de recherche centrale.",
+        "ar": "صفحة البحث الرئيسية لبريف باللون البنفسجي مع نص عربي ومربع بحث في الوسط."
+      }
+    },
+    {
+      "id": "v2-michigan-act",
+      "positives": [
+        "documents/commons/michigan-statehood-1837/deeeb8ebc3f2f295.jpg"
+      ],
+      "translations": {
+        "en": "Congress act admitting the State of Michigan into the Union, with printed headings and cursive handwriting.",
+        "fr": "Loi du Congrès admettant l’État du Michigan dans l’Union, avec des titres imprimés et un texte manuscrit cursif.",
+        "ar": "قانون للكونغرس يقبل ولاية ميشيغان في الاتحاد مع عناوين مطبوعة ونص بخط اليد."
+      }
+    },
+    {
+      "id": "v2-apollo-flight-plan",
+      "positives": [
+        "documents/commons/apollo11-flight-plan/470e01a1e407aa03.jpg"
+      ],
+      "translations": {
+        "en": "Apollo 11 flight plan page with a drawing of Earth, star alignment instructions and a vertical time scale.",
+        "fr": "Page du plan de vol Apollo 11 avec un dessin de la Terre, des instructions d’alignement sur les étoiles et une échelle de temps verticale.",
+        "ar": "صفحة من خطة طيران أبولو 11 فيها رسم للأرض وتعليمات محاذاة النجوم ومقياس زمني عمودي."
+      }
+    }
+  ]
+}

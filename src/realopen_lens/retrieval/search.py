@@ -70,6 +70,7 @@ def search_collection(
     mode: str = "hybrid",
     threads: int = 2,
     trace: dict | None = None,
+    reranker: Path | None = None,
 ) -> list[SearchResult]:
     """Search the active generation; optional hybrid trace exposes candidates and top-50 channels.
 
@@ -82,6 +83,16 @@ def search_collection(
         )
     if mode not in {"hybrid", "visual", "lexical", "semantic"}:
         raise ValueError("Search mode must be hybrid, visual, lexical, or semantic")
+    learned = None
+    if reranker is not None:
+        from realopen_lens.learning.logistic import load
+
+        if mode != "hybrid":
+            raise ValueError("The experimental reranker requires hybrid mode")
+        learned = load(reranker)
+        if trace is None:
+            trace = {}
+    channel_limit = 50 if learned is not None else max(50, limit)
     if trace is not None:
         trace.clear()
         if mode != "hybrid":
@@ -91,6 +102,11 @@ def search_collection(
     try:
         found, generation = catalog.snapshot(collection)
         manifest = load_manifest(catalog, generation)
+        if learned is not None and any(
+            manifest["config"]["spec"].get(key) != value
+            for key, value in learned.compatibility.items()
+        ):
+            raise ValueError("Reranker encoder compatibility differs from this collection")
         if trace is not None:
             trace.update(generation=generation["id"], manifest_sha256=generation["checksum"])
         from realopen_lens.indexing.service import signature
@@ -122,6 +138,10 @@ def search_collection(
                     rankings={key: [] for key in ("visual", "semantic", "lexical", "hybrid")},
                     searchable_images=0,
                 )
+                if learned is not None:
+                    trace["rankings"]["logistic"] = []
+                    trace["reranker_sha256"] = learned.sha256
+                    trace["reranker_scope"] = learned.scope
             return []
         visual_query = semantic_query = None
         if mode != "lexical":
@@ -149,7 +169,7 @@ def search_collection(
             if len(lookup) == len(manifest["images"])
             else lexical_index(ocr_records)
         )
-        lexical = rank_lexical(index, query, limit=max(50, limit))
+        lexical = rank_lexical(index, query, limit=channel_limit)
         scores = {}
         if mode == "lexical":
             ranking = lexical[:limit]
@@ -184,13 +204,13 @@ def search_collection(
                     passage_ids,
                     query,
                     ocr_records,
-                    limit=limit,
+                    limit=50 if learned is not None else limit,
                     lexical_candidates=lexical,
                     lexical_statistics=lexical_frequencies(index, query),
                     trace=trace,
                 )
         if trace is not None:
-            bm25 = lexical_scores(index, query, limit=max(50, limit))
+            bm25 = lexical_scores(index, query, limit=channel_limit)
             ranks = {
                 mode: {key: i for i, key in enumerate(ranking, 1)}
                 for mode, ranking in trace["rankings"].items()
@@ -207,6 +227,12 @@ def search_collection(
                     status=lookup[key].get("status", "ready"),
                 )
             trace["searchable_images"] = len(lookup)
+            if learned is not None:
+                reranked = learned.rank(trace["candidates"])
+                ranking = reranked[:limit]
+                trace["rankings"]["logistic"] = reranked[:50]
+                trace["reranker_sha256"] = learned.sha256
+                trace["reranker_scope"] = learned.scope
         texts = {row["image_id"]: row["text"] for row in manifest["ocr"]}
         results: list[SearchResult] = []
         for image_id in ranking:
