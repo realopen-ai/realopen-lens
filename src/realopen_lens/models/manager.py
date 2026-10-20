@@ -19,14 +19,21 @@ def digest(path: Path) -> str:
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
-def artifacts(precision: str) -> list[tuple[str, str, dict[str, Any]]]:
+def artifacts(
+    precision: str, siglip_precision: str | None = None
+) -> list[tuple[str, str, dict[str, Any]]]:
     if precision not in {"int8", "fp32"}:
         raise ValueError("Precision must be int8 or fp32")
+    if siglip_precision is not None and siglip_precision not in {"int8", "fp32"}:
+        raise ValueError("SigLIP2 precision must be int8 or fp32")
     return [
         (name, key, model["files"][key])
         for name, model in registry()["models"].items()
         for key in model["files"]
-        if key == "tokenizer" or key.endswith(f"_{precision}")
+        if key == "tokenizer"
+        or key.endswith(
+            f"_{siglip_precision if name == 'siglip2' and siglip_precision else precision}"
+        )
     ]
 
 
@@ -35,8 +42,8 @@ def artifact_path(root: Path, name: str, key: str) -> Path:
     return root / name / model["revision"] / model["files"][key]["path"]
 
 
-def verify(root: Path, precision: str) -> None:
-    for name, key, spec in artifacts(precision):
+def verify(root: Path, precision: str, siglip_precision: str | None = None) -> None:
+    for name, key, spec in artifacts(precision, siglip_precision):
         path = artifact_path(root, name, key)
         if not path.is_file():
             raise ValueError(f"Missing model file: {path}. Run 'lens models fetch' first.")
@@ -44,9 +51,15 @@ def verify(root: Path, precision: str) -> None:
             raise ValueError(f"Model integrity check failed: {path}")
 
 
-def fetch(root: Path, precision: str, progress: Callable[[str], None] = print) -> None:
+def fetch(
+    root: Path,
+    precision: str,
+    progress: Callable[[str], None] = print,
+    *,
+    siglip_precision: str | None = None,
+) -> None:
     """Download only explicit pinned artifacts, checking SHA-256 before publication."""
-    for name, key, spec in artifacts(precision):
+    for name, key, spec in artifacts(precision, siglip_precision):
         path = artifact_path(root, name, key)
         if path.is_file() and path.stat().st_size == spec["size"]:
             if digest(path) == spec["sha256"]:

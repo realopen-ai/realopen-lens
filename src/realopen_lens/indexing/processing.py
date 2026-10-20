@@ -34,7 +34,10 @@ def encoder(stage: str, config: dict):
 
     root = Path(config["models"])
     if stage == "vision":
-        return VisionEncoder(artifact_path(root, "siglip2", "vision_int8"), config["threads"])
+        precision = config.get("siglip_precision", "int8")
+        return VisionEncoder(
+            artifact_path(root, "siglip2", f"vision_{precision}"), config["threads"]
+        )
     return TextEncoder(
         artifact_path(root, "e5", "text_int8"),
         artifact_path(root, "e5", "tokenizer"),

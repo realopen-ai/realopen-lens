@@ -39,8 +39,11 @@ class SearchResult:
     issues: tuple[dict, ...] = ()
 
 
-def query_vector(text: str, kind: str, models: Path, threads: int) -> np.ndarray:
+def query_vector(
+    text: str, kind: str, models: Path, threads: int, siglip_precision: str = "int8"
+) -> np.ndarray:
     request = {"query": text, "kind": kind, "models": str(models.resolve()), "threads": threads}
+    request["siglip_precision"] = siglip_precision
     try:
         result = subprocess.run(
             [sys.executable, "-m", "realopen_lens.runtime.worker", "--query"],
@@ -73,6 +76,7 @@ def search_collection(
     trace: dict | None = None,
     reranker: Path | None = None,
     candidate_depths: CandidateDepths | None = None,
+    siglip_precision: str | None = None,
 ) -> list[SearchResult]:
     """Search the active generation; optional hybrid trace exposes bounded channel pools.
 
@@ -87,6 +91,8 @@ def search_collection(
         raise ValueError("Search mode must be hybrid, visual, lexical, or semantic")
     if candidate_depths is not None and mode != "hybrid":
         raise ValueError("Candidate depths require hybrid mode")
+    if siglip_precision is not None and siglip_precision not in {"int8", "fp32"}:
+        raise ValueError("SigLIP2 precision must be int8 or fp32")
     learned = None
     if reranker is not None:
         from realopen_lens.learning.logistic import load
@@ -113,13 +119,24 @@ def search_collection(
     try:
         found, generation = catalog.snapshot(collection)
         manifest = load_manifest(catalog, generation)
+        precision = manifest["config"]["spec"].get("siglip_precision", "int8")
+        if precision not in {"int8", "fp32"}:
+            raise ValueError("Unsupported collection SigLIP2 precision")
+        if siglip_precision is not None and siglip_precision != precision:
+            raise ValueError("Requested SigLIP2 precision differs from this collection")
+        if learned is not None and precision != "int8":
+            raise ValueError("Existing reranker encoder compatibility requires INT8 SigLIP2")
         if learned is not None and any(
             manifest["config"]["spec"].get(key) != value
             for key, value in learned.compatibility.items()
         ):
             raise ValueError("Reranker encoder compatibility differs from this collection")
         if trace is not None:
-            trace.update(generation=generation["id"], manifest_sha256=generation["checksum"])
+            trace.update(
+                generation=generation["id"],
+                manifest_sha256=generation["checksum"],
+                siglip_precision=precision,
+            )
         from realopen_lens.indexing.service import signature
 
         paths_by_id = {}
@@ -170,9 +187,13 @@ def search_collection(
             for name in ("numpy", "onnxruntime", "tokenizers"):
                 if spec["packages"][name] != version(name):
                     raise ValueError("Query encoder dependencies changed; run 'lens index' again")
-            verify(models, "int8")
+            verify(models, "int8", precision)
             if mode in {"hybrid", "visual"}:
-                visual_query = query_vector(query, "siglip2", models, threads)
+                visual_query = (
+                    query_vector(query, "siglip2", models, threads, precision)
+                    if precision != "int8"
+                    else query_vector(query, "siglip2", models, threads)
+                )
             if mode in {"hybrid", "semantic"}:
                 semantic_query = query_vector(query, "e5", models, threads)
         path = local_path(catalog.root, manifest["artifacts"]["lexical"]["path"])

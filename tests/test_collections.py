@@ -81,6 +81,60 @@ def image(path, color="red"):
     Image.new("RGB", (64, 48), color).save(path)
 
 
+@pytest.mark.parametrize("precision", ["int8", "fp32"])
+def test_precision_is_immutable_and_search_uses_saved_encoder(app, monkeypatch, precision):
+    root, store, calls, run = app
+    image(root / "one.png")
+    first = run(siglip_precision=precision)
+    assert collection_status("personal", store)["siglip_precision"] == precision
+    verified, encoded = [], []
+    monkeypatch.setattr(search, "verify", lambda *args: verified.append(args))
+
+    def query(text, kind, models, threads, siglip_precision="int8"):
+        encoded.append((kind, siglip_precision))
+        return np.eye(1, 768 if kind == "siglip2" else 384, dtype=np.float32)[0]
+
+    monkeypatch.setattr(search, "query_vector", query)
+    trace = {}
+    assert search.search_collection("red", index_dir=store, trace=trace)
+    assert encoded == [("siglip2", precision), ("e5", "int8")]
+    assert verified[0][1:] == ("int8", precision)
+    assert trace["siglip_precision"] == precision
+    other = "fp32" if precision == "int8" else "int8"
+    with pytest.raises(ValueError, match="differs from this collection"):
+        search.search_collection("red", index_dir=store, siglip_precision=other)
+    with pytest.raises(ValueError, match="separate --index-dir"):
+        run(siglip_precision=other)
+    assert collection_status("personal", store)["generation"] == first.generation
+    calls.clear()
+    assert run(siglip_precision=precision).generation == first.generation
+    assert not calls
+
+
+def test_precision_cli_and_legacy_int8_collection(app, monkeypatch):
+    from typer.testing import CliRunner
+    from realopen_lens.cli import app as cli
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    original = indexing.pipeline_config
+
+    def legacy(options):
+        config = original(options)
+        config["spec"].pop("siglip_precision")
+        config.pop("siglip_precision")
+        return config
+
+    monkeypatch.setattr(indexing, "pipeline_config", legacy)
+    run()
+    assert collection_status("personal", store)["siglip_precision"] == "int8"
+    assert search.search_collection("red", index_dir=store, mode="lexical")
+    response = CliRunner().invoke(
+        cli, ["search", "red", "--index-dir", str(store), "--siglip-precision", "fp32"]
+    )
+    assert response.exit_code == 1 and "differs from this collection" in response.stderr
+
+
 def test_multilingual_manifest_and_search_ignore_windows_default_encoding(app, monkeypatch):
     root, store, calls, run = app
     image(root / "صورة.png")
@@ -690,6 +744,9 @@ def test_experimental_reranker_is_opt_in_and_checks_encoder_compatibility(app, m
     assert json.loads(response.stdout)[0]["image_id"] == learned[0].image_id
     with pytest.raises(ValueError, match="hybrid mode"):
         search.search_collection("red", index_dir=store, mode="visual", reranker=path)
+    run(collection="fp32", siglip_precision="fp32")
+    with pytest.raises(ValueError, match="compatibility requires INT8"):
+        search.search_collection("red", index_dir=store, collection="fp32", reranker=path)
     artifact["compatibility"]["inference_sha256"] = "wrong"
     path.write_text(json.dumps(artifact), encoding="utf-8")
     response = CliRunner().invoke(
