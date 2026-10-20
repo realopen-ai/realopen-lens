@@ -165,6 +165,11 @@ The [fresh-source scope study](docs/benchmarks/2026-10-20-reranker-scope-study.m
 adds reviewed document/screenshot coverage, feature ablations and a protected
 top-50 reranking scope, with individual results and remaining recall limitations.
 
+Collection indexing now supports opt-in [FP32 SigLIP2](docs/siglip2-precision.md)
+with matching query encoders and a separate index; INT8 remains the default.
+See the [production validation](docs/benchmarks/2026-10-20-siglip2-precision.md)
+for measured quality, cold-query latency, and memory.
+
 The [candidate retrieval study](docs/benchmarks/2026-10-20-candidate-retrieval.md)
 compares pool depths, encoder precision, reviewed query expansion and OCR timeout
 recovery. See the [reproduction guide](docs/candidate-retrieval.md) for controls and commands.

@@ -1,0 +1,3589 @@
+{
+  "date": "2026-10-20",
+  "scope": "Production integration diagnostic; inspected subset, not a fresh holdout",
+  "images": 128,
+  "queries": 24,
+  "families": 8,
+  "languages": [
+    "en",
+    "fr",
+    "ar"
+  ],
+  "categories": {
+    "challenging": 5,
+    "diagrams": 20,
+    "documents": 36,
+    "photos": 37,
+    "screenshots": 30
+  },
+  "subset_sha256": "063cfb8fc428672af17b8665bc93775425d4cbd46eed3850be5609f8727dcab7",
+  "judgments_sha256": "e7baf920c55a8f080aaf09203c1b2232ad2c482aaa095af4c5d8811bfa79cfbb",
+  "seed": 20261020,
+  "source_corpus_sha256": "1af62bcad8ed5acdd7e9edc5ebeb88908532f624ac0d4fa47c9c84d0a273a145",
+  "source_judgments_sha256": "6311c219260b08319648986ae03178a1ea9d3b3f45296230f87e0fc791b4f107",
+  "policies": {
+    "int8": {
+      "initial_full_index": {
+        "job_id": "6085b7c659cc4ae8a6e2e575198bb2c2",
+        "status": "completed_with_errors",
+        "collection": "precision-study",
+        "files": 128,
+        "images": 128,
+        "reused_images": 0,
+        "failed_files": 0,
+        "removed_files": 0,
+        "generation": "31c5b3bc9de24a7fa00abf40de7ac09b",
+        "seconds": 265.0491557089845,
+        "degraded_files": 1,
+        "degraded_images": 1,
+        "reused_stages": {
+          "metadata": 0,
+          "ocr": 0,
+          "vision": 0,
+          "semantic": 0
+        }
+      },
+      "native_encoder_rebuild": {
+        "job_id": "b8aac49f2671429fb0eb107f870b695d",
+        "status": "completed_with_errors",
+        "collection": "precision-study",
+        "files": 128,
+        "images": 128,
+        "reused_images": 0,
+        "failed_files": 0,
+        "removed_files": 0,
+        "generation": "2390a10ad0b844c5bed7ebce2e520328",
+        "seconds": 18.12647787493188,
+        "degraded_files": 1,
+        "degraded_images": 1,
+        "reused_stages": {
+          "metadata": 128,
+          "ocr": 128,
+          "vision": 0,
+          "semantic": 0
+        }
+      },
+      "native_encoder_rebuild_resources": {
+        "peak_tree_rss_mib": 906.125,
+        "phase_peak_mib": {
+          "native_encoder_reindex_ocr_cached": 906.125
+        },
+        "samples": 651,
+        "access_errors": 0,
+        "sample_interval_ms": 20,
+        "scope": "Coordinator and children, including model loading and evaluation",
+        "limitations": "Shared pages may count twice; spikes between samples may be missed",
+        "invocations": [
+          "resources-attempt-001.json"
+        ]
+      },
+      "processed_queries": 24,
+      "failed_queries": 0,
+      "aggregate": {
+        "hybrid/all": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.6507936507936508,
+          "ndcg_at_10": 0.715194148429644,
+          "judged_fraction_at_10": 0.5416666666666666,
+          "known_positives": 1.0,
+          "queries": 24
+        },
+        "hybrid/exposure:fresh-v2": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.7777777777777778,
+          "ndcg_at_10": 0.8311894901132466,
+          "judged_fraction_at_10": 0.48333333333333334,
+          "known_positives": 1.0,
+          "queries": 6
+        },
+        "hybrid/exposure:legacy-benchmark": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.6634920634920635,
+          "ndcg_at_10": 0.7277108742992707,
+          "judged_fraction_at_10": 0.66,
+          "known_positives": 1.0,
+          "queries": 15
+        },
+        "hybrid/exposure:new-scale": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.3333333333333333,
+          "ndcg_at_10": 0.42061983571430495,
+          "judged_fraction_at_10": 0.06666666666666667,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:diagrams-01": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.5,
+          "ndcg_at_10": 0.6309297535714574,
+          "judged_fraction_at_10": 0.6333333333333333,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:diagrams-02": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.15079365079365079,
+          "ndcg_at_10": 0.34095795125822964,
+          "judged_fraction_at_10": 0.7333333333333334,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:documents-09": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.6333333333333333,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:documents-11": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.6666666666666666,
+          "ndcg_at_10": 0.6666666666666666,
+          "judged_fraction_at_10": 0.6666666666666666,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:fresh-07": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.3333333333333333,
+          "ndcg_at_10": 0.42061983571430495,
+          "judged_fraction_at_10": 0.06666666666666667,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:screenshots-03": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.6333333333333333,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:v2-brave-about": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.7222222222222222,
+          "ndcg_at_10": 0.7854023957026741,
+          "judged_fraction_at_10": 0.6666666666666666,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:v2-children-bear": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.8333333333333334,
+          "ndcg_at_10": 0.8769765845238191,
+          "judged_fraction_at_10": 0.3,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/kind:diagrams": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.3253968253968254,
+          "ndcg_at_10": 0.48594385241484356,
+          "judged_fraction_at_10": 0.6833333333333332,
+          "known_positives": 1.0,
+          "queries": 6
+        },
+        "hybrid/kind:documents": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.8333333333333334,
+          "ndcg_at_10": 0.8333333333333334,
+          "judged_fraction_at_10": 0.65,
+          "known_positives": 1.0,
+          "queries": 6
+        },
+        "hybrid/kind:photos": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.5833333333333334,
+          "ndcg_at_10": 0.648798210119062,
+          "judged_fraction_at_10": 0.18333333333333335,
+          "known_positives": 1.0,
+          "queries": 6
+        },
+        "hybrid/kind:screenshots": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.8611111111111112,
+          "ndcg_at_10": 0.892701197851337,
+          "judged_fraction_at_10": 0.65,
+          "known_positives": 1.0,
+          "queries": 6
+        },
+        "hybrid/language:ar": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.5178571428571429,
+          "ndcg_at_10": 0.5743991050595311,
+          "judged_fraction_at_10": 0.325,
+          "known_positives": 1.0,
+          "queries": 8
+        },
+        "hybrid/language:en": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.7708333333333334,
+          "ndcg_at_10": 0.8272583367813672,
+          "judged_fraction_at_10": 0.65,
+          "known_positives": 1.0,
+          "queries": 8
+        },
+        "hybrid/language:fr": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.6636904761904762,
+          "ndcg_at_10": 0.7439250034480338,
+          "judged_fraction_at_10": 0.65,
+          "known_positives": 1.0,
+          "queries": 8
+        },
+        "hybrid/role:diagnostic": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.3333333333333333,
+          "ndcg_at_10": 0.42061983571430495,
+          "judged_fraction_at_10": 0.06666666666666667,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/role:test": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.7222222222222222,
+          "ndcg_at_10": 0.7854023957026741,
+          "judged_fraction_at_10": 0.6666666666666666,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/role:train": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.6634920634920635,
+          "ndcg_at_10": 0.7277108742992707,
+          "judged_fraction_at_10": 0.66,
+          "known_positives": 1.0,
+          "queries": 15
+        },
+        "hybrid/role:validation": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.8333333333333334,
+          "ndcg_at_10": 0.8769765845238191,
+          "judged_fraction_at_10": 0.3,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/split:test": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.7222222222222222,
+          "ndcg_at_10": 0.7854023957026741,
+          "judged_fraction_at_10": 0.6666666666666666,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/split:train": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.6634920634920635,
+          "ndcg_at_10": 0.7277108742992707,
+          "judged_fraction_at_10": 0.66,
+          "known_positives": 1.0,
+          "queries": 15
+        },
+        "hybrid/split:validation": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.5833333333333334,
+          "ndcg_at_10": 0.648798210119062,
+          "judged_fraction_at_10": 0.18333333333333335,
+          "known_positives": 1.0,
+          "queries": 6
+        },
+        "lexical/all": {
+          "candidate_recall_at_50": 0.625,
+          "mrr_at_10": 0.40317460317460313,
+          "ndcg_at_10": 0.43675190198794955,
+          "judged_fraction_at_10": 0.4218253968253968,
+          "known_positives": 1.0,
+          "queries": 24
+        },
+        "semantic/all": {
+          "candidate_recall_at_50": 0.7916666666666666,
+          "mrr_at_10": 0.35185185185185186,
+          "ndcg_at_10": 0.38722136939092605,
+          "judged_fraction_at_10": 0.3958333333333333,
+          "known_positives": 1.0,
+          "queries": 24
+        },
+        "visual/all": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.43164682539682536,
+          "ndcg_at_10": 0.5182466841918311,
+          "judged_fraction_at_10": 0.5208333333333334,
+          "known_positives": 1.0,
+          "queries": 24
+        }
+      },
+      "cold_query_seconds": {
+        "count": 24,
+        "mean": 1.6884108611217623,
+        "median": 1.5291937500005588,
+        "p95": 2.2008767812803853,
+        "p99": 2.238180641058134,
+        "max": 2.247485041967593
+      },
+      "cold_query_peak_tree_rss_mib": {
+        "count": 24,
+        "mean": 1021.1178385416666,
+        "median": 1020.4609375,
+        "p95": 1042.321875,
+        "p99": 1043.2675,
+        "max": 1043.46875
+      },
+      "environment": {
+        "host": {
+          "system": "Darwin",
+          "machine": "arm64",
+          "python": "3.12.11 (main, Aug 18 2025, 19:02:39) [Clang 20.1.4 ]"
+        },
+        "packages": {
+          "numpy": "2.5.4",
+          "onnxruntime": "1.31.0",
+          "tokenizers": "0.22.2",
+          "Pillow": "12.3.0",
+          "psutil": "7.2.2"
+        },
+        "engine_sha256": "9c2b1e20cf289d1fe8969fb83d7fe851640b6517cdb861d3d73872b4e21dd292",
+        "harness_sha256": "38fb239e2f3993956a456cbc55f2faec1b85a1037a2c4c6a36face307ff752cb",
+        "threads": 2
+      },
+      "pipeline_spec": {
+        "version": 1,
+        "siglip_precision": "int8",
+        "model_registry": {
+          "schema_version": 1,
+          "models": {
+            "siglip2": {
+              "repo": "onnx-community/siglip2-base-patch16-224-ONNX",
+              "revision": "ba1f3b0843f24bc5417d38e19c37b287d719b2f4",
+              "files": {
+                "tokenizer": {
+                  "path": "tokenizer.json",
+                  "sha256": "cb9140fae3ac5122c972d37adf83e1248471a38147ad76f8215c8872c6fd8322",
+                  "size": 34363039
+                },
+                "vision_int8": {
+                  "path": "onnx/vision_model_int8.onnx",
+                  "sha256": "0dd31785a2713f1113ef2272472165c69d580473dae38d7b47568ac587795e70",
+                  "size": 94553333
+                },
+                "text_int8": {
+                  "path": "onnx/text_model_int8.onnx",
+                  "sha256": "3a0603d3a00c05a80a6ded4743c16aaac7b1e62cdcc7e362e7ce418659b96400",
+                  "size": 283438275
+                },
+                "vision_fp32": {
+                  "path": "onnx/vision_model.onnx",
+                  "sha256": "c0573e3f4140c3a7c4e9cc5912bd6b26a033b46a6a8e8af26cbea262b163bcad",
+                  "size": 371807752
+                },
+                "text_fp32": {
+                  "path": "onnx/text_model.onnx",
+                  "sha256": "baf12d941beabafafb14f7b4adb38dc15be18681b964a84410ec53d9d65e6293",
+                  "size": 1129469657
+                }
+              }
+            },
+            "e5": {
+              "repo": "Xenova/multilingual-e5-small",
+              "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+              "files": {
+                "tokenizer": {
+                  "path": "tokenizer.json",
+                  "sha256": "0b44a9d7b51c3c62626640cda0e2c2f70fdacdc25bbbd68038369d14ebdf4c39",
+                  "size": 17082730
+                },
+                "text_int8": {
+                  "path": "onnx/model_quantized.onnx",
+                  "sha256": "f80102d3f2a1229f387d3c81909990d8945513e347b0eab049f7de3c6f98c193",
+                  "size": 118308185
+                },
+                "text_fp32": {
+                  "path": "onnx/model.onnx",
+                  "sha256": "4aa845c27760e06e9a686b9d8b5d440eae4b6612cd09e5b522b716d3941f77ff",
+                  "size": 470268533
+                }
+              }
+            }
+          }
+        },
+        "inference_sha256": "5de67f88fe86c68bb8f6b20194482d7be6046570e54463017340bd7c73045e6d",
+        "ocr_sha256": "c87442d5005e7b2ce228e6c124b5222e59fd82cc1e85a24cc05d6fbe59534fe2",
+        "processing_sha256": "d7878c33d6343fdfd600f4c56311bdb7947f1bba5aaa64916e18329a337e14ce",
+        "packages": {
+          "numpy": "2.5.4",
+          "Pillow": "12.3.0",
+          "onnxruntime": "1.31.0",
+          "tokenizers": "0.22.2"
+        },
+        "ocr_environment": {
+          "version": "tesseract 5.5.2",
+          "language_pack_sha256": {
+            "eng": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+            "fra": "ced037562e8c80c13122dece28dd477d399af80911a28791a66a63ac1e3445ca",
+            "ara": "e3206d3dc87fd50c24a0fb9f01838615911d25168f4e64415244b67d2bb3e729"
+          }
+        },
+        "languages": "eng+fra+ara",
+        "threads": 2,
+        "thumbnail_side": 512,
+        "semantic_characters": 32000,
+        "semantic_passages": 16,
+        "ocr_characters": 128000
+      },
+      "individual_queries": [
+        {
+          "query_id": "diagrams-01-ar",
+          "text": "مخطط نقاط بصفوف قطرية من علامات دائرية صفراء بحدود متعددة الألوان.",
+          "language": "ar",
+          "family": "diagrams-01",
+          "kind": "diagrams",
+          "expected_positive_ids": [
+            "cc2b34bf8d484c7a87b6abb52c6fbde04592c0e056bf7000419c1cb82a5e44d4"
+          ],
+          "hybrid_top10": [
+            "e4372e687c28562e6416d508a956af98ecd407c810a32f6e5edf7ce12a1fe2d9",
+            "cc2b34bf8d484c7a87b6abb52c6fbde04592c0e056bf7000419c1cb82a5e44d4",
+            "1aa058d36003aa7f99e41601af07fbfaed2d3179f3b1b7ace4fb04346649b752",
+            "68d000857fdc947239b345518083890b0deb1c31dbb0d23f75976eae123b4c82",
+            "9f9ecda1ac508164787a3b21168899c6ce33ac68345fd3e977bde0c9d940a92e",
+            "c8ea03a6b2b5e395ef91dbf4ea8321f42568d9a02a1977b2758b6d2120b72664",
+            "81ba6aeeddf585d1963ad71ba7b9b3f0d6e14981a4c274c3f43b0bad56d58697",
+            "78d076c629c2a4fc70b79013cb93ee798ff07ebc5ea14dfe747eec1a280811fb",
+            "5a204665e2954e673b2d8412b1c02aa32af28356d590e2a7bb1ba2d7474ce02f",
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.4707752090180293,
+          "peak_tree_rss_mib": 1039.34375,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "diagrams-01-en",
+          "text": "Scatter plot with diagonal rows of yellow circular markers outlined in different colors.",
+          "language": "en",
+          "family": "diagrams-01",
+          "kind": "diagrams",
+          "expected_positive_ids": [
+            "cc2b34bf8d484c7a87b6abb52c6fbde04592c0e056bf7000419c1cb82a5e44d4"
+          ],
+          "hybrid_top10": [
+            "6306e0bd43b9a8089e31d6292ea6d666c662fb244919a837ced4522db00b9b4c",
+            "cc2b34bf8d484c7a87b6abb52c6fbde04592c0e056bf7000419c1cb82a5e44d4",
+            "9b6ee655026dbc97bb47be611cf0ea3ce6bc2dd2308ebc794aa3248a65cb8768",
+            "411fa4e8cccdfe91fcda72dbc4aca6c60dbd6b8e13cfc45b2acab6b778c08d2a",
+            "43d71de43a58d10db84c4fe13af148522c4fcabfe800ce6eff1991d0ba0fba83",
+            "b8c257faa1ca20f5cd89476dafb871d875132373695dc9b89e51c0719b81b2a8",
+            "4980d66d7e797360e204bdc260b65794509afde3c74d70ed304e0c948e834d7a",
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a",
+            "a3bb383c15e480dfdf51be608ddc14d1d4a8ac0416d9b653ddf505badd5ba261",
+            "5a204665e2954e673b2d8412b1c02aa32af28356d590e2a7bb1ba2d7474ce02f"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.25,
+              "ndcg_at_10": 0.4306765580733931,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.6088476249715313,
+          "peak_tree_rss_mib": 1043.46875,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "diagrams-01-fr",
+          "text": "Nuage de points avec des rangées diagonales de cercles jaunes bordés de différentes couleurs.",
+          "language": "fr",
+          "family": "diagrams-01",
+          "kind": "diagrams",
+          "expected_positive_ids": [
+            "cc2b34bf8d484c7a87b6abb52c6fbde04592c0e056bf7000419c1cb82a5e44d4"
+          ],
+          "hybrid_top10": [
+            "43d71de43a58d10db84c4fe13af148522c4fcabfe800ce6eff1991d0ba0fba83",
+            "cc2b34bf8d484c7a87b6abb52c6fbde04592c0e056bf7000419c1cb82a5e44d4",
+            "9b6ee655026dbc97bb47be611cf0ea3ce6bc2dd2308ebc794aa3248a65cb8768",
+            "e4372e687c28562e6416d508a956af98ecd407c810a32f6e5edf7ce12a1fe2d9",
+            "78d076c629c2a4fc70b79013cb93ee798ff07ebc5ea14dfe747eec1a280811fb",
+            "81ba6aeeddf585d1963ad71ba7b9b3f0d6e14981a4c274c3f43b0bad56d58697",
+            "5a204665e2954e673b2d8412b1c02aa32af28356d590e2a7bb1ba2d7474ce02f",
+            "925e72f1338dbb9b55bab231326ee11cff90281b5a02b426d61cd77319eda180",
+            "6306e0bd43b9a8089e31d6292ea6d666c662fb244919a837ced4522db00b9b4c",
+            "411fa4e8cccdfe91fcda72dbc4aca6c60dbd6b8e13cfc45b2acab6b778c08d2a"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.8,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.8,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.4724274169420823,
+          "peak_tree_rss_mib": 1014.71875,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "diagrams-02-ar",
+          "text": "ثلاثة رسوم بيانية مكدسة عموديا لقطع خطوط أفقية باللون الأخضر والأحمر والأسود.",
+          "language": "ar",
+          "family": "diagrams-02",
+          "kind": "diagrams",
+          "expected_positive_ids": [
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a"
+          ],
+          "hybrid_top10": [
+            "1aa058d36003aa7f99e41601af07fbfaed2d3179f3b1b7ace4fb04346649b752",
+            "68d000857fdc947239b345518083890b0deb1c31dbb0d23f75976eae123b4c82",
+            "a3bb383c15e480dfdf51be608ddc14d1d4a8ac0416d9b653ddf505badd5ba261",
+            "43d71de43a58d10db84c4fe13af148522c4fcabfe800ce6eff1991d0ba0fba83",
+            "54115cb1a271654271f0d49aca55507c75f207686b0748ed6d65ff9b3ff3081f",
+            "e4372e687c28562e6416d508a956af98ecd407c810a32f6e5edf7ce12a1fe2d9",
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a",
+            "1974223666eb35c1bb9de001065bdfaad2a1497707dfc1d98feaa3e21c49d0b5",
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.16666666666666666,
+              "ndcg_at_10": 0.3562071871080222,
+              "judged_fraction_at_10": 0.6,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.3,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.14285714285714285,
+              "ndcg_at_10": 0.3333333333333333,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.4419313749531284,
+          "peak_tree_rss_mib": 1021.375,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "diagrams-02-en",
+          "text": "Three vertically stacked plots of horizontal line segments colored green, red, and black.",
+          "language": "en",
+          "family": "diagrams-02",
+          "kind": "diagrams",
+          "expected_positive_ids": [
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a"
+          ],
+          "hybrid_top10": [
+            "4a75de0654a616e080be7300b7895626b8e9f2350785821a16041c74f98b5ab6",
+            "19bc398456f1e1ed510a69b1921c397d43545e24abe1726007dccc95015a4d4b",
+            "54115cb1a271654271f0d49aca55507c75f207686b0748ed6d65ff9b3ff3081f",
+            "1974223666eb35c1bb9de001065bdfaad2a1497707dfc1d98feaa3e21c49d0b5",
+            "a3bb383c15e480dfdf51be608ddc14d1d4a8ac0416d9b653ddf505badd5ba261",
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a",
+            "b8c257faa1ca20f5cd89476dafb871d875132373695dc9b89e51c0719b81b2a8",
+            "295c4eb05a7d0b7044f6ba0e9778cf4354f740cd17144bc0d3f3a2bcae3c63e3",
+            "411fa4e8cccdfe91fcda72dbc4aca6c60dbd6b8e13cfc45b2acab6b778c08d2a",
+            "5a204665e2954e673b2d8412b1c02aa32af28356d590e2a7bb1ba2d7474ce02f"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.25,
+              "ndcg_at_10": 0.4306765580733931,
+              "judged_fraction_at_10": 0.9,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.16666666666666666,
+              "ndcg_at_10": 0.3562071871080222,
+              "judged_fraction_at_10": 0.9,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.480214082985185,
+          "peak_tree_rss_mib": 1008.4375,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "diagrams-02-fr",
+          "text": "Trois graphiques empilés de segments horizontaux verts, rouges et noirs.",
+          "language": "fr",
+          "family": "diagrams-02",
+          "kind": "diagrams",
+          "expected_positive_ids": [
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a"
+          ],
+          "hybrid_top10": [
+            "a3bb383c15e480dfdf51be608ddc14d1d4a8ac0416d9b653ddf505badd5ba261",
+            "5a204665e2954e673b2d8412b1c02aa32af28356d590e2a7bb1ba2d7474ce02f",
+            "b8c257faa1ca20f5cd89476dafb871d875132373695dc9b89e51c0719b81b2a8",
+            "e4372e687c28562e6416d508a956af98ecd407c810a32f6e5edf7ce12a1fe2d9",
+            "54115cb1a271654271f0d49aca55507c75f207686b0748ed6d65ff9b3ff3081f",
+            "f960a1087c34178ad8457f0b06830a129728830b3aecd7a537594cefbfba38fe",
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a",
+            "1974223666eb35c1bb9de001065bdfaad2a1497707dfc1d98feaa3e21c49d0b5",
+            "6306e0bd43b9a8089e31d6292ea6d666c662fb244919a837ced4522db00b9b4c",
+            "925e72f1338dbb9b55bab231326ee11cff90281b5a02b426d61cd77319eda180"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.14285714285714285,
+              "ndcg_at_10": 0.3333333333333333,
+              "judged_fraction_at_10": 0.8,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.14285714285714285,
+              "ndcg_at_10": 0.3333333333333333,
+              "judged_fraction_at_10": 0.8,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.4496889999136329,
+          "peak_tree_rss_mib": 987.421875,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "documents-09-ar",
+          "text": "نموذج مصلحة الضرائب 8822 بعنوان Change of Address.",
+          "language": "ar",
+          "family": "documents-09",
+          "kind": "documents",
+          "expected_positive_ids": [
+            "00a97aa7dd3ecb68d8d5c3b420dae76d21502f4883bb54c01b7f0aa281980b83"
+          ],
+          "hybrid_top10": [
+            "00a97aa7dd3ecb68d8d5c3b420dae76d21502f4883bb54c01b7f0aa281980b83",
+            "1aa058d36003aa7f99e41601af07fbfaed2d3179f3b1b7ace4fb04346649b752",
+            "68d000857fdc947239b345518083890b0deb1c31dbb0d23f75976eae123b4c82",
+            "587b2e9c611f0b8de0c68c74db748e210fe273ee72f4d504c99c5cea090bd59a",
+            "9f9ecda1ac508164787a3b21168899c6ce33ac68345fd3e977bde0c9d940a92e",
+            "fb7d4225957a57d2362c53a2a0191d81781dd4cacf5f35591c810fd237ae32d9",
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4",
+            "c8ea03a6b2b5e395ef91dbf4ea8321f42568d9a02a1977b2758b6d2120b72664",
+            "68a6c742d6f993d88747d2482483997877be2d4ab4dd8f054cacd5c6ca089cdd"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.9,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.117840207996778,
+          "peak_tree_rss_mib": 1001.859375,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "documents-09-en",
+          "text": "IRS Form 8822 titled Change of Address.",
+          "language": "en",
+          "family": "documents-09",
+          "kind": "documents",
+          "expected_positive_ids": [
+            "00a97aa7dd3ecb68d8d5c3b420dae76d21502f4883bb54c01b7f0aa281980b83"
+          ],
+          "hybrid_top10": [
+            "00a97aa7dd3ecb68d8d5c3b420dae76d21502f4883bb54c01b7f0aa281980b83",
+            "3dc64f2a50194b779fb6145d2e486e3e878660855eba8160bca89de108ceafce",
+            "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+            "4a4731fdd125f0391cb7d9857c2a4216fb41001ceec024fbd3a19c134107d07a",
+            "034c4e989231d019d9fa7d9211513c188fe51f60cbad5f7d5ffeffb88fec82cf",
+            "e4f432e3c6bd6197b8596c2a4e443f2f5e5dda85bd43d9e8154bba5cccbd9db5",
+            "9941b2d43cbcdaa118b97f9523071562ff7d105073c2a16a2eb585ce4fa62be5",
+            "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+            "9ca829ffc7a119cfbf134ad999fe1984d4a322530e48cb33b79c7996053cc4ba",
+            "cb143680d8be477de694f9d14790bd596e62b28da4201d2292a03b4198dd20ce"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.9,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.9869514170568436,
+          "peak_tree_rss_mib": 992.28125,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "documents-09-fr",
+          "text": "Formulaire IRS 8822 intitulé Change of Address.",
+          "language": "fr",
+          "family": "documents-09",
+          "kind": "documents",
+          "expected_positive_ids": [
+            "00a97aa7dd3ecb68d8d5c3b420dae76d21502f4883bb54c01b7f0aa281980b83"
+          ],
+          "hybrid_top10": [
+            "00a97aa7dd3ecb68d8d5c3b420dae76d21502f4883bb54c01b7f0aa281980b83",
+            "3dc64f2a50194b779fb6145d2e486e3e878660855eba8160bca89de108ceafce",
+            "81c0c895bb594844d5ef3bbfa0972d0152636aafc23857650fa2c93874580cd7",
+            "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+            "93ae683e2a848b5cdf8e95894db8c626500031a32b62bd2f1a61753216055243",
+            "cb143680d8be477de694f9d14790bd596e62b28da4201d2292a03b4198dd20ce",
+            "19bc398456f1e1ed510a69b1921c397d43545e24abe1726007dccc95015a4d4b",
+            "e4f432e3c6bd6197b8596c2a4e443f2f5e5dda85bd43d9e8154bba5cccbd9db5",
+            "034c4e989231d019d9fa7d9211513c188fe51f60cbad5f7d5ffeffb88fec82cf",
+            "2506ea4bc8590fb963284dbce097fd3e1c25d72b949b92cd5253c2fa10dd453c"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.9,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.9,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.2070311249699444,
+          "peak_tree_rss_mib": 999.5,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "documents-11-ar",
+          "text": "نموذج مصلحة الضرائب 940 لإقرار صاحب العمل السنوي لضريبة البطالة الفيدرالية.",
+          "language": "ar",
+          "family": "documents-11",
+          "kind": "documents",
+          "expected_positive_ids": [
+            "e4f432e3c6bd6197b8596c2a4e443f2f5e5dda85bd43d9e8154bba5cccbd9db5"
+          ],
+          "hybrid_top10": [
+            "68d000857fdc947239b345518083890b0deb1c31dbb0d23f75976eae123b4c82",
+            "1aa058d36003aa7f99e41601af07fbfaed2d3179f3b1b7ace4fb04346649b752",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4",
+            "c62a442a6d9ddb4f6477911d74d7f716ab8074b2822c6ec4bd1a88b374d6db00",
+            "fb7d4225957a57d2362c53a2a0191d81781dd4cacf5f35591c810fd237ae32d9",
+            "587b2e9c611f0b8de0c68c74db748e210fe273ee72f4d504c99c5cea090bd59a",
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c",
+            "9287c2827c0e2a29f574d8679170169091dcad57f0136ab0901dc0215c9baf1e",
+            "c8ea03a6b2b5e395ef91dbf4ea8321f42568d9a02a1977b2758b6d2120b72664",
+            "9f9ecda1ac508164787a3b21168899c6ce33ac68345fd3e977bde0c9d940a92e"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.737672167015262,
+          "peak_tree_rss_mib": 1020.875,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "documents-11-en",
+          "text": "IRS Form 940 for Employer’s Annual Federal Unemployment Tax Return.",
+          "language": "en",
+          "family": "documents-11",
+          "kind": "documents",
+          "expected_positive_ids": [
+            "e4f432e3c6bd6197b8596c2a4e443f2f5e5dda85bd43d9e8154bba5cccbd9db5"
+          ],
+          "hybrid_top10": [
+            "e4f432e3c6bd6197b8596c2a4e443f2f5e5dda85bd43d9e8154bba5cccbd9db5",
+            "20ba3cd1007ed4d48e3cbe5ef09ea327693b64d6136a374c2f77734c5eda9c4b",
+            "35ce503f4ff3cfe372681013fd15b606a7ff566d238eb00937310a35b3d8a8cb",
+            "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+            "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+            "19bc398456f1e1ed510a69b1921c397d43545e24abe1726007dccc95015a4d4b",
+            "9941b2d43cbcdaa118b97f9523071562ff7d105073c2a16a2eb585ce4fa62be5",
+            "4a4731fdd125f0391cb7d9857c2a4216fb41001ceec024fbd3a19c134107d07a",
+            "cb143680d8be477de694f9d14790bd596e62b28da4201d2292a03b4198dd20ce",
+            "3dc64f2a50194b779fb6145d2e486e3e878660855eba8160bca89de108ceafce"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.827239624923095,
+          "peak_tree_rss_mib": 1021.90625,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "documents-11-fr",
+          "text": "Formulaire IRS 940 pour la déclaration annuelle de l’employeur de la taxe fédérale sur le chômage.",
+          "language": "fr",
+          "family": "documents-11",
+          "kind": "documents",
+          "expected_positive_ids": [
+            "e4f432e3c6bd6197b8596c2a4e443f2f5e5dda85bd43d9e8154bba5cccbd9db5"
+          ],
+          "hybrid_top10": [
+            "e4f432e3c6bd6197b8596c2a4e443f2f5e5dda85bd43d9e8154bba5cccbd9db5",
+            "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+            "20ba3cd1007ed4d48e3cbe5ef09ea327693b64d6136a374c2f77734c5eda9c4b",
+            "9941b2d43cbcdaa118b97f9523071562ff7d105073c2a16a2eb585ce4fa62be5",
+            "2506ea4bc8590fb963284dbce097fd3e1c25d72b949b92cd5253c2fa10dd453c",
+            "35b11344a5e98a494a9f9178638f6d98b0ba597151abf724cb2a17e0214e8ea5",
+            "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+            "19bc398456f1e1ed510a69b1921c397d43545e24abe1726007dccc95015a4d4b",
+            "3dc64f2a50194b779fb6145d2e486e3e878660855eba8160bca89de108ceafce",
+            "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.1,
+              "ndcg_at_10": 0.2890648263178878,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.14285714285714285,
+              "ndcg_at_10": 0.3333333333333333,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.0081470829900354,
+          "peak_tree_rss_mib": 1032.0625,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "fresh-07-ar",
+          "text": "صورة لرجال حول طاولة في حانة عليها صحف وكؤوس بيرة وطبق خبز.",
+          "language": "ar",
+          "family": "fresh-07",
+          "kind": "photos",
+          "expected_positive_ids": [
+            "5361425d6e992b85054bb0490a4bd744f1b2c4ca4ab197e265fd5e37d3023bcb"
+          ],
+          "hybrid_top10": [
+            "1aa058d36003aa7f99e41601af07fbfaed2d3179f3b1b7ace4fb04346649b752",
+            "9287c2827c0e2a29f574d8679170169091dcad57f0136ab0901dc0215c9baf1e",
+            "68d000857fdc947239b345518083890b0deb1c31dbb0d23f75976eae123b4c82",
+            "c62a442a6d9ddb4f6477911d74d7f716ab8074b2822c6ec4bd1a88b374d6db00",
+            "fb7d4225957a57d2362c53a2a0191d81781dd4cacf5f35591c810fd237ae32d9",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4",
+            "9f9ecda1ac508164787a3b21168899c6ce33ac68345fd3e977bde0c9d940a92e",
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c",
+            "c8ea03a6b2b5e395ef91dbf4ea8321f42568d9a02a1977b2758b6d2120b72664",
+            "0c5921688da89f90726cf3f5300ae49396443ab02a2f69ec358287b762111b3e"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.3333333333333333,
+              "ndcg_at_10": 0.5,
+              "judged_fraction_at_10": 0.14285714285714285,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.4934874579776078,
+          "peak_tree_rss_mib": 1018.953125,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "fresh-07-en",
+          "text": "Photograph of men at a pub table with newspapers, beer glasses, and a plate of bread.",
+          "language": "en",
+          "family": "fresh-07",
+          "kind": "photos",
+          "expected_positive_ids": [
+            "5361425d6e992b85054bb0490a4bd744f1b2c4ca4ab197e265fd5e37d3023bcb"
+          ],
+          "hybrid_top10": [
+            "4d4f4fae3f402c2b1699a302c25d93b4e203cae27cb42e70fe27d2c6acd01697",
+            "5361425d6e992b85054bb0490a4bd744f1b2c4ca4ab197e265fd5e37d3023bcb",
+            "5a57ca8e99cd6b47b6d3ab33bf5253351e7aa1f53cf30e0f4fb86c64cb7759f4",
+            "f5366eab4c43804bfe7570fdd15c47db2f6b78d1fd6f7d1eca29b0baa6eee479",
+            "eec965e56631b55d74374cceb543bfa2f02e7c2f5e9f4c72f1b2647866a357f2",
+            "c660de74435f9bf50ddd013fe0323cdb2fc940a2163c5a452f966ab7eea8f509",
+            "2ffa25d9afb7aabe6de8e11d35474450bd525ea12317ca3e56b86dc77be1c1ed",
+            "eaf70647dba7ad4f64c0e7646485e536c4bd1c0eb4e1476ec5e747bd6d6cf093",
+            "034c4e989231d019d9fa7d9211513c188fe51f60cbad5f7d5ffeffb88fec82cf",
+            "35ce503f4ff3cfe372681013fd15b606a7ff566d238eb00937310a35b3d8a8cb"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.4491989160887897,
+          "peak_tree_rss_mib": 1025.375,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "fresh-07-fr",
+          "text": "Photo d’hommes à une table de pub avec des journaux, des verres de bière et une assiette de pain.",
+          "language": "fr",
+          "family": "fresh-07",
+          "kind": "photos",
+          "expected_positive_ids": [
+            "5361425d6e992b85054bb0490a4bd744f1b2c4ca4ab197e265fd5e37d3023bcb"
+          ],
+          "hybrid_top10": [
+            "20ba3cd1007ed4d48e3cbe5ef09ea327693b64d6136a374c2f77734c5eda9c4b",
+            "5361425d6e992b85054bb0490a4bd744f1b2c4ca4ab197e265fd5e37d3023bcb",
+            "5a57ca8e99cd6b47b6d3ab33bf5253351e7aa1f53cf30e0f4fb86c64cb7759f4",
+            "2ffa25d9afb7aabe6de8e11d35474450bd525ea12317ca3e56b86dc77be1c1ed",
+            "35b11344a5e98a494a9f9178638f6d98b0ba597151abf724cb2a17e0214e8ea5",
+            "edbd29213cd1904a624eb6b65f7cfc5f44a645852e546f62d4fdcafabde58364",
+            "a473718423b7979958edd61335418f11b97c2f2e65a6a2d49b7421228de49ef5",
+            "19bc398456f1e1ed510a69b1921c397d43545e24abe1726007dccc95015a4d4b",
+            "eaf70647dba7ad4f64c0e7646485e536c4bd1c0eb4e1476ec5e747bd6d6cf093",
+            "f5366eab4c43804bfe7570fdd15c47db2f6b78d1fd6f7d1eca29b0baa6eee479"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.5372964580310509,
+          "peak_tree_rss_mib": 1040.078125,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "screenshots-03-ar",
+          "text": "لقطة شاشة لطرفية تعرض Rich Tree مع Renderables وSyntax وMarkdown وContainers.",
+          "language": "ar",
+          "family": "screenshots-03",
+          "kind": "screenshots",
+          "expected_positive_ids": [
+            "76242485aec1263b67d9edeaaba65009e38da897b0344001983673e8ae1b2d6d"
+          ],
+          "hybrid_top10": [
+            "76242485aec1263b67d9edeaaba65009e38da897b0344001983673e8ae1b2d6d",
+            "c4dcbe6ac6d2a894b3c3bbc11391f018ff8e193f73926193bc86dbba97813ac0",
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c",
+            "54173bf385c8360d66e15ca7d210d789cd11a781f1549d326a7f4f5c65f8cb7f",
+            "68cf3b05488f8e00e1f2be72b1eaeb6edb34f4d9c24f41615fced3ed3bf71e61",
+            "1e1957c103ed274ecf15991fd4c7182944ade6560abd1f34114696de54bb0931",
+            "47a3382d4757a4912173b3fd9bc0ea1e87683857f6baf4d95ed6a378caf0da6b",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4",
+            "11ce0401fc4088abcad972616855bc70a23de61e8f71dc5c9b6df3be8ed7b690",
+            "5add7e8c4b16ac3e7e227bf17737d845e1aaa63187feb4808e4bc0b05d310e93"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.2,
+              "ndcg_at_10": 0.38685280723454163,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.3333333333333333,
+              "ndcg_at_10": 0.5,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.7142857142857143,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.843519665999338,
+          "peak_tree_rss_mib": 1020.046875,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "screenshots-03-en",
+          "text": "Terminal screenshot displaying a Rich Tree with Renderables, Syntax, Markdown, and Containers.",
+          "language": "en",
+          "family": "screenshots-03",
+          "kind": "screenshots",
+          "expected_positive_ids": [
+            "76242485aec1263b67d9edeaaba65009e38da897b0344001983673e8ae1b2d6d"
+          ],
+          "hybrid_top10": [
+            "76242485aec1263b67d9edeaaba65009e38da897b0344001983673e8ae1b2d6d",
+            "4a75de0654a616e080be7300b7895626b8e9f2350785821a16041c74f98b5ab6",
+            "c4dcbe6ac6d2a894b3c3bbc11391f018ff8e193f73926193bc86dbba97813ac0",
+            "68cf3b05488f8e00e1f2be72b1eaeb6edb34f4d9c24f41615fced3ed3bf71e61",
+            "5add7e8c4b16ac3e7e227bf17737d845e1aaa63187feb4808e4bc0b05d310e93",
+            "54173bf385c8360d66e15ca7d210d789cd11a781f1549d326a7f4f5c65f8cb7f",
+            "8c55bab323e07274390106033f1667dccfd51691a3321be457f28552c6e505a8",
+            "1e1957c103ed274ecf15991fd4c7182944ade6560abd1f34114696de54bb0931",
+            "11ce0401fc4088abcad972616855bc70a23de61e8f71dc5c9b6df3be8ed7b690",
+            "13611d20711110cfbafea387bed50e6824fd42c46f9c3ccaf7bb4e1834c1ec37"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.6,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.8,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.166002167039551,
+          "peak_tree_rss_mib": 1017.265625,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "screenshots-03-fr",
+          "text": "Capture de terminal montrant Rich Tree avec Renderables, Syntax, Markdown et Containers.",
+          "language": "fr",
+          "family": "screenshots-03",
+          "kind": "screenshots",
+          "expected_positive_ids": [
+            "76242485aec1263b67d9edeaaba65009e38da897b0344001983673e8ae1b2d6d"
+          ],
+          "hybrid_top10": [
+            "76242485aec1263b67d9edeaaba65009e38da897b0344001983673e8ae1b2d6d",
+            "4a75de0654a616e080be7300b7895626b8e9f2350785821a16041c74f98b5ab6",
+            "c4dcbe6ac6d2a894b3c3bbc11391f018ff8e193f73926193bc86dbba97813ac0",
+            "68cf3b05488f8e00e1f2be72b1eaeb6edb34f4d9c24f41615fced3ed3bf71e61",
+            "54173bf385c8360d66e15ca7d210d789cd11a781f1549d326a7f4f5c65f8cb7f",
+            "5add7e8c4b16ac3e7e227bf17737d845e1aaa63187feb4808e4bc0b05d310e93",
+            "1e1957c103ed274ecf15991fd4c7182944ade6560abd1f34114696de54bb0931",
+            "11ce0401fc4088abcad972616855bc70a23de61e8f71dc5c9b6df3be8ed7b690",
+            "8c55bab323e07274390106033f1667dccfd51691a3321be457f28552c6e505a8",
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.3333333333333333,
+              "ndcg_at_10": 0.5,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.3,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.247485041967593,
+          "peak_tree_rss_mib": 1042.59375,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "v2-brave-about-ar",
+          "text": "صفحة إعدادات حول متصفح بريف بالعربية مع شعار الأسد الأحمر.",
+          "language": "ar",
+          "family": "v2-brave-about",
+          "kind": "screenshots",
+          "expected_positive_ids": [
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c"
+          ],
+          "hybrid_top10": [
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c",
+            "9f9ecda1ac508164787a3b21168899c6ce33ac68345fd3e977bde0c9d940a92e",
+            "47a3382d4757a4912173b3fd9bc0ea1e87683857f6baf4d95ed6a378caf0da6b",
+            "1aa058d36003aa7f99e41601af07fbfaed2d3179f3b1b7ace4fb04346649b752",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4",
+            "68d000857fdc947239b345518083890b0deb1c31dbb0d23f75976eae123b4c82",
+            "c8ea03a6b2b5e395ef91dbf4ea8321f42568d9a02a1977b2758b6d2120b72664",
+            "9d6559351367e3d2518bdac15578d167197fad48f0dfe087290affd495124900",
+            "9287c2827c0e2a29f574d8679170169091dcad57f0136ab0901dc0215c9baf1e",
+            "c62a442a6d9ddb4f6477911d74d7f716ab8074b2822c6ec4bd1a88b374d6db00"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.6666666666666666,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.6,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.5108910420676693,
+          "peak_tree_rss_mib": 1013.640625,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "v2-brave-about-en",
+          "text": "Brave About settings page in Arabic with the red lion logo.",
+          "language": "en",
+          "family": "v2-brave-about",
+          "kind": "screenshots",
+          "expected_positive_ids": [
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c"
+          ],
+          "hybrid_top10": [
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4",
+            "1aa058d36003aa7f99e41601af07fbfaed2d3179f3b1b7ace4fb04346649b752",
+            "5a5e86f06e3bc3d2317b3b92c0725174f75d37c5785fe2da2befb37a7c415440",
+            "9d6559351367e3d2518bdac15578d167197fad48f0dfe087290affd495124900",
+            "c8ea03a6b2b5e395ef91dbf4ea8321f42568d9a02a1977b2758b6d2120b72664",
+            "68d000857fdc947239b345518083890b0deb1c31dbb0d23f75976eae123b4c82",
+            "9287c2827c0e2a29f574d8679170169091dcad57f0136ab0901dc0215c9baf1e",
+            "4a75de0654a616e080be7300b7895626b8e9f2350785821a16041c74f98b5ab6",
+            "c62a442a6d9ddb4f6477911d74d7f716ab8074b2822c6ec4bd1a88b374d6db00"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.6,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.5649205420631915,
+          "peak_tree_rss_mib": 1040.625,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "v2-brave-about-fr",
+          "text": "Page À propos de Brave en arabe avec le logo du lion rouge.",
+          "language": "fr",
+          "family": "v2-brave-about",
+          "kind": "screenshots",
+          "expected_positive_ids": [
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c"
+          ],
+          "hybrid_top10": [
+            "68d000857fdc947239b345518083890b0deb1c31dbb0d23f75976eae123b4c82",
+            "1aa058d36003aa7f99e41601af07fbfaed2d3179f3b1b7ace4fb04346649b752",
+            "c62a442a6d9ddb4f6477911d74d7f716ab8074b2822c6ec4bd1a88b374d6db00",
+            "fb7d4225957a57d2362c53a2a0191d81781dd4cacf5f35591c810fd237ae32d9",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4",
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c",
+            "587b2e9c611f0b8de0c68c74db748e210fe273ee72f4d504c99c5cea090bd59a",
+            "9287c2827c0e2a29f574d8679170169091dcad57f0136ab0901dc0215c9baf1e",
+            "a473718423b7979958edd61335418f11b97c2f2e65a6a2d49b7421228de49ef5",
+            "c8ea03a6b2b5e395ef91dbf4ea8321f42568d9a02a1977b2758b6d2120b72664"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.16666666666666666,
+              "ndcg_at_10": 0.3562071871080222,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.2,
+              "ndcg_at_10": 0.38685280723454163,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.16666666666666666,
+              "ndcg_at_10": 0.3562071871080222,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.481294000055641,
+          "peak_tree_rss_mib": 1016.96875,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "v2-children-bear-ar",
+          "text": "طفلان بقبعتين زرقاوين يشاهدان دبا خلف زجاج حديقة الحيوان.",
+          "language": "ar",
+          "family": "v2-children-bear",
+          "kind": "photos",
+          "expected_positive_ids": [
+            "a5d73c02e6a69602bcb752fd421380431264730795af77b3bad06eee3a68c8de"
+          ],
+          "hybrid_top10": [
+            "1aa058d36003aa7f99e41601af07fbfaed2d3179f3b1b7ace4fb04346649b752",
+            "a5d73c02e6a69602bcb752fd421380431264730795af77b3bad06eee3a68c8de",
+            "68d000857fdc947239b345518083890b0deb1c31dbb0d23f75976eae123b4c82",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4",
+            "c62a442a6d9ddb4f6477911d74d7f716ab8074b2822c6ec4bd1a88b374d6db00",
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c",
+            "c8ea03a6b2b5e395ef91dbf4ea8321f42568d9a02a1977b2758b6d2120b72664",
+            "9f9ecda1ac508164787a3b21168899c6ce33ac68345fd3e977bde0c9d940a92e",
+            "5a5e86f06e3bc3d2317b3b92c0725174f75d37c5785fe2da2befb37a7c415440",
+            "47a3382d4757a4912173b3fd9bc0ea1e87683857f6baf4d95ed6a378caf0da6b"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.5210910419700667,
+          "peak_tree_rss_mib": 1019.890625,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "v2-children-bear-en",
+          "text": "Two children in blue caps watching a bear through zoo glass.",
+          "language": "en",
+          "family": "v2-children-bear",
+          "kind": "photos",
+          "expected_positive_ids": [
+            "a5d73c02e6a69602bcb752fd421380431264730795af77b3bad06eee3a68c8de"
+          ],
+          "hybrid_top10": [
+            "a5d73c02e6a69602bcb752fd421380431264730795af77b3bad06eee3a68c8de",
+            "57c62f60ea71b9d40d33fa94635153fc02b1eec74b167324e874ee2ffb12ecab",
+            "eec965e56631b55d74374cceb543bfa2f02e7c2f5e9f4c72f1b2647866a357f2",
+            "90a1de9bd77da9cc94b3264b6dd937ef2cf992fa4c514098a41727b2816df1f1",
+            "8be91636cd8f9f08e307c7a8cb5d5993fdb4143b1e7e5e411485f71c6077f333",
+            "b8c257faa1ca20f5cd89476dafb871d875132373695dc9b89e51c0719b81b2a8",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4",
+            "9d6559351367e3d2518bdac15578d167197fad48f0dfe087290affd495124900",
+            "d029b1db9a4aa19db73b6180b97a3e450e9cff353f80ea4c4c3b537dca065e70",
+            "00a9c84ff96a4ff6948ebebb5a360d93b1be5cd2cdd205ef7a18ad9568dbc9d1"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.25,
+              "ndcg_at_10": 0.4306765580733931,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.4527014578925446,
+          "peak_tree_rss_mib": 1040.78125,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "v2-children-bear-fr",
+          "text": "Deux enfants portant des casquettes bleues observent un ours derrière une vitre au zoo.",
+          "language": "fr",
+          "family": "v2-children-bear",
+          "kind": "photos",
+          "expected_positive_ids": [
+            "a5d73c02e6a69602bcb752fd421380431264730795af77b3bad06eee3a68c8de"
+          ],
+          "hybrid_top10": [
+            "a5d73c02e6a69602bcb752fd421380431264730795af77b3bad06eee3a68c8de",
+            "f25452a7c42692c290b9ebfabcec41e5432e311b21b161b36fdae0417520ad1c",
+            "d029b1db9a4aa19db73b6180b97a3e450e9cff353f80ea4c4c3b537dca065e70",
+            "d5a5bf8f2ec70cf8a822bb1937c7d2b582e6ad2512cd16dd58eccb48e4320cc6",
+            "57c62f60ea71b9d40d33fa94635153fc02b1eec74b167324e874ee2ffb12ecab",
+            "83df4841023fbc4ad38f31d1c3d649172ef8bd486575453391430b52e120c2c6",
+            "15ef7137f95183387b88f5ab13f0117d8c249a11dec174cb998978b217a19d00",
+            "eec965e56631b55d74374cceb543bfa2f02e7c2f5e9f4c72f1b2647866a357f2",
+            "c62a442a6d9ddb4f6477911d74d7f716ab8074b2822c6ec4bd1a88b374d6db00",
+            "35b11344a5e98a494a9f9178638f6d98b0ba597151abf724cb2a17e0214e8ea5"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.3,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.1111111111111111,
+              "ndcg_at_10": 0.3010299956639812,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            }
+          },
+          "seconds": 1.4452065420337021,
+          "peak_tree_rss_mib": 1027.359375,
+          "memory_access_errors": 0,
+          "status": "ok"
+        }
+      ]
+    },
+    "fp32": {
+      "initial_full_index": {
+        "job_id": "ff8a6b04139a41959ec01265a0b9cd7e",
+        "status": "completed_with_errors",
+        "collection": "precision-study",
+        "files": 128,
+        "images": 128,
+        "reused_images": 0,
+        "failed_files": 0,
+        "removed_files": 0,
+        "generation": "25d0282e624345b293266f8f60602796",
+        "seconds": 284.88525520905387,
+        "degraded_files": 1,
+        "degraded_images": 1,
+        "reused_stages": {
+          "metadata": 0,
+          "ocr": 0,
+          "vision": 0,
+          "semantic": 0
+        }
+      },
+      "native_encoder_rebuild": {
+        "job_id": "74104a3d6990455dae6fce91e2b7de5b",
+        "status": "completed_with_errors",
+        "collection": "precision-study",
+        "files": 128,
+        "images": 128,
+        "reused_images": 0,
+        "failed_files": 0,
+        "removed_files": 0,
+        "generation": "2c8d0dc4491e4fa0bfc994c9c55ac1b5",
+        "seconds": 35.03915270802099,
+        "degraded_files": 1,
+        "degraded_images": 1,
+        "reused_stages": {
+          "metadata": 128,
+          "ocr": 128,
+          "vision": 0,
+          "semantic": 0
+        }
+      },
+      "native_encoder_rebuild_resources": {
+        "peak_tree_rss_mib": 886.109375,
+        "phase_peak_mib": {
+          "native_encoder_reindex_ocr_cached": 886.109375
+        },
+        "samples": 1235,
+        "access_errors": 0,
+        "sample_interval_ms": 20,
+        "scope": "Coordinator and children, including model loading and evaluation",
+        "limitations": "Shared pages may count twice; spikes between samples may be missed",
+        "invocations": [
+          "resources-attempt-001.json"
+        ]
+      },
+      "processed_queries": 24,
+      "failed_queries": 0,
+      "aggregate": {
+        "hybrid/all": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.8868055555555556,
+          "ndcg_at_10": 0.914519129953308,
+          "judged_fraction_at_10": 0.6041666666666666,
+          "known_positives": 1.0,
+          "queries": 24
+        },
+        "hybrid/exposure:fresh-v2": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.3666666666666667,
+          "known_positives": 1.0,
+          "queries": 6
+        },
+        "hybrid/exposure:legacy-benchmark": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.8188888888888889,
+          "ndcg_at_10": 0.8632306079252927,
+          "judged_fraction_at_10": 0.7933333333333333,
+          "known_positives": 1.0,
+          "queries": 15
+        },
+        "hybrid/exposure:new-scale": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.13333333333333333,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:diagrams-01": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.8333333333333334,
+          "ndcg_at_10": 0.8769765845238191,
+          "judged_fraction_at_10": 0.7333333333333334,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:diagrams-02": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.2611111111111111,
+          "ndcg_at_10": 0.4391764551026449,
+          "judged_fraction_at_10": 0.8333333333333334,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:documents-09": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.7999999999999999,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:documents-11": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 1.0,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:fresh-07": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.13333333333333333,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:screenshots-03": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.6,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:v2-brave-about": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.5,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/family:v2-children-bear": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.2333333333333333,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/kind:diagrams": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.5472222222222222,
+          "ndcg_at_10": 0.658076519813232,
+          "judged_fraction_at_10": 0.7833333333333333,
+          "known_positives": 1.0,
+          "queries": 6
+        },
+        "hybrid/kind:documents": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.9,
+          "known_positives": 1.0,
+          "queries": 6
+        },
+        "hybrid/kind:photos": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.18333333333333335,
+          "known_positives": 1.0,
+          "queries": 6
+        },
+        "hybrid/kind:screenshots": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.5499999999999999,
+          "known_positives": 1.0,
+          "queries": 6
+        },
+        "hybrid/language:ar": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.90625,
+          "ndcg_at_10": 0.9288345697591741,
+          "judged_fraction_at_10": 0.55,
+          "known_positives": 1.0,
+          "queries": 8
+        },
+        "hybrid/language:en": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.8375,
+          "ndcg_at_10": 0.8772228201007499,
+          "judged_fraction_at_10": 0.6375,
+          "known_positives": 1.0,
+          "queries": 8
+        },
+        "hybrid/language:fr": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.9166666666666666,
+          "ndcg_at_10": 0.9375,
+          "judged_fraction_at_10": 0.625,
+          "known_positives": 1.0,
+          "queries": 8
+        },
+        "hybrid/role:diagnostic": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.13333333333333333,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/role:test": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.5,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/role:train": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.8188888888888889,
+          "ndcg_at_10": 0.8632306079252927,
+          "judged_fraction_at_10": 0.7933333333333333,
+          "known_positives": 1.0,
+          "queries": 15
+        },
+        "hybrid/role:validation": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.2333333333333333,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/split:test": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.5,
+          "known_positives": 1.0,
+          "queries": 3
+        },
+        "hybrid/split:train": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.8188888888888889,
+          "ndcg_at_10": 0.8632306079252927,
+          "judged_fraction_at_10": 0.7933333333333333,
+          "known_positives": 1.0,
+          "queries": 15
+        },
+        "hybrid/split:validation": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "judged_fraction_at_10": 0.18333333333333335,
+          "known_positives": 1.0,
+          "queries": 6
+        },
+        "lexical/all": {
+          "candidate_recall_at_50": 0.625,
+          "mrr_at_10": 0.40317460317460313,
+          "ndcg_at_10": 0.43675190198794955,
+          "judged_fraction_at_10": 0.4218253968253968,
+          "known_positives": 1.0,
+          "queries": 24
+        },
+        "semantic/all": {
+          "candidate_recall_at_50": 0.7916666666666666,
+          "mrr_at_10": 0.35185185185185186,
+          "ndcg_at_10": 0.38722136939092605,
+          "judged_fraction_at_10": 0.3958333333333333,
+          "known_positives": 1.0,
+          "queries": 24
+        },
+        "visual/all": {
+          "candidate_recall_at_50": 1.0,
+          "mrr_at_10": 0.8715277777777778,
+          "ndcg_at_10": 0.9038556693840128,
+          "judged_fraction_at_10": 0.5958333333333333,
+          "known_positives": 1.0,
+          "queries": 24
+        }
+      },
+      "cold_query_seconds": {
+        "count": 24,
+        "mean": 3.0159698210287993,
+        "median": 2.8594067500089295,
+        "p95": 4.02161807853845,
+        "p99": 4.356756818175781,
+        "max": 4.455271875020117
+      },
+      "cold_query_peak_tree_rss_mib": {
+        "count": 24,
+        "mean": 2283.7682291666665,
+        "median": 2303.6875,
+        "p95": 2698.24296875,
+        "p99": 2848.26953125,
+        "max": 2891.484375
+      },
+      "environment": {
+        "host": {
+          "system": "Darwin",
+          "machine": "arm64",
+          "python": "3.12.11 (main, Aug 18 2025, 19:02:39) [Clang 20.1.4 ]"
+        },
+        "packages": {
+          "numpy": "2.5.4",
+          "onnxruntime": "1.31.0",
+          "tokenizers": "0.22.2",
+          "Pillow": "12.3.0",
+          "psutil": "7.2.2"
+        },
+        "engine_sha256": "9c2b1e20cf289d1fe8969fb83d7fe851640b6517cdb861d3d73872b4e21dd292",
+        "harness_sha256": "38fb239e2f3993956a456cbc55f2faec1b85a1037a2c4c6a36face307ff752cb",
+        "threads": 2
+      },
+      "pipeline_spec": {
+        "version": 1,
+        "siglip_precision": "fp32",
+        "model_registry": {
+          "schema_version": 1,
+          "models": {
+            "siglip2": {
+              "repo": "onnx-community/siglip2-base-patch16-224-ONNX",
+              "revision": "ba1f3b0843f24bc5417d38e19c37b287d719b2f4",
+              "files": {
+                "tokenizer": {
+                  "path": "tokenizer.json",
+                  "sha256": "cb9140fae3ac5122c972d37adf83e1248471a38147ad76f8215c8872c6fd8322",
+                  "size": 34363039
+                },
+                "vision_int8": {
+                  "path": "onnx/vision_model_int8.onnx",
+                  "sha256": "0dd31785a2713f1113ef2272472165c69d580473dae38d7b47568ac587795e70",
+                  "size": 94553333
+                },
+                "text_int8": {
+                  "path": "onnx/text_model_int8.onnx",
+                  "sha256": "3a0603d3a00c05a80a6ded4743c16aaac7b1e62cdcc7e362e7ce418659b96400",
+                  "size": 283438275
+                },
+                "vision_fp32": {
+                  "path": "onnx/vision_model.onnx",
+                  "sha256": "c0573e3f4140c3a7c4e9cc5912bd6b26a033b46a6a8e8af26cbea262b163bcad",
+                  "size": 371807752
+                },
+                "text_fp32": {
+                  "path": "onnx/text_model.onnx",
+                  "sha256": "baf12d941beabafafb14f7b4adb38dc15be18681b964a84410ec53d9d65e6293",
+                  "size": 1129469657
+                }
+              }
+            },
+            "e5": {
+              "repo": "Xenova/multilingual-e5-small",
+              "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+              "files": {
+                "tokenizer": {
+                  "path": "tokenizer.json",
+                  "sha256": "0b44a9d7b51c3c62626640cda0e2c2f70fdacdc25bbbd68038369d14ebdf4c39",
+                  "size": 17082730
+                },
+                "text_int8": {
+                  "path": "onnx/model_quantized.onnx",
+                  "sha256": "f80102d3f2a1229f387d3c81909990d8945513e347b0eab049f7de3c6f98c193",
+                  "size": 118308185
+                },
+                "text_fp32": {
+                  "path": "onnx/model.onnx",
+                  "sha256": "4aa845c27760e06e9a686b9d8b5d440eae4b6612cd09e5b522b716d3941f77ff",
+                  "size": 470268533
+                }
+              }
+            }
+          }
+        },
+        "inference_sha256": "5de67f88fe86c68bb8f6b20194482d7be6046570e54463017340bd7c73045e6d",
+        "ocr_sha256": "c87442d5005e7b2ce228e6c124b5222e59fd82cc1e85a24cc05d6fbe59534fe2",
+        "processing_sha256": "d7878c33d6343fdfd600f4c56311bdb7947f1bba5aaa64916e18329a337e14ce",
+        "packages": {
+          "numpy": "2.5.4",
+          "Pillow": "12.3.0",
+          "onnxruntime": "1.31.0",
+          "tokenizers": "0.22.2"
+        },
+        "ocr_environment": {
+          "version": "tesseract 5.5.2",
+          "language_pack_sha256": {
+            "eng": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+            "fra": "ced037562e8c80c13122dece28dd477d399af80911a28791a66a63ac1e3445ca",
+            "ara": "e3206d3dc87fd50c24a0fb9f01838615911d25168f4e64415244b67d2bb3e729"
+          }
+        },
+        "languages": "eng+fra+ara",
+        "threads": 2,
+        "thumbnail_side": 512,
+        "semantic_characters": 32000,
+        "semantic_passages": 16,
+        "ocr_characters": 128000
+      },
+      "individual_queries": [
+        {
+          "query_id": "diagrams-01-ar",
+          "text": "مخطط نقاط بصفوف قطرية من علامات دائرية صفراء بحدود متعددة الألوان.",
+          "language": "ar",
+          "family": "diagrams-01",
+          "kind": "diagrams",
+          "expected_positive_ids": [
+            "cc2b34bf8d484c7a87b6abb52c6fbde04592c0e056bf7000419c1cb82a5e44d4"
+          ],
+          "hybrid_top10": [
+            "cc2b34bf8d484c7a87b6abb52c6fbde04592c0e056bf7000419c1cb82a5e44d4",
+            "43d71de43a58d10db84c4fe13af148522c4fcabfe800ce6eff1991d0ba0fba83",
+            "e4372e687c28562e6416d508a956af98ecd407c810a32f6e5edf7ce12a1fe2d9",
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a",
+            "5a204665e2954e673b2d8412b1c02aa32af28356d590e2a7bb1ba2d7474ce02f",
+            "9b6ee655026dbc97bb47be611cf0ea3ce6bc2dd2308ebc794aa3248a65cb8768",
+            "a3bb383c15e480dfdf51be608ddc14d1d4a8ac0416d9b653ddf505badd5ba261",
+            "411fa4e8cccdfe91fcda72dbc4aca6c60dbd6b8e13cfc45b2acab6b778c08d2a",
+            "925e72f1338dbb9b55bab231326ee11cff90281b5a02b426d61cd77319eda180",
+            "f960a1087c34178ad8457f0b06830a129728830b3aecd7a537594cefbfba38fe"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.4453467909479514,
+          "peak_tree_rss_mib": 2604.296875,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "diagrams-01-en",
+          "text": "Scatter plot with diagonal rows of yellow circular markers outlined in different colors.",
+          "language": "en",
+          "family": "diagrams-01",
+          "kind": "diagrams",
+          "expected_positive_ids": [
+            "cc2b34bf8d484c7a87b6abb52c6fbde04592c0e056bf7000419c1cb82a5e44d4"
+          ],
+          "hybrid_top10": [
+            "6306e0bd43b9a8089e31d6292ea6d666c662fb244919a837ced4522db00b9b4c",
+            "cc2b34bf8d484c7a87b6abb52c6fbde04592c0e056bf7000419c1cb82a5e44d4",
+            "43d71de43a58d10db84c4fe13af148522c4fcabfe800ce6eff1991d0ba0fba83",
+            "411fa4e8cccdfe91fcda72dbc4aca6c60dbd6b8e13cfc45b2acab6b778c08d2a",
+            "9b6ee655026dbc97bb47be611cf0ea3ce6bc2dd2308ebc794aa3248a65cb8768",
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a",
+            "a3bb383c15e480dfdf51be608ddc14d1d4a8ac0416d9b653ddf505badd5ba261",
+            "f960a1087c34178ad8457f0b06830a129728830b3aecd7a537594cefbfba38fe",
+            "5a204665e2954e673b2d8412b1c02aa32af28356d590e2a7bb1ba2d7474ce02f",
+            "4980d66d7e797360e204bdc260b65794509afde3c74d70ed304e0c948e834d7a"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.8,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.25,
+              "ndcg_at_10": 0.4306765580733931,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.8,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.979895249940455,
+          "peak_tree_rss_mib": 2256.515625,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "diagrams-01-fr",
+          "text": "Nuage de points avec des rangées diagonales de cercles jaunes bordés de différentes couleurs.",
+          "language": "fr",
+          "family": "diagrams-01",
+          "kind": "diagrams",
+          "expected_positive_ids": [
+            "cc2b34bf8d484c7a87b6abb52c6fbde04592c0e056bf7000419c1cb82a5e44d4"
+          ],
+          "hybrid_top10": [
+            "cc2b34bf8d484c7a87b6abb52c6fbde04592c0e056bf7000419c1cb82a5e44d4",
+            "43d71de43a58d10db84c4fe13af148522c4fcabfe800ce6eff1991d0ba0fba83",
+            "925e72f1338dbb9b55bab231326ee11cff90281b5a02b426d61cd77319eda180",
+            "e4372e687c28562e6416d508a956af98ecd407c810a32f6e5edf7ce12a1fe2d9",
+            "5a204665e2954e673b2d8412b1c02aa32af28356d590e2a7bb1ba2d7474ce02f",
+            "2506ea4bc8590fb963284dbce097fd3e1c25d72b949b92cd5253c2fa10dd453c",
+            "411fa4e8cccdfe91fcda72dbc4aca6c60dbd6b8e13cfc45b2acab6b778c08d2a",
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a",
+            "1974223666eb35c1bb9de001065bdfaad2a1497707dfc1d98feaa3e21c49d0b5",
+            "9b6ee655026dbc97bb47be611cf0ea3ce6bc2dd2308ebc794aa3248a65cb8768"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.7088620408903807,
+          "peak_tree_rss_mib": 2557.609375,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "diagrams-02-ar",
+          "text": "ثلاثة رسوم بيانية مكدسة عموديا لقطع خطوط أفقية باللون الأخضر والأحمر والأسود.",
+          "language": "ar",
+          "family": "diagrams-02",
+          "kind": "diagrams",
+          "expected_positive_ids": [
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a"
+          ],
+          "hybrid_top10": [
+            "54115cb1a271654271f0d49aca55507c75f207686b0748ed6d65ff9b3ff3081f",
+            "1974223666eb35c1bb9de001065bdfaad2a1497707dfc1d98feaa3e21c49d0b5",
+            "43d71de43a58d10db84c4fe13af148522c4fcabfe800ce6eff1991d0ba0fba83",
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a",
+            "a3bb383c15e480dfdf51be608ddc14d1d4a8ac0416d9b653ddf505badd5ba261",
+            "f960a1087c34178ad8457f0b06830a129728830b3aecd7a537594cefbfba38fe",
+            "b8c257faa1ca20f5cd89476dafb871d875132373695dc9b89e51c0719b81b2a8",
+            "5ebd9a5cf0c7f427b0ec6b06ab87efcb323252ee5f6d2892211c6bacda684a9f",
+            "e4372e687c28562e6416d508a956af98ecd407c810a32f6e5edf7ce12a1fe2d9",
+            "cc2b34bf8d484c7a87b6abb52c6fbde04592c0e056bf7000419c1cb82a5e44d4"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.3333333333333333,
+              "ndcg_at_10": 0.5,
+              "judged_fraction_at_10": 0.8,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.3,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.25,
+              "ndcg_at_10": 0.4306765580733931,
+              "judged_fraction_at_10": 0.8,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.6192212500609457,
+          "peak_tree_rss_mib": 2569.453125,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "diagrams-02-en",
+          "text": "Three vertically stacked plots of horizontal line segments colored green, red, and black.",
+          "language": "en",
+          "family": "diagrams-02",
+          "kind": "diagrams",
+          "expected_positive_ids": [
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a"
+          ],
+          "hybrid_top10": [
+            "4a75de0654a616e080be7300b7895626b8e9f2350785821a16041c74f98b5ab6",
+            "54115cb1a271654271f0d49aca55507c75f207686b0748ed6d65ff9b3ff3081f",
+            "a3bb383c15e480dfdf51be608ddc14d1d4a8ac0416d9b653ddf505badd5ba261",
+            "1974223666eb35c1bb9de001065bdfaad2a1497707dfc1d98feaa3e21c49d0b5",
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a",
+            "43d71de43a58d10db84c4fe13af148522c4fcabfe800ce6eff1991d0ba0fba83",
+            "b8c257faa1ca20f5cd89476dafb871d875132373695dc9b89e51c0719b81b2a8",
+            "f960a1087c34178ad8457f0b06830a129728830b3aecd7a537594cefbfba38fe",
+            "295c4eb05a7d0b7044f6ba0e9778cf4354f740cd17144bc0d3f3a2bcae3c63e3",
+            "3981080008c5486b627b280f690d4392fcafecd3d18030c755209d9af522e328"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.25,
+              "ndcg_at_10": 0.4306765580733931,
+              "judged_fraction_at_10": 0.9,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.2,
+              "ndcg_at_10": 0.38685280723454163,
+              "judged_fraction_at_10": 0.9,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.48445529199671,
+          "peak_tree_rss_mib": 2891.484375,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "diagrams-02-fr",
+          "text": "Trois graphiques empilés de segments horizontaux verts, rouges et noirs.",
+          "language": "fr",
+          "family": "diagrams-02",
+          "kind": "diagrams",
+          "expected_positive_ids": [
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a"
+          ],
+          "hybrid_top10": [
+            "54115cb1a271654271f0d49aca55507c75f207686b0748ed6d65ff9b3ff3081f",
+            "1974223666eb35c1bb9de001065bdfaad2a1497707dfc1d98feaa3e21c49d0b5",
+            "3d50bc9296b3b999f43f9c51e8a2eb1e4afa51f82c8c1273459b7c4a2596ad4a",
+            "43d71de43a58d10db84c4fe13af148522c4fcabfe800ce6eff1991d0ba0fba83",
+            "a3bb383c15e480dfdf51be608ddc14d1d4a8ac0416d9b653ddf505badd5ba261",
+            "295c4eb05a7d0b7044f6ba0e9778cf4354f740cd17144bc0d3f3a2bcae3c63e3",
+            "925e72f1338dbb9b55bab231326ee11cff90281b5a02b426d61cd77319eda180",
+            "f960a1087c34178ad8457f0b06830a129728830b3aecd7a537594cefbfba38fe",
+            "b8c257faa1ca20f5cd89476dafb871d875132373695dc9b89e51c0719b81b2a8",
+            "5a204665e2954e673b2d8412b1c02aa32af28356d590e2a7bb1ba2d7474ce02f"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.3333333333333333,
+              "ndcg_at_10": 0.5,
+              "judged_fraction_at_10": 0.8,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.3333333333333333,
+              "ndcg_at_10": 0.5,
+              "judged_fraction_at_10": 0.8,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.525421499973163,
+          "peak_tree_rss_mib": 2611.90625,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "documents-09-ar",
+          "text": "نموذج مصلحة الضرائب 8822 بعنوان Change of Address.",
+          "language": "ar",
+          "family": "documents-09",
+          "kind": "documents",
+          "expected_positive_ids": [
+            "00a97aa7dd3ecb68d8d5c3b420dae76d21502f4883bb54c01b7f0aa281980b83"
+          ],
+          "hybrid_top10": [
+            "00a97aa7dd3ecb68d8d5c3b420dae76d21502f4883bb54c01b7f0aa281980b83",
+            "68d000857fdc947239b345518083890b0deb1c31dbb0d23f75976eae123b4c82",
+            "034c4e989231d019d9fa7d9211513c188fe51f60cbad5f7d5ffeffb88fec82cf",
+            "587b2e9c611f0b8de0c68c74db748e210fe273ee72f4d504c99c5cea090bd59a",
+            "1aa058d36003aa7f99e41601af07fbfaed2d3179f3b1b7ace4fb04346649b752",
+            "9f9ecda1ac508164787a3b21168899c6ce33ac68345fd3e977bde0c9d940a92e",
+            "5c5efe956c770e45cab85d3ae139bb1f2a895e18a267f81a2b9b45dd33b35f1e",
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c",
+            "47a3382d4757a4912173b3fd9bc0ea1e87683857f6baf4d95ed6a378caf0da6b",
+            "68a6c742d6f993d88747d2482483997877be2d4ab4dd8f054cacd5c6ca089cdd"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.9,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            }
+          },
+          "seconds": 3.315194708062336,
+          "peak_tree_rss_mib": 1831.84375,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "documents-09-en",
+          "text": "IRS Form 8822 titled Change of Address.",
+          "language": "en",
+          "family": "documents-09",
+          "kind": "documents",
+          "expected_positive_ids": [
+            "00a97aa7dd3ecb68d8d5c3b420dae76d21502f4883bb54c01b7f0aa281980b83"
+          ],
+          "hybrid_top10": [
+            "00a97aa7dd3ecb68d8d5c3b420dae76d21502f4883bb54c01b7f0aa281980b83",
+            "3dc64f2a50194b779fb6145d2e486e3e878660855eba8160bca89de108ceafce",
+            "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+            "4a4731fdd125f0391cb7d9857c2a4216fb41001ceec024fbd3a19c134107d07a",
+            "034c4e989231d019d9fa7d9211513c188fe51f60cbad5f7d5ffeffb88fec82cf",
+            "20ba3cd1007ed4d48e3cbe5ef09ea327693b64d6136a374c2f77734c5eda9c4b",
+            "e4f432e3c6bd6197b8596c2a4e443f2f5e5dda85bd43d9e8154bba5cccbd9db5",
+            "9941b2d43cbcdaa118b97f9523071562ff7d105073c2a16a2eb585ce4fa62be5",
+            "5c5efe956c770e45cab85d3ae139bb1f2a895e18a267f81a2b9b45dd33b35f1e",
+            "cb143680d8be477de694f9d14790bd596e62b28da4201d2292a03b4198dd20ce"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            }
+          },
+          "seconds": 3.9914291250752285,
+          "peak_tree_rss_mib": 1753.34375,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "documents-09-fr",
+          "text": "Formulaire IRS 8822 intitulé Change of Address.",
+          "language": "fr",
+          "family": "documents-09",
+          "kind": "documents",
+          "expected_positive_ids": [
+            "00a97aa7dd3ecb68d8d5c3b420dae76d21502f4883bb54c01b7f0aa281980b83"
+          ],
+          "hybrid_top10": [
+            "00a97aa7dd3ecb68d8d5c3b420dae76d21502f4883bb54c01b7f0aa281980b83",
+            "cb143680d8be477de694f9d14790bd596e62b28da4201d2292a03b4198dd20ce",
+            "20ba3cd1007ed4d48e3cbe5ef09ea327693b64d6136a374c2f77734c5eda9c4b",
+            "3dc64f2a50194b779fb6145d2e486e3e878660855eba8160bca89de108ceafce",
+            "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+            "9941b2d43cbcdaa118b97f9523071562ff7d105073c2a16a2eb585ce4fa62be5",
+            "19bc398456f1e1ed510a69b1921c397d43545e24abe1726007dccc95015a4d4b",
+            "4a4731fdd125f0391cb7d9857c2a4216fb41001ceec024fbd3a19c134107d07a",
+            "034c4e989231d019d9fa7d9211513c188fe51f60cbad5f7d5ffeffb88fec82cf",
+            "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.9,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.9,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            }
+          },
+          "seconds": 3.8443851670017466,
+          "peak_tree_rss_mib": 1894.21875,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "documents-11-ar",
+          "text": "نموذج مصلحة الضرائب 940 لإقرار صاحب العمل السنوي لضريبة البطالة الفيدرالية.",
+          "language": "ar",
+          "family": "documents-11",
+          "kind": "documents",
+          "expected_positive_ids": [
+            "e4f432e3c6bd6197b8596c2a4e443f2f5e5dda85bd43d9e8154bba5cccbd9db5"
+          ],
+          "hybrid_top10": [
+            "e4f432e3c6bd6197b8596c2a4e443f2f5e5dda85bd43d9e8154bba5cccbd9db5",
+            "9941b2d43cbcdaa118b97f9523071562ff7d105073c2a16a2eb585ce4fa62be5",
+            "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+            "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+            "00a97aa7dd3ecb68d8d5c3b420dae76d21502f4883bb54c01b7f0aa281980b83",
+            "034c4e989231d019d9fa7d9211513c188fe51f60cbad5f7d5ffeffb88fec82cf",
+            "4a4731fdd125f0391cb7d9857c2a4216fb41001ceec024fbd3a19c134107d07a",
+            "3dc64f2a50194b779fb6145d2e486e3e878660855eba8160bca89de108ceafce",
+            "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+            "5c5efe956c770e45cab85d3ae139bb1f2a895e18a267f81a2b9b45dd33b35f1e"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.8458644170314074,
+          "peak_tree_rss_mib": 2322.640625,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "documents-11-en",
+          "text": "IRS Form 940 for Employer’s Annual Federal Unemployment Tax Return.",
+          "language": "en",
+          "family": "documents-11",
+          "kind": "documents",
+          "expected_positive_ids": [
+            "e4f432e3c6bd6197b8596c2a4e443f2f5e5dda85bd43d9e8154bba5cccbd9db5"
+          ],
+          "hybrid_top10": [
+            "e4f432e3c6bd6197b8596c2a4e443f2f5e5dda85bd43d9e8154bba5cccbd9db5",
+            "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+            "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+            "20ba3cd1007ed4d48e3cbe5ef09ea327693b64d6136a374c2f77734c5eda9c4b",
+            "35ce503f4ff3cfe372681013fd15b606a7ff566d238eb00937310a35b3d8a8cb",
+            "9941b2d43cbcdaa118b97f9523071562ff7d105073c2a16a2eb585ce4fa62be5",
+            "19bc398456f1e1ed510a69b1921c397d43545e24abe1726007dccc95015a4d4b",
+            "4a4731fdd125f0391cb7d9857c2a4216fb41001ceec024fbd3a19c134107d07a",
+            "5c5efe956c770e45cab85d3ae139bb1f2a895e18a267f81a2b9b45dd33b35f1e",
+            "cb143680d8be477de694f9d14790bd596e62b28da4201d2292a03b4198dd20ce"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.779337166924961,
+          "peak_tree_rss_mib": 2415.828125,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "documents-11-fr",
+          "text": "Formulaire IRS 940 pour la déclaration annuelle de l’employeur de la taxe fédérale sur le chômage.",
+          "language": "fr",
+          "family": "documents-11",
+          "kind": "documents",
+          "expected_positive_ids": [
+            "e4f432e3c6bd6197b8596c2a4e443f2f5e5dda85bd43d9e8154bba5cccbd9db5"
+          ],
+          "hybrid_top10": [
+            "e4f432e3c6bd6197b8596c2a4e443f2f5e5dda85bd43d9e8154bba5cccbd9db5",
+            "4e95244e00f599f96ff22014f55286e82a457ed44f4b1525c698ae098133617e",
+            "9941b2d43cbcdaa118b97f9523071562ff7d105073c2a16a2eb585ce4fa62be5",
+            "23da25efdb5857bc87446bc2dcb1c54d238d1c8207553cc36973a16b7f2e7b75",
+            "20ba3cd1007ed4d48e3cbe5ef09ea327693b64d6136a374c2f77734c5eda9c4b",
+            "00a97aa7dd3ecb68d8d5c3b420dae76d21502f4883bb54c01b7f0aa281980b83",
+            "3dc64f2a50194b779fb6145d2e486e3e878660855eba8160bca89de108ceafce",
+            "487e9b174d47b3fb103d10a4a080f38d98c416853e812cbb953e52ba0eaa79ab",
+            "19bc398456f1e1ed510a69b1921c397d43545e24abe1726007dccc95015a4d4b",
+            "4a4731fdd125f0391cb7d9857c2a4216fb41001ceec024fbd3a19c134107d07a"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.14285714285714285,
+              "ndcg_at_10": 0.3333333333333333,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 1.0,
+              "known_positives": 1
+            }
+          },
+          "seconds": 3.0621318329358473,
+          "peak_tree_rss_mib": 2099.265625,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "fresh-07-ar",
+          "text": "صورة لرجال حول طاولة في حانة عليها صحف وكؤوس بيرة وطبق خبز.",
+          "language": "ar",
+          "family": "fresh-07",
+          "kind": "photos",
+          "expected_positive_ids": [
+            "5361425d6e992b85054bb0490a4bd744f1b2c4ca4ab197e265fd5e37d3023bcb"
+          ],
+          "hybrid_top10": [
+            "5361425d6e992b85054bb0490a4bd744f1b2c4ca4ab197e265fd5e37d3023bcb",
+            "2ffa25d9afb7aabe6de8e11d35474450bd525ea12317ca3e56b86dc77be1c1ed",
+            "5a57ca8e99cd6b47b6d3ab33bf5253351e7aa1f53cf30e0f4fb86c64cb7759f4",
+            "d781c58bb770a5f10e1a65781d3b9132ec722e79f96c37de28e71df329f66f81",
+            "35eb14a59dd6c1983eeb359c6bb2fd97f39e0161227461f9f85f6e349cef992a",
+            "c62a442a6d9ddb4f6477911d74d7f716ab8074b2822c6ec4bd1a88b374d6db00",
+            "e4372e687c28562e6416d508a956af98ecd407c810a32f6e5edf7ce12a1fe2d9",
+            "5a204665e2954e673b2d8412b1c02aa32af28356d590e2a7bb1ba2d7474ce02f",
+            "3357434d4d457f91281aafa0e713efbdb2317b8ccba983b80b8275e35b8b8ba0",
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.3333333333333333,
+              "ndcg_at_10": 0.5,
+              "judged_fraction_at_10": 0.14285714285714285,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.5862459170166403,
+          "peak_tree_rss_mib": 2703.59375,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "fresh-07-en",
+          "text": "Photograph of men at a pub table with newspapers, beer glasses, and a plate of bread.",
+          "language": "en",
+          "family": "fresh-07",
+          "kind": "photos",
+          "expected_positive_ids": [
+            "5361425d6e992b85054bb0490a4bd744f1b2c4ca4ab197e265fd5e37d3023bcb"
+          ],
+          "hybrid_top10": [
+            "5361425d6e992b85054bb0490a4bd744f1b2c4ca4ab197e265fd5e37d3023bcb",
+            "4d4f4fae3f402c2b1699a302c25d93b4e203cae27cb42e70fe27d2c6acd01697",
+            "9287c2827c0e2a29f574d8679170169091dcad57f0136ab0901dc0215c9baf1e",
+            "d5a5bf8f2ec70cf8a822bb1937c7d2b582e6ad2512cd16dd58eccb48e4320cc6",
+            "2ffa25d9afb7aabe6de8e11d35474450bd525ea12317ca3e56b86dc77be1c1ed",
+            "c62a442a6d9ddb4f6477911d74d7f716ab8074b2822c6ec4bd1a88b374d6db00",
+            "f5366eab4c43804bfe7570fdd15c47db2f6b78d1fd6f7d1eca29b0baa6eee479",
+            "1f9585bab32bf2c1c9601eae4a62f086d8de4a8fa6001d782f45fc7edf73ae01",
+            "5d4bb0e28ffb4c269dea2f61a545066797fac9a0e51ff0e1ceb4fa513e711c50",
+            "9ca829ffc7a119cfbf134ad999fe1984d4a322530e48cb33b79c7996053cc4ba"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.648326624999754,
+          "peak_tree_rss_mib": 2667.921875,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "fresh-07-fr",
+          "text": "Photo d’hommes à une table de pub avec des journaux, des verres de bière et une assiette de pain.",
+          "language": "fr",
+          "family": "fresh-07",
+          "kind": "photos",
+          "expected_positive_ids": [
+            "5361425d6e992b85054bb0490a4bd744f1b2c4ca4ab197e265fd5e37d3023bcb"
+          ],
+          "hybrid_top10": [
+            "5361425d6e992b85054bb0490a4bd744f1b2c4ca4ab197e265fd5e37d3023bcb",
+            "20ba3cd1007ed4d48e3cbe5ef09ea327693b64d6136a374c2f77734c5eda9c4b",
+            "d5a5bf8f2ec70cf8a822bb1937c7d2b582e6ad2512cd16dd58eccb48e4320cc6",
+            "4d4f4fae3f402c2b1699a302c25d93b4e203cae27cb42e70fe27d2c6acd01697",
+            "2506ea4bc8590fb963284dbce097fd3e1c25d72b949b92cd5253c2fa10dd453c",
+            "9287c2827c0e2a29f574d8679170169091dcad57f0136ab0901dc0215c9baf1e",
+            "35b11344a5e98a494a9f9178638f6d98b0ba597151abf724cb2a17e0214e8ea5",
+            "88336fd76eae747f938095fdd44516b79220748be29c818855e0854a1eaffe1a",
+            "81ba6aeeddf585d1963ad71ba7b9b3f0d6e14981a4c274c3f43b0bad56d58697",
+            "78d076c629c2a4fc70b79013cb93ee798ff07ebc5ea14dfe747eec1a280811fb"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.554547125007957,
+          "peak_tree_rss_mib": 2644.734375,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "screenshots-03-ar",
+          "text": "لقطة شاشة لطرفية تعرض Rich Tree مع Renderables وSyntax وMarkdown وContainers.",
+          "language": "ar",
+          "family": "screenshots-03",
+          "kind": "screenshots",
+          "expected_positive_ids": [
+            "76242485aec1263b67d9edeaaba65009e38da897b0344001983673e8ae1b2d6d"
+          ],
+          "hybrid_top10": [
+            "76242485aec1263b67d9edeaaba65009e38da897b0344001983673e8ae1b2d6d",
+            "c4dcbe6ac6d2a894b3c3bbc11391f018ff8e193f73926193bc86dbba97813ac0",
+            "68cf3b05488f8e00e1f2be72b1eaeb6edb34f4d9c24f41615fced3ed3bf71e61",
+            "ae1a36f992dff7b6595d4f0cd1732f66d4e25d3b66411c8ab5be83a6c05e27c4",
+            "5add7e8c4b16ac3e7e227bf17737d845e1aaa63187feb4808e4bc0b05d310e93",
+            "f559ef865d10e9a186eefc88efa88f67d9ccfc7e81d6f2e8ae5b216757c0f8a2",
+            "54173bf385c8360d66e15ca7d210d789cd11a781f1549d326a7f4f5c65f8cb7f",
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c",
+            "a3bb383c15e480dfdf51be608ddc14d1d4a8ac0416d9b653ddf505badd5ba261",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.3333333333333333,
+              "ndcg_at_10": 0.5,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.7142857142857143,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            }
+          },
+          "seconds": 4.026945540914312,
+          "peak_tree_rss_mib": 1658.953125,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "screenshots-03-en",
+          "text": "Terminal screenshot displaying a Rich Tree with Renderables, Syntax, Markdown, and Containers.",
+          "language": "en",
+          "family": "screenshots-03",
+          "kind": "screenshots",
+          "expected_positive_ids": [
+            "76242485aec1263b67d9edeaaba65009e38da897b0344001983673e8ae1b2d6d"
+          ],
+          "hybrid_top10": [
+            "76242485aec1263b67d9edeaaba65009e38da897b0344001983673e8ae1b2d6d",
+            "4a75de0654a616e080be7300b7895626b8e9f2350785821a16041c74f98b5ab6",
+            "c4dcbe6ac6d2a894b3c3bbc11391f018ff8e193f73926193bc86dbba97813ac0",
+            "68cf3b05488f8e00e1f2be72b1eaeb6edb34f4d9c24f41615fced3ed3bf71e61",
+            "54173bf385c8360d66e15ca7d210d789cd11a781f1549d326a7f4f5c65f8cb7f",
+            "5add7e8c4b16ac3e7e227bf17737d845e1aaa63187feb4808e4bc0b05d310e93",
+            "8c55bab323e07274390106033f1667dccfd51691a3321be457f28552c6e505a8",
+            "ae1a36f992dff7b6595d4f0cd1732f66d4e25d3b66411c8ab5be83a6c05e27c4",
+            "f6049b8823aa75436174df2aad5ba46331f8829a51766729e4a611e947eae525",
+            "13611d20711110cfbafea387bed50e6824fd42c46f9c3ccaf7bb4e1834c1ec37"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.6,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.8,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.7,
+              "known_positives": 1
+            }
+          },
+          "seconds": 4.455271875020117,
+          "peak_tree_rss_mib": 2177.5625,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "screenshots-03-fr",
+          "text": "Capture de terminal montrant Rich Tree avec Renderables, Syntax, Markdown et Containers.",
+          "language": "fr",
+          "family": "screenshots-03",
+          "kind": "screenshots",
+          "expected_positive_ids": [
+            "76242485aec1263b67d9edeaaba65009e38da897b0344001983673e8ae1b2d6d"
+          ],
+          "hybrid_top10": [
+            "76242485aec1263b67d9edeaaba65009e38da897b0344001983673e8ae1b2d6d",
+            "4a75de0654a616e080be7300b7895626b8e9f2350785821a16041c74f98b5ab6",
+            "c4dcbe6ac6d2a894b3c3bbc11391f018ff8e193f73926193bc86dbba97813ac0",
+            "68cf3b05488f8e00e1f2be72b1eaeb6edb34f4d9c24f41615fced3ed3bf71e61",
+            "5add7e8c4b16ac3e7e227bf17737d845e1aaa63187feb4808e4bc0b05d310e93",
+            "54173bf385c8360d66e15ca7d210d789cd11a781f1549d326a7f4f5c65f8cb7f",
+            "ae1a36f992dff7b6595d4f0cd1732f66d4e25d3b66411c8ab5be83a6c05e27c4",
+            "1e1957c103ed274ecf15991fd4c7182944ade6560abd1f34114696de54bb0931",
+            "11ce0401fc4088abcad972616855bc70a23de61e8f71dc5c9b6df3be8ed7b690",
+            "a3bb383c15e480dfdf51be608ddc14d1d4a8ac0416d9b653ddf505badd5ba261"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.3,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.6,
+              "known_positives": 1
+            }
+          },
+          "seconds": 3.6226449159439653,
+          "peak_tree_rss_mib": 1479.203125,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "v2-brave-about-ar",
+          "text": "صفحة إعدادات حول متصفح بريف بالعربية مع شعار الأسد الأحمر.",
+          "language": "ar",
+          "family": "v2-brave-about",
+          "kind": "screenshots",
+          "expected_positive_ids": [
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c"
+          ],
+          "hybrid_top10": [
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c",
+            "47a3382d4757a4912173b3fd9bc0ea1e87683857f6baf4d95ed6a378caf0da6b",
+            "9f9ecda1ac508164787a3b21168899c6ce33ac68345fd3e977bde0c9d940a92e",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4",
+            "5a5e86f06e3bc3d2317b3b92c0725174f75d37c5785fe2da2befb37a7c415440",
+            "c8ea03a6b2b5e395ef91dbf4ea8321f42568d9a02a1977b2758b6d2120b72664",
+            "8525e2c260d7f67e3e8b0ca9d259ea7a868fc3dabace15a3fd5d15641d9b2703",
+            "4a75de0654a616e080be7300b7895626b8e9f2350785821a16041c74f98b5ab6",
+            "797101f6c3d8b2bb090e43ff8af7eea3832a36c3013020d6735d2854950af063",
+            "a563b0cdf09ca3c6674ee861e81635da0f26ae0c37fdf82f1c725a77f259500d"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.6666666666666666,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.989166915998794,
+          "peak_tree_rss_mib": 2139.40625,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "v2-brave-about-en",
+          "text": "Brave About settings page in Arabic with the red lion logo.",
+          "language": "en",
+          "family": "v2-brave-about",
+          "kind": "screenshots",
+          "expected_positive_ids": [
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c"
+          ],
+          "hybrid_top10": [
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4",
+            "c8ea03a6b2b5e395ef91dbf4ea8321f42568d9a02a1977b2758b6d2120b72664",
+            "5a5e86f06e3bc3d2317b3b92c0725174f75d37c5785fe2da2befb37a7c415440",
+            "47a3382d4757a4912173b3fd9bc0ea1e87683857f6baf4d95ed6a378caf0da6b",
+            "9f9ecda1ac508164787a3b21168899c6ce33ac68345fd3e977bde0c9d940a92e",
+            "8525e2c260d7f67e3e8b0ca9d259ea7a868fc3dabace15a3fd5d15641d9b2703",
+            "4a75de0654a616e080be7300b7895626b8e9f2350785821a16041c74f98b5ab6",
+            "c4dcbe6ac6d2a894b3c3bbc11391f018ff8e193f73926193bc86dbba97813ac0",
+            "8c55bab323e07274390106033f1667dccfd51691a3321be457f28552c6e505a8"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.5,
+              "ndcg_at_10": 0.6309297535714574,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.9296660830732435,
+          "peak_tree_rss_mib": 2122.71875,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "v2-brave-about-fr",
+          "text": "Page À propos de Brave en arabe avec le logo du lion rouge.",
+          "language": "fr",
+          "family": "v2-brave-about",
+          "kind": "screenshots",
+          "expected_positive_ids": [
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c"
+          ],
+          "hybrid_top10": [
+            "10c7820aa32b9a32bd4e04c4f08ba25f603f0b7fedffa0d67a442a4809a7ed0c",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4",
+            "5a5e86f06e3bc3d2317b3b92c0725174f75d37c5785fe2da2befb37a7c415440",
+            "9287c2827c0e2a29f574d8679170169091dcad57f0136ab0901dc0215c9baf1e",
+            "47a3382d4757a4912173b3fd9bc0ea1e87683857f6baf4d95ed6a378caf0da6b",
+            "c8ea03a6b2b5e395ef91dbf4ea8321f42568d9a02a1977b2758b6d2120b72664",
+            "c62a442a6d9ddb4f6477911d74d7f716ab8074b2822c6ec4bd1a88b374d6db00",
+            "fb7d4225957a57d2362c53a2a0191d81781dd4cacf5f35591c810fd237ae32d9",
+            "9f9ecda1ac508164787a3b21168899c6ce33ac68345fd3e977bde0c9d940a92e",
+            "a563b0cdf09ca3c6674ee861e81635da0f26ae0c37fdf82f1c725a77f259500d"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.2,
+              "ndcg_at_10": 0.38685280723454163,
+              "judged_fraction_at_10": 0.4,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.953529082937166,
+          "peak_tree_rss_mib": 2284.734375,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "v2-children-bear-ar",
+          "text": "طفلان بقبعتين زرقاوين يشاهدان دبا خلف زجاج حديقة الحيوان.",
+          "language": "ar",
+          "family": "v2-children-bear",
+          "kind": "photos",
+          "expected_positive_ids": [
+            "a5d73c02e6a69602bcb752fd421380431264730795af77b3bad06eee3a68c8de"
+          ],
+          "hybrid_top10": [
+            "a5d73c02e6a69602bcb752fd421380431264730795af77b3bad06eee3a68c8de",
+            "d029b1db9a4aa19db73b6180b97a3e450e9cff353f80ea4c4c3b537dca065e70",
+            "5a5e86f06e3bc3d2317b3b92c0725174f75d37c5785fe2da2befb37a7c415440",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4",
+            "9f9ecda1ac508164787a3b21168899c6ce33ac68345fd3e977bde0c9d940a92e",
+            "68d000857fdc947239b345518083890b0deb1c31dbb0d23f75976eae123b4c82",
+            "8009da0dd311de1862c3dfbfd89b00ea97abf159c76e1509fc02aeb5603e6651",
+            "57c62f60ea71b9d40d33fa94635153fc02b1eec74b167324e874ee2ffb12ecab",
+            "47a3382d4757a4912173b3fd9bc0ea1e87683857f6baf4d95ed6a378caf0da6b",
+            "83df4841023fbc4ad38f31d1c3d649172ef8bd486575453391430b52e120c2c6"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.3,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.0,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.3,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.640566417016089,
+          "peak_tree_rss_mib": 2430.125,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "v2-children-bear-en",
+          "text": "Two children in blue caps watching a bear through zoo glass.",
+          "language": "en",
+          "family": "v2-children-bear",
+          "kind": "photos",
+          "expected_positive_ids": [
+            "a5d73c02e6a69602bcb752fd421380431264730795af77b3bad06eee3a68c8de"
+          ],
+          "hybrid_top10": [
+            "a5d73c02e6a69602bcb752fd421380431264730795af77b3bad06eee3a68c8de",
+            "57c62f60ea71b9d40d33fa94635153fc02b1eec74b167324e874ee2ffb12ecab",
+            "eec965e56631b55d74374cceb543bfa2f02e7c2f5e9f4c72f1b2647866a357f2",
+            "411fa4e8cccdfe91fcda72dbc4aca6c60dbd6b8e13cfc45b2acab6b778c08d2a",
+            "5a204665e2954e673b2d8412b1c02aa32af28356d590e2a7bb1ba2d7474ce02f",
+            "b8c257faa1ca20f5cd89476dafb871d875132373695dc9b89e51c0719b81b2a8",
+            "8be91636cd8f9f08e307c7a8cb5d5993fdb4143b1e7e5e411485f71c6077f333",
+            "865a07481d76c59c4b8b20536f44edaf7e237e0f4cc8ae848dfb6cee852cf6e4",
+            "0c5921688da89f90726cf3f5300ae49396443ab02a2f69ec358287b762111b3e",
+            "36e1a6d10c0468362f4c61b856de8c868f7d1d657ad6b45c383afe18d544dca1"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.25,
+              "ndcg_at_10": 0.4306765580733931,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.1,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.8729490829864517,
+          "peak_tree_rss_mib": 2057.296875,
+          "memory_access_errors": 0,
+          "status": "ok"
+        },
+        {
+          "query_id": "v2-children-bear-fr",
+          "text": "Deux enfants portant des casquettes bleues observent un ours derrière une vitre au zoo.",
+          "language": "fr",
+          "family": "v2-children-bear",
+          "kind": "photos",
+          "expected_positive_ids": [
+            "a5d73c02e6a69602bcb752fd421380431264730795af77b3bad06eee3a68c8de"
+          ],
+          "hybrid_top10": [
+            "a5d73c02e6a69602bcb752fd421380431264730795af77b3bad06eee3a68c8de",
+            "f25452a7c42692c290b9ebfabcec41e5432e311b21b161b36fdae0417520ad1c",
+            "57c62f60ea71b9d40d33fa94635153fc02b1eec74b167324e874ee2ffb12ecab",
+            "8009da0dd311de1862c3dfbfd89b00ea97abf159c76e1509fc02aeb5603e6651",
+            "2506ea4bc8590fb963284dbce097fd3e1c25d72b949b92cd5253c2fa10dd453c",
+            "88336fd76eae747f938095fdd44516b79220748be29c818855e0854a1eaffe1a",
+            "eec965e56631b55d74374cceb543bfa2f02e7c2f5e9f4c72f1b2647866a357f2",
+            "35b11344a5e98a494a9f9178638f6d98b0ba597151abf724cb2a17e0214e8ea5",
+            "5a204665e2954e673b2d8412b1c02aa32af28356d590e2a7bb1ba2d7474ce02f",
+            "d5a5bf8f2ec70cf8a822bb1937c7d2b582e6ad2512cd16dd58eccb48e4320cc6"
+          ],
+          "metrics": {
+            "visual": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.3,
+              "known_positives": 1
+            },
+            "semantic": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 0.1111111111111111,
+              "ndcg_at_10": 0.3010299956639812,
+              "judged_fraction_at_10": 0.2,
+              "known_positives": 1
+            },
+            "lexical": {
+              "candidate_recall_at_50": 0.0,
+              "mrr_at_10": 0.0,
+              "ndcg_at_10": 0.0,
+              "judged_fraction_at_10": 0.5,
+              "known_positives": 1
+            },
+            "hybrid": {
+              "candidate_recall_at_50": 1.0,
+              "mrr_at_10": 1.0,
+              "ndcg_at_10": 1.0,
+              "judged_fraction_at_10": 0.3,
+              "known_positives": 1
+            }
+          },
+          "seconds": 2.501871582935564,
+          "peak_tree_rss_mib": 2635.78125,
+          "memory_access_errors": 0,
+          "status": "ok"
+        }
+      ]
+    }
+  },
+  "native_checks": {
+    "same_image_order": true,
+    "identical_ocr_records": true,
+    "same_passage_order": true,
+    "bit_identical_e5_vectors": true,
+    "identical_specs_except_precision": true,
+    "native_fp32_image_vectors_match_diagnostic": true,
+    "int8_golden_visual_queries": {
+      "queries": 24,
+      "maximum_score_error": 2.9802322387695312e-08
+    },
+    "fp32_golden_visual_queries": {
+      "queries": 24,
+      "maximum_score_error": 2.9802322387695312e-08
+    },
+    "cli_fp32_results": 3,
+    "cli_search_mismatch_rejected": true,
+    "cli_index_mismatch_rejected": true,
+    "cli_resume": {
+      "job_id": "47f88513759c4a88a207a5a29ebb3e75",
+      "status": "completed_with_errors",
+      "collection": "precision-study",
+      "files": 128,
+      "images": 128,
+      "reused_images": 128,
+      "failed_files": 0,
+      "removed_files": 0,
+      "generation": "25d0282e624345b293266f8f60602796",
+      "seconds": 1.0138670000014827,
+      "degraded_files": 1,
+      "degraded_images": 1,
+      "reused_stages": {
+        "metadata": 128,
+        "ocr": 128,
+        "vision": 128,
+        "semantic": 128
+      }
+    }
+  },
+  "ndcg_regressions": [],
+  "memory_notes": [
+    "Initial sandboxed process-tree samples had access errors and are excluded from memory comparisons.",
+    "Native query and cloned-index encoder-rebuild measurements had zero access errors.",
+    "Encoder rebuild reuses all metadata and OCR; it is not a complete fresh-index memory measurement.",
+    "RSS sampled every 20 ms, shared pages may count twice, short spikes may be missed."
+  ],
+  "limitations": [
+    "Previously agent-reviewed known judgments; unknown competitors are not automatic negatives.",
+    "Small subset; do not compare its Recall@50 with the earlier full 2052-image diagnostic.",
+    "Sequential single-host measurements include startup, verification and OS cache effects.",
+    "No 8 GB hardware certification or native Windows/Linux inference evaluation.",
+    "Existing rerankers and training schema remain INT8-only."
+  ]
+}

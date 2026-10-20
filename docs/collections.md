@@ -131,6 +131,10 @@ sequentially in short-lived processes and verify compatibility with the index.
 Cold queries therefore pay model startup costs; a resident API worker is future
 work. Use `--limit` for 1–100 results.
 
+Collections can opt into [FP32 SigLIP2](siglip2-precision.md) with
+`lens index --siglip-precision fp32` and a separate index. Search automatically
+uses the saved precision; E5 remains INT8.
+
 Hybrid candidate depths can be adjusted with `--visual-candidates`,
 `--semantic-candidates` and `--lexical-candidates`; see the
 [candidate retrieval guide](candidate-retrieval.md). Existing rerankers require
