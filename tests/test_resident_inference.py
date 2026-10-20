@@ -161,6 +161,36 @@ def test_server_lazily_loads_only_two_models_and_rejects_config_changes(monkeypa
     assert not any(t.name.startswith("lens-query-") for t in threading.enumerate())
 
 
+def test_interactive_cli_continues_after_error_and_closes_session(monkeypatch):
+    from typer.testing import CliRunner
+    from realopen_lens.cli import app
+    from realopen_lens import search
+
+    calls = []
+
+    class Session:
+        def __init__(self, **options):
+            calls.append("open")
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            calls.append("close")
+
+        def search(self, query, **options):
+            calls.append(query)
+            if query == "bad":
+                raise TimeoutError("deadline")
+            return []
+
+    monkeypatch.setattr(search, "SearchSession", Session)
+    result = CliRunner().invoke(app, ["search", "bad", "--interactive"], input="next\n\n")
+    assert result.exit_code == 1
+    assert "deadline" in result.output and "[]" in result.output
+    assert calls == ["open", "bad", "next", "close"]
+
+
 def test_keyboard_interrupt_reaps_owned_worker(encoder, monkeypatch):
     client, root, _, _ = encoder
     encode(client, root)

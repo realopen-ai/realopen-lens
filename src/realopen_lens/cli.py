@@ -5,7 +5,7 @@ import shutil
 import sqlite3
 import subprocess
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import typer
 
@@ -232,6 +232,9 @@ def find_images(
     siglip_precision: Annotated[
         str | None, typer.Option(help="Assert int8 or fp32; otherwise use collection precision")
     ] = None,
+    interactive: Annotated[
+        bool, typer.Option(help="Reuse encoders for subsequent queries; empty line or EOF exits")
+    ] = False,
 ):
     """Search a saved collection after indexing, including across restarts."""
     from dataclasses import asdict
@@ -246,19 +249,50 @@ def find_images(
                 semantic=50 if semantic_candidates is None else semantic_candidates,
                 lexical=50 if lexical_candidates is None else lexical_candidates,
             )
-        results = search_collection(
-            query,
-            collection=collection,
-            index_dir=index_dir,
-            models=models,
+        options: dict[str, Any] = dict(
             limit=limit,
             mode=mode,
-            threads=threads,
             reranker=reranker,
             candidate_depths=depths,
             siglip_precision=siglip_precision,
         )
-        typer.echo(json.dumps([asdict(r) for r in results], ensure_ascii=False, indent=2))
+        if not interactive:
+            results = search_collection(
+                query,
+                collection=collection,
+                index_dir=index_dir,
+                models=models,
+                threads=threads,
+                **options,
+            )
+            typer.echo(json.dumps([asdict(r) for r in results], ensure_ascii=False, indent=2))
+        else:
+            import sys
+            from realopen_lens.search import SearchSession
+
+            failed = False
+            with SearchSession(
+                collection=collection, index_dir=index_dir, models=models, threads=threads
+            ) as session:
+                while query.strip():
+                    try:
+                        results = session.search(query, **options)
+                        typer.echo(
+                            json.dumps([asdict(r) for r in results], ensure_ascii=False, indent=2)
+                        )
+                    except (
+                        OSError,
+                        ValueError,
+                        RuntimeError,
+                        TimeoutError,
+                        sqlite3.Error,
+                    ) as error:
+                        failed = True
+                        typer.echo(f"Error: {error}", err=True)
+                    typer.echo("Query (empty line to exit): ", err=True, nl=False)
+                    query = sys.stdin.readline().rstrip("\r\n")
+            if failed:
+                raise typer.Exit(1)
     except (OSError, ValueError, RuntimeError, TimeoutError, sqlite3.Error) as error:
         typer.echo(f"Error: {error}", err=True)
         raise typer.Exit(1) from error
