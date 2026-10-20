@@ -174,6 +174,16 @@ evaluates all 357 frozen queries against 2,227 searchable images, retaining firs
 failures and retries. Use the [saved precision guide](docs/saved-precision-evaluation.md)
 to build a matched control and reproduce the evaluation on your collection.
 
+Find [visually similar images](docs/image-similarity.md) using a local image or an
+indexed image ID:
+
+```sh
+uv run --no-sync lens similar /path/to/query.jpg --index-dir runs/personal-index
+uv run --no-sync lens similar --image-id FULL_IMAGE_ID --index-dir runs/personal-index
+```
+
+Exact byte matches reuse saved vectors; the query itself is excluded by default.
+
 For repeated queries, an explicit [resident search session](docs/resident-inference.md)
 reuses query encoders through the Python API or `lens search --interactive`.
 Single-shot search remains available; sessions require explicit ownership and shutdown.

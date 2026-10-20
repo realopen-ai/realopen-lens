@@ -5,4 +5,12 @@ from realopen_lens.retrieval.search import search_collection as search_collectio
 from realopen_lens.retrieval.candidates import CandidateDepths as CandidateDepths
 from realopen_lens.retrieval.session import SearchSession as SearchSession
 
-__all__ = ["CandidateDepths", "SearchResult", "SearchSession", "search_collection"]
+from realopen_lens.retrieval.images import search_similar as search_similar
+
+__all__ = [
+    "CandidateDepths",
+    "SearchResult",
+    "SearchSession",
+    "search_collection",
+    "search_similar",
+]

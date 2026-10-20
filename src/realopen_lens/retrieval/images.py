@@ -1,0 +1,152 @@
+"""Visual similarity queries against immutable saved collection generations."""
+
+from importlib.metadata import version
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+import numpy as np
+
+from realopen_lens.models.manager import artifact_path, digest, registry
+from realopen_lens.retrieval.ranking import vector_scores
+from realopen_lens.retrieval.search import SearchResult, search_results, source_paths
+from realopen_lens.runtime.jobs import environment
+from realopen_lens.storage.artifacts import load_manifest, matrices
+from realopen_lens.storage.catalog import Catalog, default_directory
+
+
+def verify_image_encoder(spec: dict, models: Path, precision: str) -> None:
+    """Check preprocessing compatibility and only the required vision graph."""
+    from realopen_lens.encoders import onnx as inference
+
+    if spec["model_registry"] != registry() or spec["inference_sha256"] != digest(
+        Path(inference.__file__)
+    ):
+        raise ValueError("Index model/preprocessing version differs; run 'lens index' again")
+    for name in ("numpy", "Pillow", "onnxruntime"):
+        if spec["packages"][name] != version(name):
+            raise ValueError("Image encoder dependencies changed; run 'lens index' again")
+    key = f"vision_{precision}"
+    path = artifact_path(models, "siglip2", key)
+    expected = registry()["models"]["siglip2"]["files"][key]
+    if not path.is_file():
+        raise ValueError(f"Missing model file: {path}. Run 'lens models fetch' first.")
+    if path.stat().st_size != expected["size"] or digest(path) != expected["sha256"]:
+        raise ValueError(f"Model integrity check failed: {path}")
+
+
+def image_vector(image: Path, models: Path, threads: int, precision: str) -> np.ndarray:
+    """Encode one local image in a bounded, offline, disposable worker."""
+    request = {
+        "image": str(image),
+        "models": str(models.resolve()),
+        "threads": threads,
+        "siglip_precision": precision,
+    }
+    try:
+        result = subprocess.run(
+            [sys.executable, "-m", "realopen_lens.runtime.worker", "--image-query"],
+            input=json.dumps(request),
+            capture_output=True,
+            text=True,
+            env=environment(threads),
+            timeout=120,
+            check=True,
+        )
+    except subprocess.TimeoutExpired as error:
+        raise TimeoutError("Image query encoder exceeded its deadline") from error
+    except subprocess.CalledProcessError as error:
+        raise RuntimeError("Local image encoder failed: " + error.stderr[-1500:]) from error
+    vector = np.asarray(json.loads(result.stdout), dtype=np.float32)
+    if vector.shape != (768,) or not np.isfinite(vector).all():
+        raise ValueError("Invalid image query embedding")
+    norm = np.linalg.norm(vector)
+    if not np.isfinite(norm) or norm == 0:
+        raise ValueError("Invalid image query embedding norm")
+    return vector / norm
+
+
+def search_similar(
+    image: Path | None = None,
+    *,
+    image_id: str | None = None,
+    collection: str = "personal",
+    index_dir: Path | None = None,
+    models: Path = Path("models"),
+    limit: int = 10,
+    threads: int = 2,
+    include_self: bool = False,
+    siglip_precision: str | None = None,
+    trace: dict | None = None,
+) -> list[SearchResult]:
+    """Find visually similar images using a local path OR a published image ID.
+
+    Exact byte matches reuse stored vectors, even for copies outside the source
+    folder. Indexed-ID queries need no models or original query file. Result
+    sources must still exist unchanged. Scores are cosine similarities, not
+    relevance probabilities or near-duplicate decisions.
+    """
+    if (image is None) == (image_id is None):
+        raise ValueError("Supply exactly one image path or image_id")
+    if not 1 <= limit <= 100 or not 1 <= threads <= 8:
+        raise ValueError("Use 1–100 results and 1–8 threads")
+    if siglip_precision is not None and siglip_precision not in {"int8", "fp32"}:
+        raise ValueError("SigLIP2 precision must be int8 or fp32")
+    if trace is not None:
+        trace.clear()
+    from realopen_lens.indexing.service import signature
+
+    query_signature = None
+    if image is not None:
+        image = image.expanduser().resolve(strict=True)
+        if not image.is_file():
+            raise ValueError("Query image must be a local file")
+        query_signature = signature(image)
+        if query_signature["size"] > 64 * 1024 * 1024:
+            raise ValueError("Query image exceeds 64 MiB encoded size")
+        image_id = digest(image)
+    catalog = Catalog(index_dir or default_directory(), readonly=True)
+    try:
+        found, generation = catalog.snapshot(collection)
+        manifest = load_manifest(catalog, generation)
+        precision = manifest["config"]["spec"].get("siglip_precision", "int8")
+        if precision not in {"int8", "fp32"}:
+            raise ValueError("Unsupported collection SigLIP2 precision")
+        if siglip_precision is not None and siglip_precision != precision:
+            raise ValueError("Requested SigLIP2 precision differs from this collection")
+        visual, _ = matrices(catalog, manifest)
+        ids = manifest["vision_ids"]
+        reused = image_id in ids
+        if reused:
+            query = np.array(visual[ids.index(image_id)], copy=True)
+        elif image is None:
+            raise ValueError("Image ID is not in this collection's active generation")
+        else:
+            verify_image_encoder(manifest["config"]["spec"], models, precision)
+            query = image_vector(image, models, threads, precision)
+        if image is not None and signature(image) != query_signature:
+            raise ValueError("Query image changed during search; retry with a stable file")
+        norm = np.linalg.norm(query)
+        if query.shape != (768,) or not np.isfinite(norm) or norm == 0:
+            raise ValueError("Invalid image query embedding")
+        query = query / norm
+        paths = source_paths(Path(found["root"]), manifest)
+        scores = vector_scores(visual, query, ids)
+        ranking = sorted(
+            (key for key in scores if key in paths and (include_self or key != image_id)),
+            key=lambda key: (-scores[key], key),
+        )[:limit]
+        if trace is not None:
+            trace.update(
+                generation=generation["id"],
+                manifest_sha256=generation["checksum"],
+                siglip_precision=precision,
+                query_image_id=image_id,
+                reused_embedding=reused,
+                searchable_images=len(paths),
+                include_self=include_self,
+            )
+        return search_results(catalog, manifest, paths, ranking, scores)
+    finally:
+        catalog.close()

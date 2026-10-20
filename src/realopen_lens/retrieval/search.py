@@ -41,6 +41,65 @@ class SearchResult:
     issues: tuple[dict, ...] = ()
 
 
+def source_paths(root: Path, manifest: dict) -> dict[str, tuple[str, ...]]:
+    """Return only unchanged local sources within the collection root."""
+    from realopen_lens.indexing.service import signature
+
+    paths_by_id = {}
+    for row in manifest["images"]:
+        paths = []
+        for relative in row["paths"]:
+            try:
+                source = (root / relative).resolve()
+                if (
+                    source.is_relative_to(root)
+                    and source.is_file()
+                    and signature(source) == row["signatures"][relative]
+                ):
+                    paths.append(str(source))
+            except (OSError, RuntimeError):
+                continue
+        if paths:
+            paths_by_id[row["image_id"]] = tuple(paths)
+    return paths_by_id
+
+
+def search_results(
+    catalog: Catalog,
+    manifest: dict,
+    paths_by_id: dict[str, tuple[str, ...]],
+    ranking: list[str],
+    scores: dict[str, float],
+) -> list[SearchResult]:
+    """Build consistent metadata for text and image search results."""
+    lookup = {row["image_id"]: row for row in manifest["images"]}
+    texts = {row["image_id"]: row["text"] for row in manifest["ocr"]}
+    results: list[SearchResult] = []
+    for image_id in ranking:
+        row = lookup[image_id]
+        result_paths = paths_by_id[image_id]
+        thumbnail = local_path(catalog.root, row["thumbnail"])
+        results.append(
+            SearchResult(
+                len(results) + 1,
+                image_id,
+                result_paths,
+                (
+                    str(thumbnail)
+                    if thumbnail.is_file() and digest(thumbnail) == row["thumbnail_sha256"]
+                    else None
+                ),
+                row["metadata"]["width"],
+                row["metadata"]["height"],
+                texts[image_id][:300],
+                scores.get(image_id),
+                row.get("status", "ready"),
+                tuple(row.get("issues", [])),
+            )
+        )
+    return results
+
+
 def query_vector(
     text: str, kind: str, models: Path, threads: int, siglip_precision: str = "int8"
 ) -> np.ndarray:
@@ -153,24 +212,7 @@ def search_collection(
                 manifest_sha256=generation["checksum"],
                 siglip_precision=precision,
             )
-        from realopen_lens.indexing.service import signature
-
-        paths_by_id = {}
-        for row in manifest["images"]:
-            paths = []
-            for relative in row["paths"]:
-                try:
-                    source = (Path(found["root"]) / relative).resolve()
-                    if (
-                        source.is_relative_to(Path(found["root"]))
-                        and source.is_file()
-                        and signature(source) == row["signatures"][relative]
-                    ):
-                        paths.append(str(source))
-                except (OSError, RuntimeError):
-                    continue
-            if paths:
-                paths_by_id[row["image_id"]] = tuple(paths)
+        paths_by_id = source_paths(Path(found["root"]), manifest)
         lookup = {
             row["image_id"]: row for row in manifest["images"] if row["image_id"] in paths_by_id
         }
@@ -299,30 +341,7 @@ def search_collection(
                 trace["reranker_sha256"] = learned.sha256
                 trace["reranker_scope"] = learned.scope
         stage("retrieval_seconds")
-        texts = {row["image_id"]: row["text"] for row in manifest["ocr"]}
-        results: list[SearchResult] = []
-        for image_id in ranking:
-            row = lookup[image_id]
-            result_paths = paths_by_id[image_id]
-            thumbnail = local_path(catalog.root, row["thumbnail"])
-            results.append(
-                SearchResult(
-                    len(results) + 1,
-                    image_id,
-                    result_paths,
-                    (
-                        str(thumbnail)
-                        if thumbnail.is_file() and digest(thumbnail) == row["thumbnail_sha256"]
-                        else None
-                    ),
-                    row["metadata"]["width"],
-                    row["metadata"]["height"],
-                    texts[image_id][:300],
-                    scores.get(image_id),
-                    row.get("status", "ready"),
-                    tuple(row.get("issues", [])),
-                )
-            )
+        results = search_results(catalog, manifest, paths_by_id, ranking, scores)
         stage("result_validation_seconds")
         return results
     finally:
