@@ -174,6 +174,10 @@ evaluates all 357 frozen queries against 2,227 searchable images, retaining firs
 failures and retries. Use the [saved precision guide](docs/saved-precision-evaluation.md)
 to build a matched control and reproduce the evaluation on your collection.
 
+For repeated queries, an explicit [resident search session](docs/resident-inference.md)
+reuses query encoders through the Python API or `lens search --interactive`.
+Single-shot search remains available; sessions require explicit ownership and shutdown.
+
 The [candidate retrieval study](docs/benchmarks/2026-10-20-candidate-retrieval.md)
 compares pool depths, encoder precision, reviewed query expansion and OCR timeout
 recovery. See the [reproduction guide](docs/candidate-retrieval.md) for controls and commands.
