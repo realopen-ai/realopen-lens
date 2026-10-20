@@ -120,9 +120,13 @@ translations, documents, and duplicate groups are correlated.
 ## Metrics and artifacts
 
 The optional production hybrid trace exposes the same candidate union and scores
-that determine search ordering. It retains all candidates (up to 150 at the fixed
-50-per-channel budget), plus each channel's top 50. Rankings match normal search;
+that determine search ordering. It retains all candidates (up to 150 at the default
+50-per-channel budget), plus each configured channel ranking. Rankings match normal search;
 tracing does not add relevant items to the candidate set.
+
+The [candidate retrieval guide](candidate-retrieval.md) documents experimental
+per-channel depths and their inclusion in evaluation resume identity. Existing
+reranker models continue to require the original 50-per-channel budget.
 
 Aggregates are query-macro averages, not total positive hits divided by all
 positive judgments. Translations contribute separate query measurements, while

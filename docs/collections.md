@@ -131,6 +131,12 @@ sequentially in short-lived processes and verify compatibility with the index.
 Cold queries therefore pay model startup costs; a resident API worker is future
 work. Use `--limit` for 1–100 results.
 
+Hybrid candidate depths can be adjusted with `--visual-candidates`,
+`--semantic-candidates` and `--lexical-candidates`; see the
+[candidate retrieval guide](candidate-retrieval.md). Existing rerankers require
+the default 50 per channel. OCR timeout band recovery can retain partial keyword
+and semantic evidence; these results carry a `PartialOCR` issue and remain degraded.
+
 An optional `--reranker PATH` selects an
 [experimental logistic model](logistic-reranker.md) for hybrid candidates.
 It requires a separately trained local JSON model and compatible encoders.
