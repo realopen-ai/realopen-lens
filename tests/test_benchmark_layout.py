@@ -23,6 +23,15 @@ import pytest
         "text_regions",
         "presence_report",
         "rescore",
+        "datasets.encoder_probes",
+        "datasets.encoder_references",
+        "datasets.ocr_probes",
+        "experiments.candidate_depths",
+        "experiments.encoder_parity",
+        "experiments.precision_retrieval",
+        "experiments.query_expansion",
+        "experiments.arabic_lexical",
+        "experiments.ocr_recovery",
     ],
 )
 def test_published_commands_still_accept_help(command):
