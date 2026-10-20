@@ -1,5 +1,8 @@
 """Focused regression coverage for experimental reranking."""
 
+import subprocess
+import pytest
+from benchmarks.datasets.downloads import download, DownloadRateLimitError
 from benchmarks.datasets.photos import save_json
 from realopen_lens.learning.features import NAMES
 from realopen_lens.learning.logistic import load
@@ -54,3 +57,17 @@ def test_hybrid50_preserves_membership_and_tail_while_union_can_demote(tmp_path)
     del artifact["feature_profile"]
     save_json(path, artifact)
     assert load(path).scope == "union" and load(path).rank(rows).index("000") == 69
+
+
+def test_source_acquisition_preserves_server_retry_after(tmp_path, monkeypatch):
+    headers = tmp_path / "response.headers"
+
+    def limited(command, **kwargs):
+        headers.write_bytes(b"HTTP/2 429\r\nRetry-After: 600\r\n\r\n")
+        raise subprocess.CalledProcessError(22, command, stderr=b"HTTP 429")
+
+    monkeypatch.setattr(subprocess, "run", limited)
+    with pytest.raises(DownloadRateLimitError) as caught:
+        download("https://example.invalid/source.png", tmp_path / "image.png", headers=headers)
+    assert caught.value.retry_after == 600
+    assert not (tmp_path / "image.png").exists()
