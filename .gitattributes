@@ -1,3 +1,5 @@
 # Frozen relevance references use byte-level SHA256 checksums on every platform.
 /benchmarks/sources/retrieval-v1/*.json text eol=lf
 /benchmarks/sources/retrieval-v2/*.json text eol=lf
+/benchmarks/sources/encoder-reference.lock.json text eol=lf
+/benchmarks/sources/encoder-reference.requirements.txt text eol=lf
