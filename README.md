@@ -178,6 +178,11 @@ For repeated queries, an explicit [resident search session](docs/resident-infere
 reuses query encoders through the Python API or `lens search --interactive`.
 Single-shot search remains available; sessions require explicit ownership and shutdown.
 
+Hybrid search recognizes conservative [typed numeric identifiers](docs/numeric-identifiers.md)
+such as form, invoice and error numbers across supported marker languages, preserving
+full codes and leading zeros. See the
+[before/after evaluation](docs/benchmarks/2026-10-20-numeric-identifiers.md) for measured gains and limits.
+
 The [candidate retrieval study](docs/benchmarks/2026-10-20-candidate-retrieval.md)
 compares pool depths, encoder precision, reviewed query expansion and OCR timeout
 recovery. See the [reproduction guide](docs/candidate-retrieval.md) for controls and commands.
