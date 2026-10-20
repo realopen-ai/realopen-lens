@@ -6,12 +6,14 @@ from pathlib import Path
 import sqlite3
 import subprocess
 import sys
+from time import perf_counter
 
 import numpy as np
 
 from realopen_lens.storage.catalog import Catalog, default_directory, local_path
 from realopen_lens.storage.artifacts import load_manifest, matrices
 from realopen_lens.runtime.jobs import environment
+from realopen_lens.runtime.resident import ResidentQueryEncoder
 from realopen_lens.models.manager import digest, registry, verify
 from realopen_lens.retrieval.candidates import CandidateDepths
 from realopen_lens.retrieval.ranking import (
@@ -77,12 +79,25 @@ def search_collection(
     reranker: Path | None = None,
     candidate_depths: CandidateDepths | None = None,
     siglip_precision: str | None = None,
+    query_encoder: ResidentQueryEncoder | None = None,
+    profile: dict | None = None,
 ) -> list[SearchResult]:
     """Search the active generation; optional hybrid trace exposes bounded channel pools.
 
     Tracing preserves scores and ordering. Raw BM25 is lower-is-better, cosine
     similarities are higher-is-better, and absent channel values remain None.
     """
+    started = checkpoint = perf_counter()
+    if profile is not None:
+        profile.clear()
+
+    def stage(name: str):
+        nonlocal checkpoint
+        now = perf_counter()
+        if profile is not None:
+            profile[name] = now - checkpoint
+        checkpoint = now
+
     if not query.strip() or len(query) > 4096 or not 1 <= limit <= 100 or not 1 <= threads <= 8:
         raise ValueError(
             "Use a nonempty query up to 4096 characters, 1–100 results, and 1–8 threads"
@@ -119,6 +134,7 @@ def search_collection(
     try:
         found, generation = catalog.snapshot(collection)
         manifest = load_manifest(catalog, generation)
+        stage("index_verification_seconds")
         precision = manifest["config"]["spec"].get("siglip_precision", "int8")
         if precision not in {"int8", "fp32"}:
             raise ValueError("Unsupported collection SigLIP2 precision")
@@ -159,6 +175,7 @@ def search_collection(
             row["image_id"]: row for row in manifest["images"] if row["image_id"] in paths_by_id
         }
         ocr_records = [r for r in manifest["ocr"] if r["image_id"] in lookup]
+        stage("source_validation_seconds")
         if not lookup:
             if trace is not None:
                 trace.update(
@@ -187,15 +204,29 @@ def search_collection(
             for name in ("numpy", "onnxruntime", "tokenizers"):
                 if spec["packages"][name] != version(name):
                     raise ValueError("Query encoder dependencies changed; run 'lens index' again")
-            verify(models, "int8", precision)
+            if query_encoder is None:
+                verify(models, "int8", precision)
+            else:
+                query_encoder.verify(models, threads, precision)
+            stage("model_verification_seconds")
             if mode in {"hybrid", "visual"}:
                 visual_query = (
-                    query_vector(query, "siglip2", models, threads, precision)
-                    if precision != "int8"
-                    else query_vector(query, "siglip2", models, threads)
+                    query_encoder.encode(query, "siglip2", models, threads, precision)
+                    if query_encoder is not None
+                    else (
+                        query_vector(query, "siglip2", models, threads, precision)
+                        if precision != "int8"
+                        else query_vector(query, "siglip2", models, threads)
+                    )
                 )
+                stage("visual_encoder_seconds")
             if mode in {"hybrid", "semantic"}:
-                semantic_query = query_vector(query, "e5", models, threads)
+                semantic_query = (
+                    query_encoder.encode(query, "e5", models, threads, precision)
+                    if query_encoder is not None
+                    else query_vector(query, "e5", models, threads)
+                )
+                stage("semantic_encoder_seconds")
         path = local_path(catalog.root, manifest["artifacts"]["lexical"]["path"])
         index = (
             sqlite3.connect(path.as_uri() + "?mode=ro", uri=True)
@@ -267,6 +298,7 @@ def search_collection(
                 trace["rankings"]["logistic"] = reranked[:50]
                 trace["reranker_sha256"] = learned.sha256
                 trace["reranker_scope"] = learned.scope
+        stage("retrieval_seconds")
         texts = {row["image_id"]: row["text"] for row in manifest["ocr"]}
         results: list[SearchResult] = []
         for image_id in ranking:
@@ -291,8 +323,11 @@ def search_collection(
                     tuple(row.get("issues", [])),
                 )
             )
+        stage("result_validation_seconds")
         return results
     finally:
         if index is not None:
             index.close()
         catalog.close()
+        if profile is not None:
+            profile["total_seconds"] = perf_counter() - started
