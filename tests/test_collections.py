@@ -114,6 +114,88 @@ def test_superset_evaluation_requires_opt_in_and_freezes_extra_paths(app):
         )
 
 
+def test_controlled_precision_index_reuses_only_nonvisual_stages(app, tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from benchmarks.datasets.photos import save_json
+    from benchmarks.experiments import saved_precision
+    from realopen_lens.models.manager import digest
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    image(root / "two.png", "green")
+    first = run(siglip_precision="fp32")
+    rows = [
+        {
+            "id": name,
+            "path": name,
+            "sha256": digest(root / name),
+            "pixel_sha256": name,
+            "source_document": name,
+            "duplicate_group": name,
+            "split": "train",
+        }
+        for name in ("one.png", "two.png")
+    ]
+    corpus, judgments = tmp_path / "corpus.json", tmp_path / "judgments.json"
+    save_json(corpus, {"images": rows})
+    save_json(
+        judgments,
+        {
+            "version": 1,
+            "corpus_sha256": digest(corpus),
+            "queries": [
+                {
+                    "id": "q",
+                    "text": "red",
+                    "language": "en",
+                    "family": "red",
+                    "split": "train",
+                    "review": {
+                        "status": "reviewed",
+                        "reviewer": "fixture",
+                        "method": "fixture",
+                        "date": "2026-10-20",
+                    },
+                    "judgments": [{"image_sha256": rows[0]["sha256"], "grade": 2, "reason": "red"}],
+                }
+            ],
+        },
+    )
+    monkeypatch.setattr(
+        saved_precision,
+        "index_collection",
+        lambda folder, **kwargs: run(
+            store=str(kwargs["index_dir"]),
+            collection=kwargs["collection"],
+            siglip_precision=kwargs["siglip_precision"],
+        ),
+    )
+    calls.clear()
+    args = SimpleNamespace(
+        index_dir=store,
+        collection="personal",
+        corpus=corpus,
+        judgments=judgments,
+        corpus_prefix=Path("."),
+        allow_extra_images=False,
+        output=tmp_path / "control",
+    )
+    result = saved_precision.prepare(args)
+    assert result["controls"]["identical_e5_vectors"]
+    assert result["controls"]["identical_ocr"]
+    assert result["result"]["reused_stages"] == {
+        "metadata": 2,
+        "ocr": 2,
+        "vision": 0,
+        "semantic": 2,
+    }
+    assert sorted(calls) == [("vision", "one.png"), ("vision", "two.png")]
+    assert collection_status("personal", store)["generation"] == first.generation
+    calls.clear()
+    assert saved_precision.prepare(args)["result"]["generation"] == result["result"]["generation"]
+    assert not calls
+
+
 @pytest.mark.parametrize("precision", ["int8", "fp32"])
 def test_precision_is_immutable_and_search_uses_saved_encoder(app, monkeypatch, precision):
     root, store, calls, run = app
