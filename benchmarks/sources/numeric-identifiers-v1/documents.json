@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "generator": "Pillow built-in font size28, white1100x700 canvas, multiline black text at60,70 with28px spacing",
+  "documents": [
+    {
+      "id": "form4868",
+      "path": "form4868.png",
+      "reference_text": "Form 4868\nApplication for Automatic Extension\nDepartment of the Treasury\nIndividual Income Tax Return",
+      "sha256": "6c64371904e3b951ac101fcd91df0e9ba074c21deb12d0ad6f4670ab8da063aa",
+      "source": "Locally generated diagnostic document with invented entities; CC0-1.0",
+      "ground_truth": "Literal identifying text; relevance is specified only for explicit target queries"
+    },
+    {
+      "id": "form2026",
+      "path": "form2026.png",
+      "reference_text": "Form 2026\nApplication for Review",
+      "sha256": "ef5821acdb8095e35152c9f86b44ecfb43bfe81e27b25cf86d40c9ad29c6b32e",
+      "source": "Locally generated diagnostic document with invented entities; CC0-1.0",
+      "ground_truth": "Literal identifying text; relevance is specified only for explicit target queries"
+    },
+    {
+      "id": "form1040",
+      "path": "form1040.png",
+      "reference_text": "Form 1040\nIndividual Income Tax Return\nProcessed 4868 items",
+      "sha256": "fe79052f503857514fad85dbcedf1135b8146042ee95a3918a6b37bd18aad34a",
+      "source": "Locally generated diagnostic document with invented entities; CC0-1.0",
+      "ground_truth": "Literal identifying text; relevance is specified only for explicit target queries"
+    },
+    {
+      "id": "invoice846231",
+      "path": "invoice846231.png",
+      "reference_text": "Invoice No. 846231\nCustomer: Atlas Supplies\nTotal: 100.00\nQuantity: 42",
+      "sha256": "f81799f6beea8adca56737f78a2c68c77ec4541ea4b5467579f335da9f9842c0",
+      "source": "Locally generated diagnostic document with invented entities; CC0-1.0",
+      "ground_truth": "Literal identifying text; relevance is specified only for explicit target queries"
+    },
+    {
+      "id": "invoice004231",
+      "path": "invoice004231.png",
+      "reference_text": "Invoice No. 004231\nCustomer: Birch Systems\nTotal: 125.00",
+      "sha256": "3574bd51c6e8d2f68ae4949a02620fb45bd0cce9d1bd58cdb8869adb345ad0f0",
+      "source": "Locally generated diagnostic document with invented entities; CC0-1.0",
+      "ground_truth": "Literal identifying text; relevance is specified only for explicit target queries"
+    },
+    {
+      "id": "invoice4231",
+      "path": "invoice4231.png",
+      "reference_text": "Invoice No. 4231\nCustomer: Cedar Trading\nTotal: 425.00",
+      "sha256": "ec20c17fa966d33649435c4746857bbda6a033fbf03e7dfb638befc40ad77a62",
+      "source": "Locally generated diagnostic document with invented entities; CC0-1.0",
+      "ground_truth": "Literal identifying text; relevance is specified only for explicit target queries"
+    },
+    {
+      "id": "order846231",
+      "path": "order846231.png",
+      "reference_text": "Order No. 846231\nPacking list\nCustomer: Atlas Supplies",
+      "sha256": "980c4034146166cc2fbbecf7a9e7b14fc098bb6d11485bf9d9d9b1137c30fecb",
+      "source": "Locally generated diagnostic document with invented entities; CC0-1.0",
+      "ground_truth": "Literal identifying text; relevance is specified only for explicit target queries"
+    },
+    {
+      "id": "error1045",
+      "path": "error1045.png",
+      "reference_text": "Error code 1045\nAccess denied for user\nDatabase connection failed",
+      "sha256": "2784404a82b3cb5c8621e07ecc8d7e0a5db7f5639203d5865a329f5e967a4abb",
+      "source": "Locally generated diagnostic document with invented entities; CC0-1.0",
+      "ground_truth": "Literal identifying text; relevance is specified only for explicit target queries"
+    },
+    {
+      "id": "error1046",
+      "path": "error1046.png",
+      "reference_text": "Error code 1046\nNo database selected\nProcessed 1045 rows",
+      "sha256": "42472624f422996a04c18ae7718f4a3fd416cdbf1625905d1d4679f3fa951e43",
+      "source": "Locally generated diagnostic document with invented entities; CC0-1.0",
+      "ground_truth": "Literal identifying text; relevance is specified only for explicit target queries"
+    },
+    {
+      "id": "error42",
+      "path": "error42.png",
+      "reference_text": "Error 42\nOperation cancelled\nPlease retry the operation",
+      "sha256": "ade0902e6eefbacd1c4b34df730d94163c097de4d430aef5cae8b506303f6a56",
+      "source": "Locally generated diagnostic document with invented entities; CC0-1.0",
+      "ground_truth": "Literal identifying text; relevance is specified only for explicit target queries"
+    },
+    {
+      "id": "invoicecode",
+      "path": "invoicecode.png",
+      "reference_text": "Invoice INV-2026-0042\nCustomer: Cedar Trading\nTotal: 100.00",
+      "sha256": "09e9cce08e3b64a363b28d894629cca957857f790377af400f31c21ed0ce482f",
+      "source": "Locally generated diagnostic document with invented entities; CC0-1.0",
+      "ground_truth": "Literal identifying text; relevance is specified only for explicit target queries"
+    },
+    {
+      "id": "errorcode",
+      "path": "errorcode.png",
+      "reference_text": "Runtime error ERR_42\nConnection closed unexpectedly",
+      "sha256": "efd8ff0654340dcf47c9f4b4c0ab2bd16d89d21556833b69d695dd4c42067d6b",
+      "source": "Locally generated diagnostic document with invented entities; CC0-1.0",
+      "ground_truth": "Literal identifying text; relevance is specified only for explicit target queries"
+    },
+    {
+      "id": "wrongcode",
+      "path": "wrongcode.png",
+      "reference_text": "Runtime error ERR_420\nConnection closed unexpectedly",
+      "sha256": "0eab76414a22b1d413aa11f61efad882c655a3fc5f22a262c205da76644de290",
+      "source": "Locally generated diagnostic document with invented entities; CC0-1.0",
+      "ground_truth": "Literal identifying text; relevance is specified only for explicit target queries"
+    },
+    {
+      "id": "dates",
+      "path": "dates.png",
+      "reference_text": "Project Summary\nDate 2026-10-20\nAnnual review 2026\nQuantity 100",
+      "sha256": "a9015f72305f076c2cef5a4c5f1a68017b1b32576a95d1a0568d06eb2a8a4ca4",
+      "source": "Locally generated diagnostic document with invented entities; CC0-1.0",
+      "ground_truth": "Literal identifying text; relevance is specified only for explicit target queries"
+    }
+  ]
+}

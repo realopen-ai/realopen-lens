@@ -595,3 +595,33 @@ def test_reference_correction_is_auditable_and_preserves_unaffected_queries(defa
             assert query["review"]["correction"]
         else:
             assert query["text"] == previous["text"]
+
+
+@pytest.mark.parametrize("fail", [False, True])
+def test_resident_evaluation_owns_and_closes_encoder_even_on_failure(monkeypatch, fail):
+    events = []
+    token = object()
+
+    class Encoder:
+        def __enter__(self):
+            events.append("open")
+            return token
+
+        def __exit__(self, *args):
+            events.append("close")
+
+    def evaluate(args, encoder):
+        assert encoder is token
+        events.append("evaluate")
+        if fail:
+            raise ValueError("failed run")
+        return 42
+
+    monkeypatch.setattr(collections, "ResidentQueryEncoder", Encoder)
+    monkeypatch.setattr(collections, "_run", evaluate)
+    if fail:
+        with pytest.raises(ValueError, match="failed run"):
+            collections.run(SimpleNamespace(resident=True))
+    else:
+        assert collections.run(SimpleNamespace(resident=True)) == 42
+    assert events == ["open", "evaluate", "close"]
