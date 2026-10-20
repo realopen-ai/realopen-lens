@@ -184,6 +184,16 @@ uv run --no-sync lens similar --image-id FULL_IMAGE_ID --index-dir runs/personal
 
 Exact byte matches reuse saved vectors; the query itself is excluded by default.
 
+Save a search for [explicit local relevance feedback](docs/relevance-feedback.md):
+
+```sh
+uv run --no-sync lens search "pizza" --index-dir runs/personal-index --save-run
+uv run --no-sync lens feedback runs --index-dir runs/personal-index
+```
+
+Label returned results as relevant or irrelevant, correct/remove labels, and
+export them as JSONL. Feedback does not automatically change ranking or train models.
+
 For repeated queries, an explicit [resident search session](docs/resident-inference.md)
 reuses query encoders through the Python API or `lens search --interactive`.
 Single-shot search remains available; sessions require explicit ownership and shutdown.
