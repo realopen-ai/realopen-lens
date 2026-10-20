@@ -1010,3 +1010,109 @@ def test_resident_session_preserves_trace_and_observes_source_and_generation_cha
         assert session.search("red ERR_42") == []
     with pytest.raises(RuntimeError, match="closed"):
         session.search("ERR_42", mode="lexical")
+
+
+@pytest.mark.parametrize("precision", ["int8", "fp32"])
+def test_image_similarity_reuses_vectors_and_preserves_metadata(
+    app, monkeypatch, tmp_path, precision
+):
+    import shutil
+    from realopen_lens.search import search_similar
+    from realopen_lens.retrieval import images
+    from realopen_lens.models.manager import digest
+
+    root, store, calls, run = app
+    image(root / "red.png")
+    image(root / "green.png", "green")
+    run(siglip_precision=precision)
+    key = digest(root / "red.png")
+    monkeypatch.setattr(images, "image_vector", lambda *a: pytest.fail("Unexpected encoding"))
+    monkeypatch.setattr(images, "verify_image_encoder", lambda *a: pytest.fail("Unexpected models"))
+    trace = {}
+    result = search_similar(image_id=key, index_dir=store, models=tmp_path / "absent", trace=trace)
+    assert len(result) == 1 and result[0].image_id != key
+    assert result[0].rank == 1 and result[0].width == 64 and result[0].height == 48
+    assert result[0].text == "green garden" and result[0].visual_similarity == 0
+    assert result[0].thumbnail and Path(result[0].thumbnail).is_file()
+    assert result[0].paths == (str(root / "green.png"),)
+    assert trace["reused_embedding"] and trace["siglip_precision"] == precision
+    copy = tmp_path / "external-copy.png"
+    shutil.copyfile(root / "red.png", copy)
+    assert search_similar(copy, index_dir=store) == result
+    included = search_similar(copy, index_dir=store, include_self=True)
+    assert included[0].image_id == key and included[0].visual_similarity == 1
+    with pytest.raises(ValueError, match="differs"):
+        search_similar(
+            image_id=key,
+            index_dir=store,
+            siglip_precision=("fp32" if precision == "int8" else "int8"),
+        )
+    # The saved query vector remains usable when its original disappears.
+    (root / "red.png").unlink()
+    assert search_similar(image_id=key, index_dir=store) == result
+    (root / "green.png").write_bytes(b"changed")
+    assert search_similar(image_id=key, index_dir=store) == []
+
+
+def test_image_similarity_external_encoding_and_stable_ties(app, monkeypatch, tmp_path):
+    from realopen_lens.search import search_similar
+    from realopen_lens.retrieval import images
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    image(root / "two.png", "green")
+    run(siglip_precision="fp32")
+    query = tmp_path / "query.png"
+    image(query, "blue")
+    verified = []
+    monkeypatch.setattr(images, "verify_image_encoder", lambda *a: verified.append(a))
+
+    def encode(path, models, threads, precision):
+        assert path == query and precision == "fp32" and threads == 2
+        return np.ones(768, dtype=np.float32)
+
+    monkeypatch.setattr(images, "image_vector", encode)
+    trace = {}
+    result = search_similar(query, index_dir=store, trace=trace)
+    assert len(verified) == 1 and not trace["reused_embedding"]
+    assert [r.image_id for r in result] == sorted(r.image_id for r in result)
+    assert len(search_similar(query, index_dir=store, limit=1)) == 1
+    assert result == search_similar(query, index_dir=store)
+
+    def changing(*args):
+        image(query, "black")
+        return np.ones(768, dtype=np.float32)
+
+    monkeypatch.setattr(images, "image_vector", changing)
+    with pytest.raises(ValueError, match="changed during search"):
+        search_similar(query, index_dir=store)
+
+
+def test_image_similarity_rejects_invalid_requests_and_corrupt_index(app):
+    from realopen_lens.search import search_similar
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    run()
+    for options in (
+        {},
+        {"image": root / "one.png", "image_id": "abc"},
+        {"image_id": "abc", "limit": 0},
+        {"image_id": "abc", "threads": 9},
+        {"image_id": "abc", "siglip_precision": "fp16"},
+    ):
+        with pytest.raises(ValueError):
+            search_similar(index_dir=store, **options)
+    with pytest.raises(ValueError, match="not in this collection"):
+        search_similar(image_id="not-an-indexed-id", index_dir=store)
+    with pytest.raises(ValueError, match="local file"):
+        search_similar(root, index_dir=store)
+    catalog = Catalog(store)
+    try:
+        _, generation = catalog.snapshot("personal")
+        manifest = load_manifest(catalog, generation)
+    finally:
+        catalog.close()
+    (store / manifest["artifacts"]["vision"]["path"]).write_bytes(b"broken")
+    with pytest.raises(ValueError, match="artifact is missing or corrupt"):
+        search_similar(root / "one.png", index_dir=store)

@@ -298,5 +298,45 @@ def find_images(
         raise typer.Exit(1) from error
 
 
+@app.command("similar")
+def similar_images(
+    image: Annotated[
+        Path | None, typer.Argument(help="Local query image; omit with --image-id")
+    ] = None,
+    image_id: Annotated[str | None, typer.Option(help="Image ID in the active generation")] = None,
+    collection: Annotated[str, typer.Option()] = "personal",
+    index_dir: Annotated[Path | None, typer.Option()] = None,
+    models: Annotated[Path, typer.Option()] = Path("models"),
+    limit: Annotated[int, typer.Option(min=1, max=100)] = 10,
+    threads: Annotated[int, typer.Option(min=1, max=8)] = 2,
+    include_self: Annotated[
+        bool, typer.Option(help="Include exact query bytes in results")
+    ] = False,
+    siglip_precision: Annotated[
+        str | None, typer.Option(help="Assert int8 or fp32; otherwise use collection precision")
+    ] = None,
+):
+    """Find visually similar images from a local image or indexed image ID."""
+    from dataclasses import asdict
+    from realopen_lens.search import search_similar
+
+    try:
+        results = search_similar(
+            image,
+            image_id=image_id,
+            collection=collection,
+            index_dir=index_dir,
+            models=models,
+            limit=limit,
+            threads=threads,
+            include_self=include_self,
+            siglip_precision=siglip_precision,
+        )
+        typer.echo(json.dumps([asdict(r) for r in results], ensure_ascii=False, indent=2))
+    except (OSError, ValueError, RuntimeError, TimeoutError, sqlite3.Error) as error:
+        typer.echo(f"Error: {error}", err=True)
+        raise typer.Exit(1) from error
+
+
 if __name__ == "__main__":
     app()

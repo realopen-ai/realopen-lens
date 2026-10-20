@@ -30,11 +30,29 @@ def main():
     parser.add_argument("--job")
     parser.add_argument("--stage", choices=["metadata", "ocr", "vision", "semantic"])
     parser.add_argument("--query", action="store_true")
+    parser.add_argument("--image-query", action="store_true")
     args = parser.parse_args()
     from realopen_lens.runtime.offline import enforce
 
     enforce()
-    if args.query:
+    if args.image_query:
+        from realopen_lens.encoders.onnx import VisionEncoder
+        from realopen_lens.models.manager import artifact_path
+
+        try:
+            request = json.load(sys.stdin)
+            precision = request["siglip_precision"]
+            if precision not in {"int8", "fp32"}:
+                raise ValueError("SigLIP2 precision must be int8 or fp32")
+            vision_model = VisionEncoder(
+                artifact_path(Path(request["models"]), "siglip2", f"vision_{precision}"),
+                request["threads"],
+            )
+            print(json.dumps(vision_model.encode([Path(request["image"])])[0].tolist()))
+        except Exception as error:
+            print(f"Image query failed: {type(error).__name__}: {error}", file=sys.stderr)
+            raise SystemExit(1) from error
+    elif args.query:
         from realopen_lens.encoders.onnx import TextEncoder
         from realopen_lens.models.manager import artifact_path
 
