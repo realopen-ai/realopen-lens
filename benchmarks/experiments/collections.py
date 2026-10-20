@@ -31,6 +31,7 @@ def run(args):
     verify(args.models, "int8")
     reranker = getattr(args, "reranker", None)
     reranker_sha256 = digest(reranker) if reranker is not None else None
+    defer_test = getattr(args, "defer_test_metrics", False)
     root = Path(__file__).resolve().parents[2]
     source_root = root / "src/realopen_lens"
     installed_root = Path(realopen_lens.__file__).parent
@@ -57,6 +58,8 @@ def run(args):
     }
     if reranker is not None:
         identity["reranker_sha256"] = reranker_sha256
+    if defer_test:
+        identity["defer_test_metrics"] = True
     args.output.mkdir(parents=True, exist_ok=True)
     config = args.output / "config.json"
     if config.exists() and json.loads(config.read_text(encoding="utf-8")) != identity:
@@ -129,24 +132,30 @@ def run(args):
                         raise ValueError("Search observed a changed reranker")
                     if [r.image_id for r in results] != trace["rankings"][mode]:
                         raise ValueError("Candidate trace differs from returned ranking")
-                    labels = {r["image_sha256"]: r["grade"] for r in query["judgments"]}
-                    positives = {key for key, value in labels.items() if value > 0}
-                    record.update(
-                        status="ok",
-                        trace=trace,
-                        metrics={
-                            mode: evaluate(ranking, labels)
-                            for mode, ranking in trace["rankings"].items()
-                        },
-                        pool_recall=len({r["image_id"] for r in trace["candidates"]} & positives)
-                        / len(positives),
-                        missed_pool_positives=sorted(
-                            positives - {r["image_id"] for r in trace["candidates"]}
-                        ),
-                        missed_hybrid_top50_positives=sorted(
-                            positives - set(trace["rankings"]["hybrid"])
-                        ),
-                    )
+                    record.update(status="ok", trace=trace, metrics={})
+                    if defer_test and query.get("study_role", query["split"]) == "test":
+                        # Capture production candidates without scoring the fresh holdout.
+                        # The study scores it only after freezing validation selection.
+                        record["quality_deferred"] = True
+                    else:
+                        labels = {r["image_sha256"]: r["grade"] for r in query["judgments"]}
+                        positives = {key for key, value in labels.items() if value > 0}
+                        record.update(
+                            metrics={
+                                mode: evaluate(ranking, labels)
+                                for mode, ranking in trace["rankings"].items()
+                            },
+                            pool_recall=len(
+                                {r["image_id"] for r in trace["candidates"]} & positives
+                            )
+                            / len(positives),
+                            missed_pool_positives=sorted(
+                                positives - {r["image_id"] for r in trace["candidates"]}
+                            ),
+                            missed_hybrid_top50_positives=sorted(
+                                positives - set(trace["rankings"]["hybrid"])
+                            ),
+                        )
             except Exception as error:
                 record.update(
                     status="error", error_type=type(error).__name__, error=str(error)[:2000]
@@ -188,6 +197,11 @@ def main():
     parser.add_argument("--models", type=Path, default=Path("models"))
     parser.add_argument("--threads", type=int, choices=range(1, 9), default=2)
     parser.add_argument("--retry-errors", action="store_true")
+    parser.add_argument(
+        "--defer-test-metrics",
+        action="store_true",
+        help="Capture fresh test candidates without scoring before model freeze",
+    )
     parser.add_argument("--reranker", type=Path, help="Experimental local logistic JSON model")
     args = parser.parse_args()
     enforce()
