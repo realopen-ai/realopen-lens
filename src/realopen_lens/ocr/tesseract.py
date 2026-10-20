@@ -82,14 +82,17 @@ def parse_tsv(text: str) -> dict[str, Any]:
 def _recognize(
     image: Image.Image, executable: str, languages: str, threads: int, psm: int, timeout: float
 ) -> dict[str, Any]:
+    start = monotonic()
     payload = io.BytesIO()
     image.save(payload, format="PNG")
-    start = monotonic()
+    remaining = timeout - (monotonic() - start)
+    if remaining <= 0:
+        raise subprocess.TimeoutExpired("OCR image serialization", timeout)
     result = subprocess.run(
         [executable, "stdin", "stdout", "-l", languages, "--oem", "1", "--psm", str(psm), "tsv"],
         input=payload.getvalue(),
         capture_output=True,
-        timeout=timeout,
+        timeout=remaining,
         env={**os.environ, "OMP_THREAD_LIMIT": str(threads)},
     )
     if result.returncode:
@@ -230,6 +233,7 @@ def extract(
     start = monotonic()
     attempts: list[dict[str, Any]] = []
     failed_attempts: list[dict[str, Any]] = []
+    recognition_attempts = 0
     warnings = []
     detection = None
     with ExitStack() as buffers:
@@ -299,22 +303,24 @@ def extract(
             psm: int,
             label: str,
             source_region: tuple,
-            required: bool = False,
+            attempt_timeout: float = 15,
             **metadata: Any,
         ) -> dict | None:
+            nonlocal recognition_attempts
             remaining = timeout - (monotonic() - start)
-            if remaining <= 0 or len(attempts) >= 4:
-                if required:
-                    raise subprocess.TimeoutExpired("OCR budget", timeout)
+            if remaining <= 0 or recognition_attempts >= 4:
                 warnings.append("OCR fallback budget exhausted")
                 return None
             try:
-                result = _recognize(image, executable, languages, threads, psm, min(15, remaining))
+                recognition_attempts += 1
+                result = _recognize(
+                    image, executable, languages, threads, psm, min(15, remaining, attempt_timeout)
+                )
                 result.update(input=label, source_region=list(source_region), **metadata)
                 attempts.append(result)
                 return result
             except (subprocess.TimeoutExpired, ValueError) as error:
-                if required:
+                if label == "rgb" and not isinstance(error, subprocess.TimeoutExpired):
                     raise
                 warnings.append(f"OCR fallback failed: {type(error).__name__}")
                 failed_attempts.append(
@@ -327,16 +333,67 @@ def extract(
                 )
                 return None
 
-        first = attempt(rgb, 3, "rgb", full_region, required=True)
-        assert first is not None
+        first = attempt(rgb, 3, "rgb", full_region)
+        initial_recovered = first is None
+        if first is None:
+            # A second full-page pass can repeat the same timeout. Split the remaining
+            # budget across disjoint bands, retaining explicitly partial evidence.
+            initial_gray, _ = _gray(rgb)
+            keep(initial_gray)
+            recovered = []
+            for number in range(3):
+                remaining = timeout - (monotonic() - start)
+                if remaining <= 0:
+                    break
+                top, bottom = number * rgb.height // 3, (number + 1) * rgb.height // 3
+                if bottom <= top:
+                    continue
+                with initial_gray.crop((0, top, rgb.width, bottom)) as band:
+                    candidate = attempt(
+                        band,
+                        11,
+                        f"timeout-band-{number}",
+                        (
+                            0,
+                            round(top * original_size[1] / rgb.height),
+                            original_size[0],
+                            round(bottom * original_size[1] / rgb.height),
+                        ),
+                        attempt_timeout=remaining / (3 - number),
+                    )
+                if candidate is not None and candidate["words"]:
+                    recovered.append((number, top, candidate))
+            if not recovered:
+                raise subprocess.TimeoutExpired("OCR timeout recovery exhausted", timeout)
+            words = [
+                {**word, "box": [word["box"][0], word["box"][1] + top, *word["box"][2:]]}
+                for _, top, candidate in recovered
+                for word in candidate["words"]
+            ]
+            first = {
+                "text": "\n".join(candidate["text"] for _, _, candidate in recovered),
+                "words": words,
+                "confidence": sum(w["confidence"] for w in words) / len(words),
+                "psm": 11,
+                "ocr_size": list(rgb.size),
+                "source_region": list(full_region),
+                "input": "timeout-band-recovery",
+                "aggregate": True,
+                "seconds": sum(c["seconds"] for _, _, c in recovered),
+                "timeout_recovery": {"bands": 3, "recovered_bands": [i for i, _, _ in recovered]},
+            }
+            attempts.append(first)
+            warnings.append(
+                "Whole-image OCR timed out; recovered partial band text, not a complete transcript"
+            )
         work_result = first
         cropped = region != full_region
-        if cropped:
+        if cropped and not initial_recovered:
             work_result = attempt(working, 3, "opaque-region-rgb", region) or first
         gray, inverted = _gray(working)
         keep(gray)
         incomplete = _layout_incomplete(gray, work_result["words"])
-        if (
+        if not initial_recovered and (
             cropped
             or inverted
             or incomplete
@@ -350,7 +407,11 @@ def extract(
             attempt(cleaned, 11, "grayscale-sparse", region, rules_removed=removed)
 
         best = max(attempts, key=_quality)
-        if max(region[2] - region[0], region[3] - region[1]) > 3000 and len(best["words"]) >= 8:
+        if (
+            not initial_recovered
+            and max(region[2] - region[0], region[3] - region[1]) > 3000
+            and len(best["words"]) >= 8
+        ):
             with _ocr_source(path, detection, region_mode) as source:
                 large = keep(source.crop(region))
             large.thumbnail((3200, 3200))
@@ -362,7 +423,8 @@ def extract(
         best = max(attempts, key=_quality)
         remaining = timeout - (monotonic() - start)
         if (
-            len(best["words"]) >= 8
+            not initial_recovered
+            and len(best["words"]) >= 8
             and (best["confidence"] or 0) < 55
             and remaining > 2
             and len(attempts) < 4
@@ -407,7 +469,7 @@ def extract(
                         "error": str(error)[:500],
                     }
                 )
-        selected = max(attempts, key=_quality)
+        selected = first if initial_recovered else max(attempts, key=_quality)
         if not selected["words"]:
             warnings.append("Empty OCR output; text absence has not been established")
         elif (selected["confidence"] or 0) < 55:
@@ -418,11 +480,12 @@ def extract(
             dict.fromkeys(
                 " ".join(word["text"] for word in candidate["words"] if word["confidence"] >= 70)
                 for candidate in attempts
-                if candidate is not selected
+                if candidate is not selected and not initial_recovered
             )
         )
         return {
             **environment,
+            **({"timeout_recovery": selected["timeout_recovery"]} if initial_recovered else {}),
             **({"text_detection": detection, "region_mode": region_mode} if detection else {}),
             "text": selected["text"],
             "words": selected["words"],

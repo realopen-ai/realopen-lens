@@ -594,6 +594,35 @@ def test_candidate_trace_uses_production_scores_without_changing_results(app, mo
         snapshot(store, "personal", corpus)
 
 
+def test_partial_timeout_recovery_is_searchable_but_degraded_and_cached(app, monkeypatch):
+    from realopen_lens.ocr import tesseract
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    original = tesseract.extract
+
+    def partial(*args):
+        result = original(*args)
+        result.update(
+            timeout_recovery={"bands": 3, "recovered_bands": [0]},
+            warnings=["Whole-image OCR timed out; recovered partial text"],
+        )
+        return result
+
+    monkeypatch.setattr(tesseract, "extract", partial)
+    first = run()
+    assert first.status == "completed_with_errors" and first.failed_files == 0
+    assert first.images == 1 and first.degraded_files == 1
+    found = search.search_collection("ERR_42", index_dir=store, mode="lexical")
+    assert found[0].status == "degraded"
+    assert found[0].issues[0]["error_type"] == "PartialOCR"
+    assert any(kind == "semantic" for kind, value in calls)
+    calls.clear()
+    repeated = run()
+    assert repeated.degraded_files == 1 and not calls
+    assert repeated.generation == first.generation
+
+
 def test_experimental_reranker_is_opt_in_and_checks_encoder_compatibility(app, monkeypatch):
     import json
     from typer.testing import CliRunner
