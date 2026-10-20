@@ -1,7 +1,10 @@
 """Explicit search lifetime; indexes and source validity are checked on every call."""
 
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from realopen_lens.learning.feedback import RecordedSearch
 
 from realopen_lens.retrieval.search import SearchResult, search_collection
 from realopen_lens.runtime.resident import ResidentQueryEncoder
@@ -34,6 +37,22 @@ class SearchSession:
         if self._closed:
             raise RuntimeError("Search session is closed")
         return search_collection(
+            query,
+            collection=self.collection,
+            index_dir=self.index_dir,
+            models=self.models,
+            threads=self.threads,
+            query_encoder=self._encoder,
+            **options,
+        )
+
+    def search_recorded(self, query: str, **options: Any) -> "RecordedSearch":
+        """Opt into saving a search for explicit relevance feedback."""
+        from realopen_lens.learning.feedback import search_and_record
+
+        if self._closed:
+            raise RuntimeError("Search session is closed")
+        return search_and_record(
             query,
             collection=self.collection,
             index_dir=self.index_dir,

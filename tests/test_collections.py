@@ -835,6 +835,13 @@ def test_experimental_reranker_is_opt_in_and_checks_encoder_compatibility(app, m
     assert trace["rankings"]["hybrid"] == [r.image_id for r in normal]
     assert trace["rankings"]["logistic"] == [r.image_id for r in learned]
     assert len(trace["reranker_sha256"]) == 64
+    from realopen_lens.learning.feedback import search_and_record, saved_search
+
+    recorded = search_and_record("red ERR_42", index_dir=store, reranker=path)
+    saved = saved_search(recorded.run_id, index_dir=store)
+    assert recorded.results == learned
+    assert saved["ranking"]["reranker_sha256"] == trace["reranker_sha256"]
+    assert saved["ranking"]["reranker_scope"] == trace["reranker_scope"]
     for limit in (1, 50, 100):
         limited_trace = {}
         limited = search.search_collection(
@@ -1116,3 +1123,163 @@ def test_image_similarity_rejects_invalid_requests_and_corrupt_index(app):
     (store / manifest["artifacts"]["vision"]["path"]).write_bytes(b"broken")
     with pytest.raises(ValueError, match="artifact is missing or corrupt"):
         search_similar(root / "one.png", index_dir=store)
+
+
+@pytest.mark.parametrize("mode", ["hybrid", "visual", "lexical", "semantic"])
+def test_recorded_search_freezes_real_results_and_ranking_provenance(app, monkeypatch, mode):
+    from realopen_lens.learning.feedback import search_and_record, saved_search, judge
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    image(root / "two.png", "green")
+    run()
+
+    def vector(text, kind, *args):
+        result = np.zeros(768 if kind == "siglip2" else 384, dtype=np.float32)
+        result[0] = 1
+        return result
+
+    monkeypatch.setattr(search, "verify", lambda *a: None)
+    monkeypatch.setattr(search, "query_vector", vector)
+    normal = search.search_collection("red ERR_42", index_dir=store, mode=mode)
+    assert not (store / "feedback.sqlite3").exists()
+    recorded = search_and_record("red ERR_42", index_dir=store, mode=mode)
+    assert recorded.results == normal
+    saved = saved_search(recorded.run_id, index_dir=store)
+    assert saved["query"] == {"kind": "text", "text": "red ERR_42"}
+    assert saved["ranking"]["mode"] == mode
+    assert saved["ranking"]["siglip_precision"] == "int8"
+    assert saved["ranking_sources"]["ranking.py"]
+    assert bool(saved["candidates"]) == (mode == "hybrid")
+    old_generation = saved["generation"]
+    (root / "one.png").unlink()
+    run()
+    # A judgment refers to the saved display, even after refresh/removal.
+    target = normal[0].image_id
+    judge(recorded.run_id, target, "relevant", index_dir=store)
+    assert saved_search(recorded.run_id, index_dir=store)["generation"] == old_generation
+
+
+def test_failed_or_concurrently_changed_search_does_not_save_run(app, monkeypatch):
+    from realopen_lens.learning import feedback
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    run()
+    with pytest.raises(ValueError):
+        feedback.search_and_record("red", mode="invalid", index_dir=store)
+    assert not (store / "feedback.sqlite3").exists()
+    original = search.search_collection
+
+    def changing(*args, **options):
+        result = original(*args, **options)
+        image(root / "two.png", "green")
+        run()
+        return result
+
+    monkeypatch.setattr(search, "search_collection", changing)
+    with pytest.raises(ValueError, match="Collection changed"):
+        feedback.search_and_record("red", mode="lexical", index_dir=store)
+    assert not (store / "feedback.sqlite3").exists()
+
+
+@pytest.mark.parametrize("precision", ["int8", "fp32"])
+def test_recorded_image_query_preserves_content_id_and_precision(app, precision):
+    from realopen_lens.learning.feedback import similar_and_record, saved_search
+    from realopen_lens.models.manager import digest
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    image(root / "two.png", "green")
+    run(siglip_precision=precision)
+    key = digest(root / "one.png")
+    recorded = similar_and_record(root / "one.png", index_dir=store)
+    saved = saved_search(recorded.run_id, index_dir=store)
+    assert saved["query"] == {"kind": "image", "image_id": key}
+    assert saved["ranking"]["siglip_precision"] == precision
+    assert saved["ranking"]["reused_embedding"] and not saved["ranking"]["include_self"]
+    assert saved["candidates"] == {} and recorded.results[0].image_id != key
+
+
+def test_save_run_cli_records_text_image_and_interactive_searches(app):
+    import json
+    from typer.testing import CliRunner
+    from realopen_lens.cli import app as cli
+    from realopen_lens.learning.feedback import saved_runs, saved_search
+    from realopen_lens.search import SearchSession
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    image(root / "two.png", "green")
+    run()
+    runner = CliRunner()
+    response = runner.invoke(
+        cli, ["search", "ERR_42", "--mode", "lexical", "--save-run", "--index-dir", str(store)]
+    )
+    assert response.exit_code == 0, response.output
+    assert isinstance(json.loads(response.stdout), list) and "Saved search:" in response.stderr
+    first = saved_runs(index_dir=store)[0]
+    assert saved_search(first["run_id"], index_dir=store)["ranking"]["query_runtime"] == "none"
+    response = runner.invoke(
+        cli, ["similar", str(root / "one.png"), "--save-run", "--index-dir", str(store)]
+    )
+    assert response.exit_code == 0, response.output
+    assert json.loads(response.stdout)[0]["image_id"]
+    assert saved_runs(index_dir=store)[0]["query"]["kind"] == "image"
+    response = runner.invoke(
+        cli,
+        [
+            "search",
+            "ERR_42",
+            "--mode",
+            "lexical",
+            "--save-run",
+            "--interactive",
+            "--index-dir",
+            str(store),
+        ],
+        input="garden\n\n",
+    )
+    assert response.exit_code == 0, response.output
+    assert response.stderr.count("Saved search:") == 2
+    assert len(saved_runs(index_dir=store)) == 4
+    with SearchSession(index_dir=store) as session:
+        assert session.search_recorded("ERR_42", mode="lexical").run_id
+    with pytest.raises(RuntimeError, match="closed"):
+        session.search_recorded("ERR_42", mode="lexical")
+
+
+def test_recorded_resident_hybrid_keeps_actual_candidate_depths(app, monkeypatch):
+    from realopen_lens.search import SearchSession, CandidateDepths
+    from realopen_lens.runtime.resident import ResidentQueryEncoder
+    from realopen_lens.learning.feedback import saved_search
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    run()
+    monkeypatch.setattr(ResidentQueryEncoder, "verify", lambda *args: None)
+    monkeypatch.setattr(
+        ResidentQueryEncoder,
+        "encode",
+        lambda self, text, kind, *args: np.eye(
+            1, 768 if kind == "siglip2" else 384, dtype=np.float32
+        )[0],
+    )
+    with SearchSession(index_dir=store) as session:
+        recorded = session.search_recorded("ERR_42", candidate_depths=CandidateDepths(visual=70))
+    saved = saved_search(recorded.run_id, index_dir=store)
+    assert saved["ranking"]["query_runtime"] == "resident"
+    assert saved["ranking"]["candidate_depths"] == {"visual": 70, "semantic": 50, "lexical": 50}
+    assert len(saved["candidates"]) == 1
+
+
+def test_empty_recorded_search_has_no_implied_negative_labels(app):
+    from realopen_lens.learning.feedback import search_and_record, saved_search
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    run()
+    recorded = search_and_record("nonexistent-term", mode="lexical", index_dir=store)
+    assert recorded.results == []
+    saved = saved_search(recorded.run_id, index_dir=store)
+    assert saved["results"] == [] and saved["judgments"] == [] and saved["candidates"] == {}

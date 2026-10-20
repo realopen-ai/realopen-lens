@@ -6,6 +6,7 @@ import sqlite3
 import subprocess
 from pathlib import Path
 from typing import Annotated, Any
+from collections.abc import Callable
 
 import typer
 
@@ -16,6 +17,8 @@ models_app = typer.Typer(
     no_args_is_help=True, help="Explicit model downloads and integrity checks."
 )
 app.add_typer(models_app, name="models")
+feedback_app = typer.Typer(no_args_is_help=True, help="Explicit local search relevance judgments.")
+app.add_typer(feedback_app, name="feedback")
 
 
 @models_app.command("fetch")
@@ -232,6 +235,9 @@ def find_images(
     siglip_precision: Annotated[
         str | None, typer.Option(help="Assert int8 or fp32; otherwise use collection precision")
     ] = None,
+    save_run: Annotated[
+        bool, typer.Option(help="Save this search for explicit relevance feedback")
+    ] = False,
     interactive: Annotated[
         bool, typer.Option(help="Reuse encoders for subsequent queries; empty line or EOF exits")
     ] = False,
@@ -257,14 +263,28 @@ def find_images(
             siglip_precision=siglip_precision,
         )
         if not interactive:
-            results = search_collection(
-                query,
-                collection=collection,
-                index_dir=index_dir,
-                models=models,
-                threads=threads,
-                **options,
-            )
+            if save_run:
+                from realopen_lens.learning.feedback import search_and_record
+
+                recorded = search_and_record(
+                    query,
+                    collection=collection,
+                    index_dir=index_dir,
+                    models=models,
+                    threads=threads,
+                    **options,
+                )
+                results = recorded.results
+                typer.echo(f"Saved search: {recorded.run_id}", err=True)
+            else:
+                results = search_collection(
+                    query,
+                    collection=collection,
+                    index_dir=index_dir,
+                    models=models,
+                    threads=threads,
+                    **options,
+                )
             typer.echo(json.dumps([asdict(r) for r in results], ensure_ascii=False, indent=2))
         else:
             import sys
@@ -276,7 +296,12 @@ def find_images(
             ) as session:
                 while query.strip():
                     try:
-                        results = session.search(query, **options)
+                        if save_run:
+                            recorded = session.search_recorded(query, **options)
+                            results = recorded.results
+                            typer.echo(f"Saved search: {recorded.run_id}", err=True)
+                        else:
+                            results = session.search(query, **options)
                         typer.echo(
                             json.dumps([asdict(r) for r in results], ensure_ascii=False, indent=2)
                         )
@@ -312,6 +337,9 @@ def similar_images(
     include_self: Annotated[
         bool, typer.Option(help="Include exact query bytes in results")
     ] = False,
+    save_run: Annotated[
+        bool, typer.Option(help="Save this search for explicit relevance feedback")
+    ] = False,
     siglip_precision: Annotated[
         str | None, typer.Option(help="Assert int8 or fp32; otherwise use collection precision")
     ] = None,
@@ -321,8 +349,7 @@ def similar_images(
     from realopen_lens.search import search_similar
 
     try:
-        results = search_similar(
-            image,
+        options: dict[str, Any] = dict(
             image_id=image_id,
             collection=collection,
             index_dir=index_dir,
@@ -332,10 +359,90 @@ def similar_images(
             include_self=include_self,
             siglip_precision=siglip_precision,
         )
+        if save_run:
+            from realopen_lens.learning.feedback import similar_and_record
+
+            recorded = similar_and_record(image, **options)
+            results = recorded.results
+            typer.echo(f"Saved search: {recorded.run_id}", err=True)
+        else:
+            results = search_similar(image, **options)
         typer.echo(json.dumps([asdict(r) for r in results], ensure_ascii=False, indent=2))
     except (OSError, ValueError, RuntimeError, TimeoutError, sqlite3.Error) as error:
         typer.echo(f"Error: {error}", err=True)
         raise typer.Exit(1) from error
+
+
+def _feedback_echo(operation: Callable[..., Any], *args: Any, **options: Any) -> None:
+    try:
+        typer.echo(json.dumps(operation(*args, **options), ensure_ascii=False, indent=2))
+    except (OSError, ValueError, RuntimeError, sqlite3.Error) as error:
+        typer.echo(f"Error: {error}", err=True)
+        raise typer.Exit(1) from error
+
+
+@feedback_app.command("runs")
+def feedback_runs(
+    index_dir: Annotated[Path | None, typer.Option()] = None,
+    limit: Annotated[int, typer.Option(min=1, max=100)] = 20,
+):
+    """List recent explicitly saved searches."""
+    from realopen_lens.learning.feedback import saved_runs
+
+    _feedback_echo(saved_runs, index_dir=index_dir, limit=limit)
+
+
+@feedback_app.command("show")
+def feedback_show(run_id: str, index_dir: Annotated[Path | None, typer.Option()] = None):
+    """Inspect the original search, returned results and current judgments."""
+    from realopen_lens.learning.feedback import saved_search
+
+    _feedback_echo(saved_search, run_id, index_dir=index_dir)
+
+
+@feedback_app.command("set")
+def feedback_set(
+    run_id: str,
+    image_id: str,
+    label: str,
+    index_dir: Annotated[Path | None, typer.Option()] = None,
+):
+    """Set or correct a result's explicit label: relevant or irrelevant."""
+    from realopen_lens.learning.feedback import judge
+
+    _feedback_echo(judge, run_id, image_id, label, index_dir=index_dir)
+
+
+@feedback_app.command("remove")
+def feedback_remove(
+    run_id: str,
+    image_id: str,
+    index_dir: Annotated[Path | None, typer.Option()] = None,
+):
+    """Remove an active label; audit history is retained."""
+    from realopen_lens.learning.feedback import remove_judgment
+
+    _feedback_echo(remove_judgment, run_id, image_id, index_dir=index_dir)
+
+
+@feedback_app.command("history")
+def feedback_history(run_id: str, index_dir: Annotated[Path | None, typer.Option()] = None):
+    """Show label corrections and removals in order."""
+    from realopen_lens.learning.feedback import judgment_history
+
+    _feedback_echo(judgment_history, run_id, index_dir=index_dir)
+
+
+@feedback_app.command("export")
+def feedback_export(
+    output: Path,
+    index_dir: Annotated[Path | None, typer.Option()] = None,
+    overwrite: Annotated[bool, typer.Option(help="Replace an existing export")] = False,
+):
+    """Export current explicit labels as UTF-8 JSONL; prints the record count."""
+    from realopen_lens.learning.feedback import export_feedback
+
+    _feedback_echo(export_feedback, output, index_dir=index_dir, overwrite=overwrite)
 
 
 if __name__ == "__main__":
