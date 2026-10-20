@@ -29,7 +29,7 @@ from realopen_lens.runtime.offline import enforce
 def run(args):
     corpus, bundle = load(args.corpus, args.judgments)
     state = snapshot(args.index_dir, args.collection, corpus)
-    verify(args.models, "int8")
+    verify(args.models, "int8", state["pipeline_spec"].get("siglip_precision", "int8"))
     reranker = getattr(args, "reranker", None)
     reranker_sha256 = digest(reranker) if reranker is not None else None
     defer_test = getattr(args, "defer_test_metrics", False)

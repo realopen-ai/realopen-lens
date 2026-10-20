@@ -177,7 +177,7 @@ def test_evaluation_resumes_records_and_rejects_identity_changes(
             raise AssertionError("Fresh test quality must not be scored before model freeze")
 
         monkeypatch.setattr(collections, "evaluate", forbidden)
-    state = {"generation": "g", "unique_images": 3, "paths": 3}
+    state = {"generation": "g", "unique_images": 3, "paths": 3, "pipeline_spec": {}}
     monkeypatch.setattr(collections, "snapshot", lambda *a, **kw: state)
     calls = []
     reranker = tmp_path / "model.json"
@@ -260,7 +260,7 @@ def test_query_failures_are_retained_and_remaining_queries_run(tmp_path, monkeyp
     other.update(id="q-fr", text="une voiture rouge", language="fr")
     bundle["queries"].append(other)
     save_json(path, bundle)
-    state = {"generation": "g", "unique_images": 3, "paths": 3}
+    state = {"generation": "g", "unique_images": 3, "paths": 3, "pipeline_spec": {}}
     monkeypatch.setattr(collections, "snapshot", lambda *a, **kw: state)
     calls = []
 
@@ -307,7 +307,7 @@ def test_retry_retains_all_failed_attempts(tmp_path, monkeypatch):
     monkeypatch.setattr(
         collections,
         "snapshot",
-        lambda *a, **kw: {"generation": "g", "unique_images": 3, "paths": 3},
+        lambda *a, **kw: {"generation": "g", "unique_images": 3, "paths": 3, "pipeline_spec": {}},
     )
 
     def fail(*a, **kw):

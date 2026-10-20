@@ -84,6 +84,72 @@ def test_index_encoder_selects_matching_vision_graph(monkeypatch, precision):
     assert selected == ["vision_" + precision]
 
 
+def test_subset_resume_preserves_copied_sources_and_frozen_labels(tmp_path):
+    from types import SimpleNamespace
+    from PIL import Image
+    from benchmarks.datasets.downloads import digest
+    from benchmarks.datasets.photos import save_json
+    from benchmarks.experiments.siglip_precision import prepare
+
+    source = tmp_path / "source"
+    source.mkdir()
+    rows = []
+    for color in ("red", "green", "blue"):
+        path = source / f"{color}.png"
+        Image.new("RGB", (8, 8), color).save(path)
+        rows.append(
+            {
+                "id": color,
+                "path": path.name,
+                "sha256": digest(path),
+                "pixel_sha256": color,
+                "duplicate_group": color,
+                "source_document": color,
+                "split": "train",
+                "category": "photos",
+            }
+        )
+    corpus, judgments = tmp_path / "corpus.json", tmp_path / "judgments.json"
+    save_json(corpus, {"images": rows})
+    queries = [
+        {
+            "id": language,
+            "language": language,
+            "text": text,
+            "family": "red",
+            "kind": "photos",
+            "split": "train",
+            "judgments": [{"image_sha256": rows[0]["sha256"], "grade": 2, "reason": "Red square"}],
+            "review": {
+                "status": "reviewed",
+                "reviewer": "fixture",
+                "method": "fixture",
+                "date": "2026-10-20",
+            },
+        }
+        for language, text in [("en", "red"), ("fr", "rouge"), ("ar", "أحمر")]
+    ]
+    save_json(judgments, {"version": 1, "corpus_sha256": digest(corpus), "queries": queries})
+    args = SimpleNamespace(
+        corpus=corpus,
+        judgments=judgments,
+        source_root=source,
+        output=tmp_path / "run",
+        seed=42,
+        families_per_kind=1,
+        image_count=3,
+    )
+    root, manifest, bundle = prepare(args)
+    assert json.loads(bundle.read_text(encoding="utf-8"))["queries"] == queries
+    copied = root / "red.png"
+    before = copied.stat().st_ctime_ns
+    prepare(args)
+    assert copied.stat().st_ctime_ns == before
+    copied.write_bytes(b"corrupt")
+    with pytest.raises(ValueError, match="Prepared image changed"):
+        prepare(args)
+
+
 def test_current_training_schema_rejects_fp32_instead_of_exporting_an_int8_model():
     from benchmarks.experiments.logistic import validate_records
 
