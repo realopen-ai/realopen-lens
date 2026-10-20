@@ -216,12 +216,23 @@ def find_images(
     reranker: Annotated[
         Path | None, typer.Option(help="Experimental local logistic JSON model; hybrid mode only")
     ] = None,
+    visual_candidates: Annotated[int | None, typer.Option(min=1, max=1000)] = None,
+    semantic_candidates: Annotated[int | None, typer.Option(min=1, max=1000)] = None,
+    lexical_candidates: Annotated[int | None, typer.Option(min=1, max=1000)] = None,
 ):
     """Search a saved collection after indexing, including across restarts."""
     from dataclasses import asdict
     from realopen_lens.retrieval.search import search_collection
+    from realopen_lens.retrieval.candidates import CandidateDepths
 
     try:
+        depths = None
+        if any(v is not None for v in (visual_candidates, semantic_candidates, lexical_candidates)):
+            depths = CandidateDepths(
+                visual=50 if visual_candidates is None else visual_candidates,
+                semantic=50 if semantic_candidates is None else semantic_candidates,
+                lexical=50 if lexical_candidates is None else lexical_candidates,
+            )
         results = search_collection(
             query,
             collection=collection,
@@ -231,6 +242,7 @@ def find_images(
             mode=mode,
             threads=threads,
             reranker=reranker,
+            candidate_depths=depths,
         )
         typer.echo(json.dumps([asdict(r) for r in results], ensure_ascii=False, indent=2))
     except (OSError, ValueError, RuntimeError, TimeoutError, sqlite3.Error) as error:

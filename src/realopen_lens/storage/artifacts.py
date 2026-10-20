@@ -66,6 +66,19 @@ def image_issues(catalog: Catalog, pipeline: str, image_id: str) -> list[dict]:
     issues = []
     for stage in ("ocr", "semantic"):
         record = catalog.analysis(pipeline, image_id, stage)
+        if (
+            stage == "ocr"
+            and record is not None
+            and valid_analysis(catalog, record)
+            and json.loads(record["payload"]).get("timeout_recovery")
+        ):
+            issues.append(
+                {
+                    "stage": "ocr",
+                    "error_type": "PartialOCR",
+                    "error": "Whole-image OCR timed out; recovered band text is incomplete",
+                }
+            )
         if not valid_analysis(catalog, record):
             payload = json.loads(record["payload"]) if record else {}
             issues.append(

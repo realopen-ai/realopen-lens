@@ -13,6 +13,7 @@ from realopen_lens.storage.catalog import Catalog, default_directory, local_path
 from realopen_lens.storage.artifacts import load_manifest, matrices
 from realopen_lens.runtime.jobs import environment
 from realopen_lens.models.manager import digest, registry, verify
+from realopen_lens.retrieval.candidates import CandidateDepths
 from realopen_lens.retrieval.ranking import (
     hybrid_rank,
     lexical_index,
@@ -71,8 +72,9 @@ def search_collection(
     threads: int = 2,
     trace: dict | None = None,
     reranker: Path | None = None,
+    candidate_depths: CandidateDepths | None = None,
 ) -> list[SearchResult]:
-    """Search the active generation; optional hybrid trace exposes candidates and top-50 channels.
+    """Search the active generation; optional hybrid trace exposes bounded channel pools.
 
     Tracing preserves scores and ordering. Raw BM25 is lower-is-better, cosine
     similarities are higher-is-better, and absent channel values remain None.
@@ -83,6 +85,8 @@ def search_collection(
         )
     if mode not in {"hybrid", "visual", "lexical", "semantic"}:
         raise ValueError("Search mode must be hybrid, visual, lexical, or semantic")
+    if candidate_depths is not None and mode != "hybrid":
+        raise ValueError("Candidate depths require hybrid mode")
     learned = None
     if reranker is not None:
         from realopen_lens.learning.logistic import load
@@ -90,9 +94,16 @@ def search_collection(
         if mode != "hybrid":
             raise ValueError("The experimental reranker requires hybrid mode")
         learned = load(reranker)
+        if candidate_depths is not None and candidate_depths != CandidateDepths():
+            raise ValueError(
+                "Reranker candidate budget differs; existing models require 50/channel"
+            )
         if trace is None:
             trace = {}
     channel_limit = 50 if learned is not None else max(50, limit)
+    depths = candidate_depths or CandidateDepths(visual=channel_limit)
+    if mode == "hybrid":
+        channel_limit = depths.lexical
     if trace is not None:
         trace.clear()
         if mode != "hybrid":
@@ -137,6 +148,7 @@ def search_collection(
                     candidates=[],
                     rankings={key: [] for key in ("visual", "semantic", "lexical", "hybrid")},
                     searchable_images=0,
+                    candidate_depths=depths.as_dict(),
                 )
                 if learned is not None:
                     trace["rankings"]["logistic"] = []
@@ -208,6 +220,7 @@ def search_collection(
                     lexical_candidates=lexical,
                     lexical_statistics=lexical_frequencies(index, query),
                     trace=trace,
+                    candidate_depths=depths,
                 )
         if trace is not None:
             bm25 = lexical_scores(index, query, limit=channel_limit)

@@ -97,6 +97,16 @@ def export(output: Path, db: sqlite3.Connection, corpus: dict, bundle: dict, ide
     }
     ok = [r for r in records if r["status"] == "ok"]
     graded = [r for r in ok if not r.get("quality_deferred", False)]
+    pool_groups: dict[str, list] = defaultdict(list)
+    for record in graded:
+        query = queries[record["query_id"]]
+        for tag in (
+            "all",
+            "language:" + query["language"],
+            "kind:" + query.get("kind", "mixed"),
+            "role:" + query.get("study_role", query["split"]),
+        ):
+            pool_groups[tag].append(record["pool_recall"])
     learned = bool(identity.get("reranker_sha256"))
     latency_key = "reranked_end_to_end_seconds" if learned else "hybrid_end_to_end_seconds"
     summary: dict = {
@@ -113,6 +123,11 @@ def export(output: Path, db: sqlite3.Connection, corpus: dict, bundle: dict, ide
         latency_key: distribution([r["seconds"] for r in records]),
         "peak_tree_rss_mib": distribution([r["peak_tree_rss_mib"] for r in records]),
         "candidate_pool_recall": distribution([r["pool_recall"] for r in graded]),
+        "candidate_pool_recall_by_group": {
+            key: distribution(values) | {"queries": len(values)}
+            for key, values in sorted(pool_groups.items())
+        },
+        "candidate_pool_size": distribution([len(r["trace"]["candidates"]) for r in ok]),
         "limitations": [
             "Relevance uses reviewed known positives; judgments are incomplete.",
             "Unjudged items contribute zero gain to known-judgment metrics, "

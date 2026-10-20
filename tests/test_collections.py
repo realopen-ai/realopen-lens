@@ -594,6 +594,35 @@ def test_candidate_trace_uses_production_scores_without_changing_results(app, mo
         snapshot(store, "personal", corpus)
 
 
+def test_partial_timeout_recovery_is_searchable_but_degraded_and_cached(app, monkeypatch):
+    from realopen_lens.ocr import tesseract
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    original = tesseract.extract
+
+    def partial(*args):
+        result = original(*args)
+        result.update(
+            timeout_recovery={"bands": 3, "recovered_bands": [0]},
+            warnings=["Whole-image OCR timed out; recovered partial text"],
+        )
+        return result
+
+    monkeypatch.setattr(tesseract, "extract", partial)
+    first = run()
+    assert first.status == "completed_with_errors" and first.failed_files == 0
+    assert first.images == 1 and first.degraded_files == 1
+    found = search.search_collection("ERR_42", index_dir=store, mode="lexical")
+    assert found[0].status == "degraded"
+    assert found[0].issues[0]["error_type"] == "PartialOCR"
+    assert any(kind == "semantic" for kind, value in calls)
+    calls.clear()
+    repeated = run()
+    assert repeated.degraded_files == 1 and not calls
+    assert repeated.generation == first.generation
+
+
 def test_experimental_reranker_is_opt_in_and_checks_encoder_compatibility(app, monkeypatch):
     import json
     from typer.testing import CliRunner
@@ -645,6 +674,15 @@ def test_experimental_reranker_is_opt_in_and_checks_encoder_compatibility(app, m
         assert limited == learned[:limit]
         assert limited_trace == trace
     assert search.search_collection("red ERR_42", index_dir=store) == normal
+    from realopen_lens.retrieval.candidates import CandidateDepths
+
+    with pytest.raises(ValueError, match="candidate budget differs"):
+        search.search_collection(
+            "red ERR_42",
+            index_dir=store,
+            reranker=path,
+            candidate_depths=CandidateDepths(visual=200),
+        )
     response = CliRunner().invoke(
         cli, ["search", "red ERR_42", "--index-dir", str(store), "--reranker", str(path)]
     )
@@ -711,3 +749,53 @@ def test_v2_production_scope_preserves_hybrid50_with_a_larger_candidate_union(ap
         assert trace["reranker_scope"] == scope
     assert observed["hybrid50"] == set(baseline["rankings"]["hybrid"])
     assert observed["union"] != observed["hybrid50"]
+
+
+def test_production_candidate_depths_are_independent_of_display_limit(app, monkeypatch):
+    from realopen_lens.retrieval.candidates import CandidateDepths
+    from typer.testing import CliRunner
+    from realopen_lens.cli import app as cli
+
+    root, store, calls, run = app
+    for i in range(70):
+        image(root / f"{i:02}.png", (i, 255, 0))
+    run()
+    monkeypatch.setattr(search, "verify", lambda *a: None)
+    monkeypatch.setattr(
+        search,
+        "query_vector",
+        lambda text, kind, *a: np.eye(1, 768 if kind == "siglip2" else 384, dtype=np.float32)[0],
+    )
+    traces = []
+    for limit in (1, 50):
+        trace = {}
+        found = search.search_collection(
+            "garden",
+            index_dir=store,
+            limit=limit,
+            candidate_depths=CandidateDepths(70, 1, 1),
+            trace=trace,
+        )
+        assert len(found) == limit
+        assert len(trace["candidates"]) == 70
+        assert len(trace["rankings"]["visual"]) == 70
+        traces.append(trace)
+    assert traces[0] == traces[1]
+    response = CliRunner().invoke(
+        cli, ["search", "garden", "--index-dir", str(store), "--visual-candidates", "70"]
+    )
+    assert response.exit_code == 0
+    response = CliRunner().invoke(
+        cli,
+        [
+            "search",
+            "garden",
+            "--index-dir",
+            str(store),
+            "--mode",
+            "visual",
+            "--visual-candidates",
+            "70",
+        ],
+    )
+    assert response.exit_code == 1 and "hybrid mode" in response.stderr

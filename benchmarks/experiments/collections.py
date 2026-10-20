@@ -22,6 +22,7 @@ from benchmarks.runtime.identity import source_hash
 from benchmarks.runtime.resources import MemoryMonitor, write_resources
 from realopen_lens.models.manager import registry, verify
 from realopen_lens.retrieval.search import search_collection
+from realopen_lens.retrieval.candidates import CandidateDepths
 from realopen_lens.runtime.offline import enforce
 
 
@@ -32,6 +33,14 @@ def run(args):
     reranker = getattr(args, "reranker", None)
     reranker_sha256 = digest(reranker) if reranker is not None else None
     defer_test = getattr(args, "defer_test_metrics", False)
+    depths = CandidateDepths(
+        **{
+            name: getattr(args, name + "_candidates", 50)
+            for name in ("visual", "semantic", "lexical")
+        }
+    )
+    if reranker is not None and depths != CandidateDepths():
+        raise ValueError("Existing reranker models require 50 candidates per channel")
     root = Path(__file__).resolve().parents[2]
     source_root = root / "src/realopen_lens"
     installed_root = Path(realopen_lens.__file__).parent
@@ -49,6 +58,7 @@ def run(args):
         "threads": args.threads,
         "search_limit": 50,
         "candidate_feature_schema": 1,
+        "candidate_depths": depths.as_dict(),
         "engine_sha256": source_hash(source_root),
         "harness_sha256": source_hash(root / "benchmarks"),
         "host": {"system": platform.system(), "machine": platform.machine(), "python": sys.version},
@@ -120,6 +130,7 @@ def run(args):
                         limit=50,
                         threads=args.threads,
                         trace=trace,
+                        candidate_depths=depths,
                         **({"reranker": reranker} if reranker is not None else {}),
                     )
                     if (
@@ -203,6 +214,10 @@ def main():
         help="Capture fresh test candidates without scoring before model freeze",
     )
     parser.add_argument("--reranker", type=Path, help="Experimental local logistic JSON model")
+    for name in ("visual", "semantic", "lexical"):
+        parser.add_argument(
+            "--" + name + "-candidates", type=int, choices=range(1, 1001), default=50
+        )
     args = parser.parse_args()
     enforce()
     run(args)

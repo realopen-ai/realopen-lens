@@ -137,6 +137,108 @@ def test_failed_ocr_fallback_keeps_first_result_and_reports_warning(tmp_path, mo
     assert any("fallback failed" in warning for warning in result["warnings"])
 
 
+@pytest.mark.parametrize("total_budget,second_fails", [(30, False), (30, True), (10, False)])
+def test_initial_ocr_timeout_uses_only_remaining_budget_and_preserves_failure(
+    tmp_path, monkeypatch, total_budget, second_fails
+):
+    from realopen_lens.ocr import tesseract
+
+    path = tmp_path / "dense.png"
+    Image.new("RGB", (64, 64), "white").save(path)
+    monkeypatch.setattr(tesseract.shutil, "which", lambda _: "test-tesseract")
+    monkeypatch.setattr(tesseract, "_environment", lambda *args: {"version": "test"})
+    now, calls = [0.0], []
+    monkeypatch.setattr(tesseract, "monotonic", lambda: now[0])
+
+    def recognize(image, executable, languages, threads, psm, timeout):
+        calls.append((psm, timeout))
+        if len(calls) == 1 or second_fails:
+            now[0] += timeout
+            raise subprocess.TimeoutExpired("test-tesseract", timeout)
+        now[0] += 1
+        return {
+            "text": "recovered dense page",
+            "words": [{"text": "recovered", "confidence": 95, "box": [0, 0, 10, 10]}] * 8,
+            "confidence": 95,
+            "psm": psm,
+            "seconds": 1,
+            "stderr": "",
+        }
+
+    monkeypatch.setattr(tesseract, "_recognize", recognize)
+    if total_budget == 10 or second_fails:
+        with pytest.raises(subprocess.TimeoutExpired):
+            tesseract.extract(path, timeout=total_budget)
+    else:
+        result = tesseract.extract(path, timeout=total_budget)
+        assert result["text"].splitlines() == ["recovered dense page"] * 3
+        assert result["selected_psm"] == 11
+        assert result["timeout_recovery"]["recovered_bands"] == [0, 1, 2]
+        assert {word["box"][1] for word in result["words"]} == {0, 21, 42}
+        assert result["failed_attempts"][0]["input"] == "rgb"
+        assert result["failed_attempts"][0]["error_type"] == "TimeoutExpired"
+        assert result["warnings"]  # A recovered attempt remains explicitly diagnostic.
+    assert calls[0] == (3, min(15, total_budget))
+    assert len(calls) == (1 if total_budget == 10 else 4)
+    assert all(psm == 11 and 0 < deadline <= 15 for psm, deadline in calls[1:])
+    assert now[0] <= total_budget
+
+
+def test_ocr_serialization_is_included_in_the_native_attempt_budget(monkeypatch):
+    from realopen_lens.ocr import tesseract
+
+    ticks = iter([0.0, 2.0])
+    monkeypatch.setattr(tesseract, "monotonic", lambda: next(ticks))
+
+    class SlowImage:
+        def save(self, buffer, **kwargs):
+            buffer.write(b"encoded")
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Expired attempts must not launch a native process")
+
+    monkeypatch.setattr(tesseract.subprocess, "run", forbidden)
+    with pytest.raises(subprocess.TimeoutExpired, match="serialization"):
+        tesseract._recognize(SlowImage(), "tesseract", "eng", 2, 3, 1)
+
+
+def test_timeout_recovery_can_return_one_band_without_claiming_complete_ocr(tmp_path, monkeypatch):
+    from realopen_lens.ocr import tesseract
+
+    path = tmp_path / "dense.png"
+    Image.new("RGB", (90, 90), "white").save(path)
+    monkeypatch.setattr(tesseract.shutil, "which", lambda _: "test-tesseract")
+    monkeypatch.setattr(tesseract, "_environment", lambda *args: {"version": "test"})
+    calls, now = [], [0.0]
+    monkeypatch.setattr(tesseract, "monotonic", lambda: now[0])
+
+    def recognize(image, executable, languages, threads, psm, timeout):
+        calls.append((image.size, timeout))
+        if len(calls) != 2:
+            now[0] += timeout
+            raise subprocess.TimeoutExpired("test-tesseract", timeout)
+        now[0] += 1
+        return {
+            "text": "Document heading",
+            "words": [
+                {"text": "heading", "confidence": 90, "box": [1, 2, 10, 10]},
+            ],
+            "confidence": 90,
+            "psm": psm,
+            "seconds": 1,
+            "stderr": "",
+        }
+
+    monkeypatch.setattr(tesseract, "_recognize", recognize)
+    result = tesseract.extract(path)
+    assert len(calls) == 4 and now[0] <= 30
+    assert result["text"] == "Document heading" and result["ocr_size"] == [90, 90]
+    assert result["timeout_recovery"] == {"bands": 3, "recovered_bands": [0]}
+    assert len(result["failed_attempts"]) == 3
+    assert any("not a complete transcript" in warning for warning in result["warnings"])
+    assert result["words"][0]["box"] == [1, 2, 10, 10]
+
+
 def test_resume_records_survive_reopen_and_errors_cannot_leave_stale_vectors(tmp_path):
     path = tmp_path / "results.sqlite"
     db = connect(path)
