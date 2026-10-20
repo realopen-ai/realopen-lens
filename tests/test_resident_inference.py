@@ -191,6 +191,32 @@ def test_interactive_cli_continues_after_error_and_closes_session(monkeypatch):
     assert calls == ["open", "bad", "next", "close"]
 
 
+def test_query_cohort_is_balanced_deterministic_and_keeps_translations():
+    from benchmarks.experiments.resident_inference import select_queries
+
+    bundle = {
+        "queries": [
+            {
+                "id": f"{kind}-{family}-{language}",
+                "kind": kind,
+                "family": f"{kind}-{family}",
+                "language": language,
+            }
+            for kind in ("photos", "documents", "diagrams", "screenshots")
+            for family in range(4)
+            for language in ("en", "fr", "ar")
+        ]
+    }
+    chosen = select_queries(bundle, 2, 20261020)
+    assert chosen == select_queries(bundle, 2, 20261020)
+    assert len(chosen) == 24
+    for kind in ("photos", "documents", "diagrams", "screenshots"):
+        rows = [q for q in chosen if q["kind"] == kind]
+        assert len(rows) == 6 and {q["language"] for q in rows} == {"en", "fr", "ar"}
+    with pytest.raises(ValueError):
+        select_queries(bundle, 5, 20261020)
+
+
 def test_keyboard_interrupt_reaps_owned_worker(encoder, monkeypatch):
     client, root, _, _ = encoder
     encode(client, root)
@@ -203,3 +229,83 @@ def test_keyboard_interrupt_reaps_owned_worker(encoder, monkeypatch):
     with pytest.raises(KeyboardInterrupt):
         encode(client, root)
     assert client.pid is None and not psutil.pid_exists(pid)
+
+
+def test_interrupted_benchmark_archives_partial_resident_sequence_and_rewarms(
+    tmp_path, monkeypatch
+):
+    from types import SimpleNamespace
+    from benchmarks.experiments import resident_inference as experiment
+
+    reference = tmp_path / "reference.json"
+    reference.write_text("{}", encoding="utf-8")
+    query = {"id": "q", "family": "q", "text": "query", "kind": "photos"}
+    monkeypatch.setattr(experiment, "load", lambda *a: ({}, {"queries": [query]}))
+    monkeypatch.setattr(
+        experiment,
+        "snapshot",
+        lambda index, *a, **k: {
+            "pipeline_spec": {"siglip_precision": index.name},
+            "generation": index.name,
+        },
+    )
+    calls = []
+
+    class Session:
+        def __init__(self, **kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+    monkeypatch.setattr(experiment, "SearchSession", Session)
+    interrupt = True
+
+    def measure(q, index, collection, models, threads, session=None):
+        calls.append((index.name, session is not None))
+        if interrupt and len(calls) == 3:
+            raise KeyboardInterrupt
+        return {
+            "query_id": "q",
+            "query": q,
+            "status": "ok",
+            "trace": {},
+            "results": [],
+            "seconds": 0.1,
+            "peak_tree_rss_mib": 1,
+            "profile": {},
+            "metrics": {},
+            "memory_access_errors": 0,
+            "worker_pid": None,
+            "resident_worker_rss_mib": None,
+        }
+
+    monkeypatch.setattr(experiment, "measure", measure)
+    args = SimpleNamespace(
+        corpus=reference,
+        judgments=reference,
+        int8_index=tmp_path / "int8",
+        fp32_index=tmp_path / "fp32",
+        collection="personal",
+        models=tmp_path,
+        threads=2,
+        repeats=1,
+        families_per_kind=1,
+        seed=1,
+        corpus_prefix=Path("."),
+        allow_extra_images=False,
+        output=tmp_path / "run",
+    )
+    with pytest.raises(KeyboardInterrupt):
+        experiment.run(args)
+    interrupt = False
+    calls.clear()
+    report = experiment.run(args)
+    assert report["all_pairs_identical"] and report["errors"] == 0
+    assert calls.count(("int8", False)) == 0  # Completed single-shot query resumed.
+    assert calls.count(("int8", True)) == 2  # Startup and warm query rerun together.
+    archived = json.loads((args.output / "int8-interrupted-001.json").read_text(encoding="utf-8"))
+    assert archived["requests"][0]["phase"] == "resident_cold"

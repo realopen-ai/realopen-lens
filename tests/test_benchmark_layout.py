@@ -35,6 +35,7 @@ import pytest
         "experiments.siglip_precision",
         "experiments.saved_precision",
         "reporting.precision",
+        "experiments.resident_inference",
     ],
 )
 def test_published_commands_still_accept_help(command):
