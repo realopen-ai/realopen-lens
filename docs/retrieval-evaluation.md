@@ -172,3 +172,11 @@ Use validation families to select logistic-regression regularization first. Then
 compare a small neural reranker using the same frozen candidate pool. Candidate
 misses cannot be repaired by reranking. Reserve test families for a fixed final
 comparison against the existing hybrid baseline; do not tune using their reports.
+
+## Saved collections with additional images
+
+Exact corpus membership remains the default. Explicit `--corpus-prefix` and
+`--allow-extra-images` options support larger saved collections while retaining
+unreviewed distractors, verifying all reference hashes, and excluding unknown
+images from training labels. The [saved precision evaluation guide](saved-precision-evaluation.md)
+documents matched INT8/FP32 controls and full production query comparisons.

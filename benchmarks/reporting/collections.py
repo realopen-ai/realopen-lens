@@ -13,7 +13,7 @@ def candidate_rows(record: dict, query: dict, images: dict) -> list[dict]:
     result = []
     for rank, candidate in enumerate(record["trace"]["candidates"], 1):
         key = candidate["image_id"]
-        image = images[key]
+        image = images.get(key)
         label = labels.get(key)
         result.append(
             {
@@ -25,16 +25,19 @@ def candidate_rows(record: dict, query: dict, images: dict) -> list[dict]:
                 "query_split": query["split"],
                 "query_role": query.get("study_role", query["split"]),
                 "image_id": key,
-                "image_path": image["path"],
-                "image_split": image["split"],
-                "source_document": image["source_document"],
-                "duplicate_group": image["duplicate_group"],
-                "category": image["category"],
+                "image_path": image["path"] if image else None,
+                "image_split": image["split"] if image else None,
+                "source_document": image["source_document"] if image else None,
+                "duplicate_group": image["duplicate_group"] if image else None,
+                "category": image["category"] if image else None,
+                "in_reference_corpus": image is not None,
                 "candidate_rank": rank,
                 "grade": label["grade"] if label is not None else None,
                 "label": int(label["grade"] > 0) if label is not None else None,
                 "judgment_reason": label["reason"] if label is not None else None,
-                "training_eligible": label is not None and query["split"] == image["split"],
+                "training_eligible": image is not None
+                and label is not None
+                and query["split"] == image["split"],
                 "features": {k: v for k, v in candidate.items() if k != "image_id"},
             }
         )

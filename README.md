@@ -169,6 +169,10 @@ Collection indexing now supports opt-in [FP32 SigLIP2](docs/siglip2-precision.md
 with matching query encoders and a separate index; INT8 remains the default.
 See the [production validation](docs/benchmarks/2026-10-20-siglip2-precision.md)
 for measured quality, cold-query latency, and memory.
+The [full saved-collection comparison](docs/benchmarks/2026-10-20-full-siglip2-precision.md)
+evaluates all 357 frozen queries against 2,227 searchable images, retaining first-pass
+failures and retries. Use the [saved precision guide](docs/saved-precision-evaluation.md)
+to build a matched control and reproduce the evaluation on your collection.
 
 The [candidate retrieval study](docs/benchmarks/2026-10-20-candidate-retrieval.md)
 compares pool depths, encoder precision, reviewed query expansion and OCR timeout

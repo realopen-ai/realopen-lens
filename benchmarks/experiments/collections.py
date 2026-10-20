@@ -28,7 +28,18 @@ from realopen_lens.runtime.offline import enforce
 
 def run(args):
     corpus, bundle = load(args.corpus, args.judgments)
-    state = snapshot(args.index_dir, args.collection, corpus)
+
+    def current_snapshot(*, verify_files: bool = True) -> dict:
+        return snapshot(
+            args.index_dir,
+            args.collection,
+            corpus,
+            verify_files=verify_files,
+            corpus_prefix=getattr(args, "corpus_prefix", Path(".")),
+            allow_extra_images=getattr(args, "allow_extra_images", False),
+        )
+
+    state = current_snapshot()
     verify(args.models, "int8", state["pipeline_spec"].get("siglip_precision", "int8"))
     reranker = getattr(args, "reranker", None)
     reranker_sha256 = digest(reranker) if reranker is not None else None
@@ -102,7 +113,7 @@ def run(args):
             if query["id"] in done:
                 continue
             # Refuse a moving target rather than mixing generations or source inventories.
-            if snapshot(args.index_dir, args.collection, corpus, verify_files=False) != state:
+            if current_snapshot(verify_files=False) != state:
                 raise ValueError("Collection changed during evaluation")
             if (
                 source_hash(source_root) != identity["engine_sha256"]
@@ -187,7 +198,7 @@ def run(args):
                 db.execute("INSERT OR REPLACE INTO queries VALUES (?, ?)", (query["id"], payload))
             write_resources(args.output, memory)
             print(f"{query['id']}: {record['status']} ({record['seconds']:.2f}s)", flush=True)
-        if snapshot(args.index_dir, args.collection, corpus) != state:
+        if current_snapshot() != state:
             raise ValueError("Collection changed during evaluation")
         if reranker is not None and digest(reranker) != reranker_sha256:
             raise ValueError("Reranker changed during evaluation")
@@ -206,6 +217,12 @@ def main():
     parser.add_argument("--judgments", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--models", type=Path, default=Path("models"))
+    parser.add_argument("--corpus-prefix", type=Path, default=Path("."))
+    parser.add_argument(
+        "--allow-extra-images",
+        action="store_true",
+        help="Keep additional collection images as explicitly unreviewed distractors",
+    )
     parser.add_argument("--threads", type=int, choices=range(1, 9), default=2)
     parser.add_argument("--retry-errors", action="store_true")
     parser.add_argument(
