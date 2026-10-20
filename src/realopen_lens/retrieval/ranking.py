@@ -10,6 +10,11 @@ from collections import defaultdict
 import numpy as np
 
 from realopen_lens.retrieval.candidates import CandidateDepths
+from realopen_lens.retrieval.identifiers import (
+    code_identifier,
+    numeric_identifier_match,
+    numeric_query_aliases,
+)
 
 
 def rank_vectors(
@@ -44,7 +49,7 @@ def lexical_index(records: list[dict[str, Any]]) -> sqlite3.Connection:
 
 
 def lexical_frequencies(database: sqlite3.Connection, text: str) -> tuple[int, dict[str, int]]:
-    terms = sorted(_tokens(text) - _STOPWORDS)
+    terms = sorted(_query_tokens(text) - _STOPWORDS)
     if len(terms) > 256:
         raise ValueError("Lexical query exceeds 256 distinct terms")
     total = database.execute("SELECT COUNT(*) FROM ocr").fetchone()[0]
@@ -65,7 +70,7 @@ def lexical_scores(database: sqlite3.Connection, text: str, limit: int = 50) -> 
     """Retain raw FTS5 BM25 values (lower is better); never mix them with cosine scores."""
     if limit < 1:
         raise ValueError("Retrieval limit must be positive")
-    tokens = sorted(_tokens(text))
+    tokens = sorted(_query_tokens(text))
     if len(set(tokens)) > 256:
         raise ValueError("Lexical query exceeds 256 distinct terms")
     if not tokens:
@@ -125,6 +130,12 @@ def _tokens(text: str) -> set[str]:
     return set(re.findall(r"\w+", _search_text(text)))
 
 
+def _query_tokens(text: str) -> set[str]:
+    original = _tokens(text)
+    expanded = original | numeric_query_aliases(text)
+    return expanded if len(expanded) <= 256 else original
+
+
 _STOPWORDS = _tokens(" ".join(_STOPWORDS))
 
 
@@ -146,11 +157,16 @@ def lexical_evidence(
     exact_identifier = any(
         re.search(r"(?<!\w)" + re.escape(item.casefold()) + r"(?!\w)", normalized)
         for item in identifiers
+        if code_identifier(item)
     )
     phrases = re.findall(r'"([^"\n]{2,})"', query)
-    if exact_identifier or any(
-        re.search(r"(?<!\w)" + re.escape(phrase.casefold()) + r"(?!\w)", normalized)
-        for phrase in phrases
+    if (
+        numeric_identifier_match(query, text)
+        or exact_identifier
+        or any(
+            re.search(r"(?<!\w)" + re.escape(phrase.casefold()) + r"(?!\w)", normalized)
+            for phrase in phrases
+        )
     ):
         return 1.4
     if statistics is not None:
