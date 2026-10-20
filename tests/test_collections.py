@@ -982,6 +982,8 @@ def test_resident_session_preserves_trace_and_observes_source_and_generation_cha
     root, store, calls, run = app
     image(root / "one.png")
     run()
+    models = root.parent / "missing-models"
+    assert not models.exists()
 
     def vector(text, kind, *args):
         result = np.zeros(768 if kind == "siglip2" else 384, dtype=np.float32)
@@ -989,11 +991,14 @@ def test_resident_session_preserves_trace_and_observes_source_and_generation_cha
         return result
 
     monkeypatch.setattr(search, "query_vector", vector)
+    monkeypatch.setattr(search, "verify", lambda *a: None)
     monkeypatch.setattr(ResidentQueryEncoder, "verify", lambda *a: None)
     monkeypatch.setattr(ResidentQueryEncoder, "encode", lambda self, *a: vector(*a))
     baseline, resident_trace, profile = {}, {}, {}
-    expected = search.search_collection("red ERR_42", index_dir=store, trace=baseline)
-    with SearchSession(index_dir=store) as session:
+    expected = search.search_collection(
+        "red ERR_42", index_dir=store, models=models, trace=baseline
+    )
+    with SearchSession(index_dir=store, models=models) as session:
         assert session.search("red ERR_42", trace=resident_trace, profile=profile) == expected
         assert baseline == resident_trace and profile["total_seconds"] > 0
         image(root / "two.png", "green")
