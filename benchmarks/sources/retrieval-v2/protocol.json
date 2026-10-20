@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "seed": 20261020,
+  "purpose": "Broaden fresh text-heavy validation and test coverage before selecting reranker scope or feature ablations.",
+  "legacy_policy": "Retain the original 2000-image corpus and frozen train labels. Earlier validation/test families are diagnostic only and excluded from new model selection and new test aggregates.",
+  "new_sources": "Legally reusable independently authored document scans and software screenshots with per-file source, attribution, license, content and pixel hashes. Include visible English, French and Arabic text. Group translations, pages of a work, screenshot software projects and near duplicates before splitting. No target selection from retrieval performance.",
+  "new_photo_controls": "Seeded previously unjudged original-corpus photos from unused positive source components; review new families before retrieval. Retain their existing source split.",
+  "split_policy": "Assign new document works and screenshot software project groups to train/validation/test before measuring rankings. Entire groups stay in one fold. Reject source/pixel and near-duplicate leakage with legacy images. Freeze image inventory, multilingual intents and reviewed labels before retrieval.",
+  "review": "Visual agent review with observation and reason. Grade 2 direct, 1 partial, 0 explicitly irrelevant; ambiguous and missing labels remain unjudged. All translations of one intent share a family and labels. No independent human/native-speaker review claim.",
+  "feature_profiles": {
+    "full": [],
+    "no-bm25": ["bm25_log"],
+    "no-ocr-length": ["log_ocr_characters"],
+    "no-missing": ["semantic_missing", "lexical_missing"],
+    "core": ["bm25_log", "log_ocr_characters", "semantic_missing", "lexical_missing"]
+  },
+  "rerank_scopes": ["union", "hybrid50"],
+  "l2_grid": [0.001, 0.01, 0.1, 1.0],
+  "training": "Use only explicitly reviewed same-split training candidates. Fit normalization on train only, preserve existing family/translation and within-query class balancing. Keep candidate encoders and Tesseract unchanged.",
+  "validation_guard": {
+    "max_recall_at_50_drop": 0.0,
+    "groups": ["overall", "language", "kind"],
+    "min_mrr_at_10_delta": 0.0,
+    "min_ndcg_at_10_delta_exclusive": 0.0,
+    "tolerance": 1e-12
+  },
+  "selection": "Evaluate the 40 predefined profile/scope/L2 combinations only on fresh validation families. Choose a guarded model by validation macro nDCG@10, then MRR@10, then stronger L2, then stable profile/scope name. If none passes, retain hybrid and report no guarded learned selection. Independently freeze the validation-best research champion for each scope before examining fresh test metrics.",
+  "test_policy": "Freeze model checksums and selection records before scoring the new test. Evaluate hybrid, the two frozen scope champions and any distinct guarded selection; report legacy model as a fixed reference. No test-based feature, threshold or regularization changes. Report old families separately as diagnostic.",
+  "measurements": ["known-positive pool recall", "Recall@50", "MRR@10", "nDCG@10", "judged fraction at 10", "per-kind/language metrics", "per-query rankings and scores", "reranking-only latency", "production request latency and sampled memory"],
+  "deployment": "Opt-in local JSON models only. Preserve v1 model compatibility, exact default hybrid ranking, and hybrid as default regardless of this experiment. No neural training in this study."
+}
