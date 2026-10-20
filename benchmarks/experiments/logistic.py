@@ -40,11 +40,20 @@ def validate_records(records: list[dict], bundle: dict, corpus: dict, config: di
         raise ValueError("Replay requires exactly one record for every frozen query")
     if config["candidate_feature_schema"] != 1 or config["search_limit"] != 50:
         raise ValueError("Replay requires the version-1 top-50 production trace schema")
+    budget = {name: 50 for name in ("visual", "semantic", "lexical")}
+    if config.get("candidate_depths", budget) != budget:
+        raise ValueError("Reranker training requires the original 50 candidates per channel")
     for row in records:
         if row["status"] != "ok" or row["query"] != expected[row["query_id"]]:
             raise ValueError("Replay contains errors or different frozen query references")
         trace = row["trace"]
         candidates = [r["image_id"] for r in trace["candidates"]]
+        if (
+            trace.get("candidate_depths", budget) != budget
+            or len(candidates) > 150
+            or any(len(trace["rankings"].get(name, [])) > 50 for name in budget)
+        ):
+            raise ValueError("Reranker training requires the original 50 candidates per channel")
         if (
             trace["generation"] != config["snapshot"]["generation"]
             or trace["searchable_images"] != len(images)

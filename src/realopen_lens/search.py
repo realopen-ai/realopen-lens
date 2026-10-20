@@ -2,5 +2,6 @@
 
 from realopen_lens.retrieval.search import SearchResult as SearchResult
 from realopen_lens.retrieval.search import search_collection as search_collection
+from realopen_lens.retrieval.candidates import CandidateDepths as CandidateDepths
 
-__all__ = ["SearchResult", "search_collection"]
+__all__ = ["CandidateDepths", "SearchResult", "search_collection"]

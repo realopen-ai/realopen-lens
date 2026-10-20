@@ -32,6 +32,27 @@ def candidate(key, visual):
     }
 
 
+@pytest.mark.parametrize("location", ["config", "trace"])
+def test_training_rejects_expanded_pools_instead_of_mislabeling_them_as_budget_50(location):
+    query = {"id": "q", "text": "a target"}
+    config = {"candidate_feature_schema": 1, "search_limit": 50, "snapshot": {"generation": "g"}}
+    trace = {
+        "generation": "g",
+        "searchable_images": 1,
+        "candidates": [{"image_id": "a"}],
+        "rankings": {"hybrid": ["a"]},
+    }
+    records = [{"query_id": "q", "query": query, "status": "ok", "trace": trace}]
+    corpus, bundle = {"images": [{"sha256": "a"}]}, {"queries": [query]}
+    validate_records(records, bundle, corpus, config)  # Legacy traces remain compatible.
+    config["candidate_depths"] = {name: 50 for name in ("visual", "semantic", "lexical")}
+    trace["candidate_depths"] = dict(config["candidate_depths"])
+    validate_records(records, bundle, corpus, config)
+    (config if location == "config" else trace)["candidate_depths"]["visual"] = 100
+    with pytest.raises(ValueError, match="50 candidates per channel"):
+        validate_records(records, bundle, corpus, config)
+
+
 def training_rows():
     return [
         {

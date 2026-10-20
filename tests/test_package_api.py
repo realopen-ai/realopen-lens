@@ -4,7 +4,7 @@
 def test_public_collection_entry_points_remain_available():
     from realopen_lens.indexing import IndexResult, collection_status, index_collection
     from realopen_lens.indexing import service
-    from realopen_lens.search import SearchResult, search_collection
+    from realopen_lens.search import CandidateDepths, SearchResult, search_collection
     from realopen_lens.retrieval import search
 
     assert (IndexResult, collection_status, index_collection) == (
@@ -13,6 +13,7 @@ def test_public_collection_entry_points_remain_available():
         service.index_collection,
     )
     assert (SearchResult, search_collection) == (search.SearchResult, search.search_collection)
+    assert CandidateDepths().as_dict() == {"visual": 50, "semantic": 50, "lexical": 50}
 
 
 def test_bundled_model_manifests_load_from_the_models_package():

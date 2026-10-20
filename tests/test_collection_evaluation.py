@@ -220,6 +220,10 @@ def test_evaluation_resumes_records_and_rejects_identity_changes(
     with sqlite3.connect(args.output / "results.sqlite") as db:
         assert db.execute("SELECT * FROM queries").fetchall() == before
     assert len(calls) == 1
+    args.visual_candidates = 200
+    with pytest.raises(ValueError, match="identity changed|require 50"):
+        collections.run(args)
+    args.visual_candidates = 50
     exported = [
         json.loads(line)
         for line in (args.output / f"training-{'test' if defer_test else 'train'}.jsonl")

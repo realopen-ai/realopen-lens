@@ -3,6 +3,8 @@ import pytest
 
 from benchmarks.metrics.retrieval import metrics
 from realopen_lens.retrieval.ranking import fuse, lexical_index, rank_lexical, rank_vectors
+from realopen_lens.retrieval.candidates import CandidateDepths
+from realopen_lens.retrieval.ranking import hybrid_rank
 
 
 def test_recall_is_not_hit_rate():
@@ -47,3 +49,39 @@ def test_fusion_counts_each_image_once_per_channel():
 def test_ndcg_discounts_later_relevant_results():
     assert metrics(["a", "b"], ["a", "b"])["ndcg_at_10"] == pytest.approx(1)
     assert metrics(["x", "a", "b"], ["a", "b"])["ndcg_at_10"] < 1
+
+
+@pytest.mark.parametrize("value", [0, -1, 1001, True, 50.5, "50"])
+def test_candidate_budgets_reject_unbounded_or_noninteger_depths(value):
+    with pytest.raises(ValueError, match="candidate depth"):
+        CandidateDepths(semantic=value)
+
+
+def test_channel_depths_recover_excluded_candidates_without_changing_default_fusion():
+    ids = [f"{i:03}" for i in range(300)]
+    visual = np.linspace(0.5, 0.1, 300, dtype=np.float32).reshape(-1, 1)
+    # Disjoint visual, semantic and keyword leaders exercise all three budgets.
+    passages = list(reversed(ids[100:200]))
+    semantic = np.linspace(0.99, 0.85, 100, dtype=np.float32).reshape(-1, 1)
+    keyword = list(reversed(ids[200:300]))
+    args = (visual, np.ones(1), ids, semantic, np.ones(1), passages, "ERR_42", [])
+    common = {"lexical_candidates": keyword, "lexical_statistics": (300, {})}
+    baseline = {}
+    original = hybrid_rank(*args, trace=baseline, **common)
+    explicit = {}
+    assert (
+        hybrid_rank(*args, trace=explicit, candidate_depths=CandidateDepths(), **common) == original
+    )
+    assert explicit == baseline
+    base_pool = {row["image_id"] for row in baseline["candidates"]}
+    assert len(base_pool) == 150
+    for channel, target in (("visual", "075"), ("semantic", "125"), ("lexical", "225")):
+        assert target not in base_pool
+        trace = {}
+        depths = CandidateDepths(**{channel: 100})
+        hybrid_rank(*args, trace=trace, candidate_depths=depths, **common)
+        pool = {row["image_id"] for row in trace["candidates"]}
+        assert base_pool < pool and target in pool and len(pool) == 200
+        assert len(trace["rankings"][channel]) == 100
+        assert len(trace["rankings"]["hybrid"]) == 50
+        assert trace["candidate_depths"] == depths.as_dict()

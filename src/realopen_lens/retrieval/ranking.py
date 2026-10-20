@@ -9,6 +9,8 @@ from collections import defaultdict
 
 import numpy as np
 
+from realopen_lens.retrieval.candidates import CandidateDepths
+
 
 def rank_vectors(
     vectors: np.ndarray,
@@ -184,6 +186,7 @@ def hybrid_rank(
     lexical_candidates: list[str] | None = None,
     lexical_statistics: tuple[int, dict[str, int]] | None = None,
     trace: dict | None = None,
+    candidate_depths: CandidateDepths | None = None,
 ) -> list[str]:
     """Score-preserving fusion with one bounded OCR contribution per image.
 
@@ -194,6 +197,7 @@ def hybrid_rank(
     """
     if limit < 1:
         raise ValueError("Retrieval limit must be positive")
+    depths = candidate_depths or CandidateDepths(visual=max(50, limit))
     visual = vector_scores(visual_vectors, visual_query, image_ids)
     semantic = (
         vector_scores(passage_vectors, semantic_query, passage_ids) if len(passage_ids) else {}
@@ -205,14 +209,16 @@ def hybrid_rank(
         database = lexical_index(ocr_records)
         try:
             if lexical_candidates is None:
-                lexical_candidates = rank_lexical(database, query)
+                lexical_candidates = rank_lexical(database, query, depths.lexical)
             if lexical_statistics is None:
                 lexical_statistics = lexical_frequencies(database, query)
         finally:
             database.close()
-    lexical_ids = set(lexical_candidates[:50])
-    candidates = set(sorted(visual, key=lambda key: (-visual[key], key))[: max(50, limit)])
-    candidates.update(sorted(semantic, key=lambda key: (-semantic[key], key))[:50])
+    visual_ranking = sorted(visual, key=lambda key: (-visual[key], key))[: depths.visual]
+    semantic_ranking = sorted(semantic, key=lambda key: (-semantic[key], key))[: depths.semantic]
+    lexical_ids = set(lexical_candidates[: depths.lexical])
+    candidates = set(visual_ranking)
+    candidates.update(semantic_ranking)
     candidates.update(lexical_ids)
     combined = {}
     evidence = {}
@@ -257,10 +263,11 @@ def hybrid_rank(
         trace.update(
             {
                 "candidates": [{"image_id": key, **evidence[key]} for key in ordered],
+                "candidate_depths": depths.as_dict(),
                 "rankings": {
-                    "visual": sorted(visual, key=lambda key: (-visual[key], key))[:50],
-                    "semantic": sorted(semantic, key=lambda key: (-semantic[key], key))[:50],
-                    "lexical": lexical_candidates[:50],
+                    "visual": visual_ranking,
+                    "semantic": semantic_ranking,
+                    "lexical": lexical_candidates[: depths.lexical],
                     "hybrid": ordered[:50],
                 },
             }
