@@ -592,3 +592,122 @@ def test_candidate_trace_uses_production_scores_without_changing_results(app, mo
     image(root / "one.png", "blue")
     with pytest.raises(ValueError, match="Source changed"):
         snapshot(store, "personal", corpus)
+
+
+def test_experimental_reranker_is_opt_in_and_checks_encoder_compatibility(app, monkeypatch):
+    import json
+    from typer.testing import CliRunner
+    from realopen_lens.cli import app as cli
+    from realopen_lens.learning.features import NAMES
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    image(root / "two.png", "green")
+    run()
+    monkeypatch.setattr(search, "verify", lambda *a: None)
+    monkeypatch.setattr(
+        search,
+        "query_vector",
+        lambda text, kind, *a: np.eye(1, 768 if kind == "siglip2" else 384, dtype=np.float32)[0],
+    )
+    normal = search.search_collection("red ERR_42", index_dir=store)
+    catalog = Catalog(store, readonly=True)
+    try:
+        _, generation = catalog.snapshot("personal")
+        spec = load_manifest(catalog, generation)["config"]["spec"]
+    finally:
+        catalog.close()
+    artifact = {
+        "version": 1,
+        "kind": "logistic_regression",
+        "feature_schema": 1,
+        "features": list(NAMES),
+        "candidate_budget": 50,
+        "mean": [0] * len(NAMES),
+        "scale": [1] * len(NAMES),
+        "weights": [-1] + [0] * (len(NAMES) - 1),
+        "intercept": 0,
+        "compatibility": {key: spec[key] for key in ("model_registry", "inference_sha256")},
+    }
+    path = store / "reranker.json"
+    path.write_text(json.dumps(artifact), encoding="utf-8")
+    trace = {}
+    learned = search.search_collection("red ERR_42", index_dir=store, reranker=path, trace=trace)
+    assert [r.image_id for r in learned] == [r.image_id for r in reversed(normal)]
+    assert trace["rankings"]["hybrid"] == [r.image_id for r in normal]
+    assert trace["rankings"]["logistic"] == [r.image_id for r in learned]
+    assert len(trace["reranker_sha256"]) == 64
+    for limit in (1, 50, 100):
+        limited_trace = {}
+        limited = search.search_collection(
+            "red ERR_42", index_dir=store, reranker=path, limit=limit, trace=limited_trace
+        )
+        assert limited == learned[:limit]
+        assert limited_trace == trace
+    assert search.search_collection("red ERR_42", index_dir=store) == normal
+    response = CliRunner().invoke(
+        cli, ["search", "red ERR_42", "--index-dir", str(store), "--reranker", str(path)]
+    )
+    assert response.exit_code == 0
+    assert json.loads(response.stdout)[0]["image_id"] == learned[0].image_id
+    with pytest.raises(ValueError, match="hybrid mode"):
+        search.search_collection("red", index_dir=store, mode="visual", reranker=path)
+    artifact["compatibility"]["inference_sha256"] = "wrong"
+    path.write_text(json.dumps(artifact), encoding="utf-8")
+    response = CliRunner().invoke(
+        cli, ["search", "red", "--index-dir", str(store), "--reranker", str(path)]
+    )
+    assert response.exit_code == 1 and "compatibility" in response.stderr
+
+
+def test_v2_production_scope_preserves_hybrid50_with_a_larger_candidate_union(app, monkeypatch):
+    import json
+    from realopen_lens.learning.features import NAMES
+
+    root, store, calls, run = app
+    for i in range(70):
+        image(root / f"{i:02}.png", (1 if i < 10 else 0, 255, i))
+    run()
+    monkeypatch.setattr(search, "verify", lambda *a: None)
+    monkeypatch.setattr(
+        search,
+        "query_vector",
+        lambda text, kind, *a: np.eye(1, 768 if kind == "siglip2" else 384, dtype=np.float32)[0],
+    )
+    baseline = {}
+    search.search_collection("garden", index_dir=store, limit=50, trace=baseline)
+    assert len(baseline["candidates"]) > 50
+    catalog = Catalog(store, readonly=True)
+    try:
+        _, generation = catalog.snapshot("personal")
+        spec = load_manifest(catalog, generation)["config"]["spec"]
+    finally:
+        catalog.close()
+    artifact = {
+        "version": 2,
+        "kind": "logistic_regression",
+        "feature_schema": 1,
+        "features": list(NAMES),
+        "candidate_budget": 50,
+        "feature_profile": "full",
+        "mean": [0] * len(NAMES),
+        "scale": [1] * len(NAMES),
+        "weights": [-1] + [0] * (len(NAMES) - 1),
+        "intercept": 0,
+        "compatibility": {key: spec[key] for key in ("model_registry", "inference_sha256")},
+    }
+    observed = {}
+    for scope in ("union", "hybrid50"):
+        artifact["rerank_scope"] = scope
+        path = store / f"{scope}.json"
+        path.write_text(json.dumps(artifact), encoding="utf-8")
+        trace = {}
+        found = search.search_collection(
+            "garden", index_dir=store, limit=50, trace=trace, reranker=path
+        )
+        observed[scope] = {r.image_id for r in found}
+        assert trace["rankings"]["hybrid"] == baseline["rankings"]["hybrid"]
+        assert trace["candidates"] == baseline["candidates"]
+        assert trace["reranker_scope"] == scope
+    assert observed["hybrid50"] == set(baseline["rankings"]["hybrid"])
+    assert observed["union"] != observed["hybrid50"]
