@@ -84,7 +84,7 @@ def load_manifest(catalog: Catalog, generation: dict) -> dict:
     path = local_path(catalog.root, generation["manifest"])
     if not path.is_file() or digest(path) != generation["checksum"]:
         raise ValueError("Index manifest is missing or corrupt; run 'lens index' to rebuild")
-    manifest = json.loads(path.read_text())
+    manifest = json.loads(path.read_text(encoding="utf-8"))
     if manifest.get("version") != 1:
         raise ValueError("Unsupported index manifest version; run 'lens index' to rebuild")
     for artifact in manifest["artifacts"].values():

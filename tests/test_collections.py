@@ -81,6 +81,38 @@ def image(path, color="red"):
     Image.new("RGB", (64, 48), color).save(path)
 
 
+def test_multilingual_manifest_and_search_ignore_windows_default_encoding(app, monkeypatch):
+    root, store, calls, run = app
+    image(root / "صورة.png")
+    from realopen_lens.ocr import tesseract
+
+    extract = tesseract.extract
+
+    def multilingual(*args, **kwargs):
+        result = extract(*args, **kwargs)
+        result["text"] += " العربية"
+        return result
+
+    monkeypatch.setattr(tesseract, "extract", multilingual)
+    run()
+    read_text = Path.read_text
+
+    def windows_default(path, encoding=None, errors=None):
+        return read_text(path, encoding=encoding or "cp1252", errors=errors)
+
+    monkeypatch.setattr(Path, "read_text", windows_default)
+    catalog = Catalog(store, readonly=True)
+    try:
+        _, generation = catalog.snapshot("personal")
+        manifest = load_manifest(catalog, generation)
+        assert manifest["images"][0]["paths"] == ["صورة.png"]
+        assert "العربية" in manifest["ocr"][0]["text"]
+    finally:
+        catalog.close()
+    result = search.search_collection("العربية", index_dir=store, mode="lexical")
+    assert len(result) == 1 and result[0].paths == (str(root / "صورة.png"),)
+
+
 def test_roundtrip_duplicates_restart_and_lexical_search_without_models(app, monkeypatch):
     root, store, calls, run = app
     image(root / "one.png")
