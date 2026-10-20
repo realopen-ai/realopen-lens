@@ -40,8 +40,11 @@ def main():
 
         request = json.load(sys.stdin)
         root, kind = Path(request["models"]), request["kind"]
+        precision = request.get("siglip_precision", "int8") if kind == "siglip2" else "int8"
+        if precision not in {"int8", "fp32"}:
+            raise ValueError("SigLIP2 precision must be int8 or fp32")
         model = TextEncoder(
-            artifact_path(root, kind, "text_int8"),
+            artifact_path(root, kind, f"text_{precision}"),
             artifact_path(root, kind, "tokenizer"),
             kind,
             request["threads"],

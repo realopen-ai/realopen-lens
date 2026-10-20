@@ -146,7 +146,8 @@ The command verifies input identities/checksums, requires exact int8 production
 ranking replay, and retains each policy's complete candidate traces. It reuses
 cached OCR and fixed fusion thresholds. Reported ranking times exclude model
 loading/encoding; probe timings and memory are separate. FP32 is an evaluation
-option here, not a production CLI precision setting.
+option here. Production indexing now also supports opt-in
+[SigLIP2 precision selection](siglip2-precision.md) with a separate collection index.
 
 ## Reviewed expansion and Arabic keyword probes
 

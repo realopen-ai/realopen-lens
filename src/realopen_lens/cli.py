@@ -22,12 +22,15 @@ app.add_typer(models_app, name="models")
 def fetch_models(
     directory: Annotated[Path, typer.Option("--directory")] = Path("models"),
     precision: Annotated[str, typer.Option()] = "int8",
+    siglip_precision: Annotated[
+        str | None, typer.Option(help="Override SigLIP2 precision only: int8 or fp32")
+    ] = None,
 ) -> None:
     """Explicitly download pinned ONNX model artifacts."""
     from realopen_lens.models.manager import fetch
 
     try:
-        fetch(directory, precision, typer.echo)
+        fetch(directory, precision, typer.echo, siglip_precision=siglip_precision)
     except (OSError, ValueError) as error:
         typer.echo(f"Error: {error}", err=True)
         raise typer.Exit(1) from error
@@ -37,12 +40,15 @@ def fetch_models(
 def verify_models(
     directory: Annotated[Path, typer.Option("--directory")] = Path("models"),
     precision: Annotated[str, typer.Option()] = "int8",
+    siglip_precision: Annotated[
+        str | None, typer.Option(help="Override SigLIP2 precision only: int8 or fp32")
+    ] = None,
 ) -> None:
     """Verify local model checksums without making network requests."""
     from realopen_lens.models.manager import verify
 
     try:
-        verify(directory, precision)
+        verify(directory, precision, siglip_precision)
     except (OSError, ValueError) as error:
         typer.echo(f"Error: {error}", err=True)
         raise typer.Exit(1) from error
@@ -163,6 +169,9 @@ def index_folder(
         bool, typer.Option(help="Rehash even files with unchanged filesystem metadata")
     ] = False,
     log: Annotated[bool, typer.Option("--log", help="Stream live indexing logs to stderr")] = False,
+    siglip_precision: Annotated[
+        str, typer.Option(help="SigLIP2 precision: int8 or fp32; E5 stays int8")
+    ] = "int8",
 ):
     """Index or refresh a folder; unchanged processing resumes from durable cache."""
     from dataclasses import asdict
@@ -178,6 +187,7 @@ def index_folder(
             threads=threads,
             rehash=rehash,
             log=log,
+            siglip_precision=siglip_precision,
         )
         typer.echo(json.dumps(asdict(result), ensure_ascii=False, indent=2))
     except (OSError, ValueError, RuntimeError, sqlite3.Error) as error:
@@ -219,6 +229,9 @@ def find_images(
     visual_candidates: Annotated[int | None, typer.Option(min=1, max=1000)] = None,
     semantic_candidates: Annotated[int | None, typer.Option(min=1, max=1000)] = None,
     lexical_candidates: Annotated[int | None, typer.Option(min=1, max=1000)] = None,
+    siglip_precision: Annotated[
+        str | None, typer.Option(help="Assert int8 or fp32; otherwise use collection precision")
+    ] = None,
 ):
     """Search a saved collection after indexing, including across restarts."""
     from dataclasses import asdict
@@ -243,6 +256,7 @@ def find_images(
             threads=threads,
             reranker=reranker,
             candidate_depths=depths,
+            siglip_precision=siglip_precision,
         )
         typer.echo(json.dumps([asdict(r) for r in results], ensure_ascii=False, indent=2))
     except (OSError, ValueError, RuntimeError, TimeoutError, sqlite3.Error) as error:

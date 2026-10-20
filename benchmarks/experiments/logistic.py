@@ -40,6 +40,9 @@ def validate_records(records: list[dict], bundle: dict, corpus: dict, config: di
         raise ValueError("Replay requires exactly one record for every frozen query")
     if config["candidate_feature_schema"] != 1 or config["search_limit"] != 50:
         raise ValueError("Replay requires the version-1 top-50 production trace schema")
+    spec = config.get("snapshot", {}).get("pipeline_spec", {})
+    if spec.get("siglip_precision", "int8") != "int8":
+        raise ValueError("Existing reranker training requires INT8 SigLIP2 compatibility")
     budget = {name: 50 for name in ("visual", "semantic", "lexical")}
     if config.get("candidate_depths", budget) != budget:
         raise ValueError("Reranker training requires the original 50 candidates per channel")

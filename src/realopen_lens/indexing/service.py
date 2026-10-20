@@ -61,12 +61,16 @@ def pipeline_config(options: dict) -> dict:
     from realopen_lens.indexing import processing
     import shutil
 
-    verify(Path(options["models"]), "int8")
+    precision = options.get("siglip_precision", "int8")
+    if precision not in {"int8", "fp32"}:
+        raise ValueError("SigLIP2 precision must be int8 or fp32")
+    verify(Path(options["models"]), "int8", precision)
     executable = shutil.which("tesseract")
     if executable is None:
         raise ValueError("Tesseract 5 is required for indexing")
     spec = {
         "version": 1,
+        "siglip_precision": precision,
         "model_registry": registry(),
         "inference_sha256": digest(Path(inference.__file__)),
         "ocr_sha256": digest(Path(ocr.__file__)),
@@ -85,7 +89,7 @@ def pipeline_config(options: dict) -> dict:
     import hashlib
 
     pipeline = hashlib.sha256(json.dumps(spec, sort_keys=True).encode()).hexdigest()
-    return {**options, "pipeline": pipeline, "spec": spec}
+    return {**options, "siglip_precision": precision, "pipeline": pipeline, "spec": spec}
 
 
 def discover(catalog: Catalog, job_id: str, config: dict, previous: list[dict]):
@@ -141,7 +145,12 @@ def run_index(options: dict, *, stage_runner=supervise) -> IndexResult:
     if not root.is_dir() or root == store or root.is_relative_to(store):
         raise ValueError("Select an existing image root outside the index directory")
     started = perf_counter()
-    logger.info("Indexing collection %r from %s", options["collection"], root)
+    logger.info(
+        "Indexing collection %r from %s (SigLIP2 %s; E5 int8)",
+        options["collection"],
+        root,
+        options.get("siglip_precision", "int8"),
+    )
     with writer_lock(store):
         catalog = Catalog(store)
         job_id = None
@@ -154,6 +163,12 @@ def run_index(options: dict, *, stage_runner=supervise) -> IndexResult:
             if collection["active_generation"]:
                 _, active = catalog.snapshot(options["collection"])
                 previous = catalog.files(active["job_id"])
+                existing = json.loads(catalog.job(active["job_id"])["config"])["spec"]
+                if existing.get("siglip_precision", "int8") != config["spec"]["siglip_precision"]:
+                    raise ValueError(
+                        "SigLIP2 precision differs from this collection; "
+                        "use a separate --index-dir or --collection"
+                    )
             job_id = catalog.create_job(collection["id"], config)
             logger.info("Job %s", job_id)
             logger.info("Scanning image files%s", " (forced rehash)" if config["rehash"] else "")
@@ -332,9 +347,12 @@ def index_collection(
     languages: str = "eng+fra+ara",
     rehash: bool = False,
     log: bool = False,
+    siglip_precision: str = "int8",
 ) -> IndexResult:
     if not 1 <= threads <= 8 or not collection.strip() or len(collection) > 128:
         raise ValueError("Use 1–8 threads and a collection name of 1–128 characters")
+    if siglip_precision not in {"int8", "fp32"}:
+        raise ValueError("SigLIP2 precision must be int8 or fp32")
     store = (index_dir or default_directory()).resolve()
     options = {
         "root": str(root.resolve()),
@@ -345,6 +363,7 @@ def index_collection(
         "languages": languages,
         "rehash": rehash,
         "log": log,
+        "siglip_precision": siglip_precision,
     }
     request = store / "requests" / (identifier() + ".json")
     atomic_bytes(request, json.dumps(options).encode())
@@ -392,6 +411,13 @@ def collection_status(collection: str, index_dir: Path | None = None) -> dict:
             "collection": collection,
             "root": found["root"],
             "generation": found["active_generation"],
+            "siglip_precision": (
+                json.loads(catalog.job(catalog.snapshot(collection)[1]["job_id"])["config"])[
+                    "spec"
+                ].get("siglip_precision", "int8")
+                if found["active_generation"]
+                else None
+            ),
             "job": None,
         }
         if job:

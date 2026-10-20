@@ -32,6 +32,7 @@ import pytest
         "experiments.query_expansion",
         "experiments.arabic_lexical",
         "experiments.ocr_recovery",
+        "experiments.siglip_precision",
     ],
 )
 def test_published_commands_still_accept_help(command):
