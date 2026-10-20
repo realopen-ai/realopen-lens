@@ -94,6 +94,8 @@ def export(output: Path, db: sqlite3.Connection, corpus: dict, bundle: dict, ide
         for group, values in sorted(groups.items())
     }
     ok = [r for r in records if r["status"] == "ok"]
+    learned = bool(identity.get("reranker_sha256"))
+    latency_key = "reranked_end_to_end_seconds" if learned else "hybrid_end_to_end_seconds"
     summary: dict = {
         "identity": identity,
         "expected_queries": len(queries),
@@ -103,7 +105,8 @@ def export(output: Path, db: sqlite3.Connection, corpus: dict, bundle: dict, ide
         "execution_success_rate": len(ok) / len(queries),
         "aggregate": aggregate,
         "exports": dict(counts),
-        "hybrid_end_to_end_seconds": distribution([r["seconds"] for r in records]),
+        "request_mode": "hybrid+logistic" if learned else "hybrid",
+        latency_key: distribution([r["seconds"] for r in records]),
         "peak_tree_rss_mib": distribution([r["peak_tree_rss_mib"] for r in records]),
         "candidate_pool_recall": distribution([r["pool_recall"] for r in ok]),
         "limitations": [
@@ -138,11 +141,12 @@ def export(output: Path, db: sqlite3.Connection, corpus: dict, bundle: dict, ide
         "",
         f"Images: {identity['snapshot']['unique_images']}; paths: {identity['snapshot']['paths']}.",
         f"Queries: {len(ok)}/{len(queries)} successful; {len(records) - len(ok)} errors.",
+        f"Request mode: {summary['request_mode']}.",
         "",
         "| Mode | Split | Queries | Recall@50 | MRR@10 | nDCG@10 |",
         "|---|---|---:|---:|---:|---:|",
     ]
-    for mode in ("visual", "lexical", "semantic", "hybrid"):
+    for mode in ("visual", "lexical", "semantic", "hybrid", "logistic"):
         for split in ("all", "split:train", "split:validation", "split:test"):
             group_metrics = aggregate.get(mode + "/" + split)
             if group_metrics:

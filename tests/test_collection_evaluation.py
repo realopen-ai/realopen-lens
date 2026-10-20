@@ -159,13 +159,16 @@ def test_grouping_is_transitive_and_family_safe():
     assert len({r["split"] for r in rows}) == 1
 
 
+@pytest.mark.parametrize("use_reranker", [False, True])
 def test_evaluation_resumes_records_and_rejects_identity_changes(
-    tmp_path, monkeypatch, default_text_encoding
+    tmp_path, monkeypatch, default_text_encoding, use_reranker
 ):
     corpus, path, rows, bundle = corpus_files(tmp_path)
     state = {"generation": "g", "unique_images": 3, "paths": 3}
     monkeypatch.setattr(collections, "snapshot", lambda *a, **kw: state)
     calls = []
+    reranker = tmp_path / "model.json"
+    reranker.write_text("{}", encoding="utf-8")
 
     def search(*a, trace, **kw):
         calls.append(1)
@@ -177,6 +180,11 @@ def test_evaluation_resumes_records_and_rejects_identity_changes(
             },
             candidates=[{"image_id": key, "visual_cosine": 0.1} for key in ("a", "b", "c")],
         )
+        if use_reranker:
+            assert kw["reranker"] == reranker
+            trace["rankings"]["logistic"] = ["c", "b", "a"]
+            trace["reranker_sha256"] = digest(reranker)
+            return [SimpleNamespace(image_id=key) for key in ("c", "b", "a")]
         return [SimpleNamespace(image_id=key) for key in ("a", "b", "c")]
 
     monkeypatch.setattr(collections, "search_collection", search)
@@ -189,6 +197,7 @@ def test_evaluation_resumes_records_and_rejects_identity_changes(
         threads=2,
         output=tmp_path / "out",
         retry_errors=False,
+        reranker=reranker if use_reranker else None,
     )
     collections.run(args)
     with sqlite3.connect(args.output / "results.sqlite") as db:
@@ -202,6 +211,17 @@ def test_evaluation_resumes_records_and_rejects_identity_changes(
         for line in (args.output / "training-train.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert len(exported) == 2 and all(r["label"] is not None for r in exported)
+    if use_reranker:
+        report = (args.output / "report.md").read_text(encoding="utf-8")
+        summary = json.loads((args.output / "summary.json").read_text(encoding="utf-8"))
+        assert "| logistic |" in report
+        assert "reranked_end_to_end_seconds" in summary
+        assert "hybrid_end_to_end_seconds" not in summary
+        assert (args.output / "reranker.json").read_bytes() == reranker.read_bytes()
+        reranker.write_text('{"changed":true}', encoding="utf-8")
+        with pytest.raises(ValueError, match="identity changed"):
+            collections.run(args)
+        reranker.write_text("{}", encoding="utf-8")
     state["generation"] = "changed"
     with pytest.raises(ValueError, match="identity changed"):
         collections.run(args)
