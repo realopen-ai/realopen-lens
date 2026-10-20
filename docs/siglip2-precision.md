@@ -97,3 +97,7 @@ subject to cache and background-load differences.
 
 Check `memory_measurement.complete` in `comparison.json` before interpreting RSS.
 Nonzero access errors mean child-process memory could not be sampled completely.
+
+For an existing full collection, use the [saved collection evaluation workflow](saved-precision-evaluation.md)
+to verify reference membership, retain additional distractors, and build a matched
+INT8 control without repeating the successful OCR/E5 stages.
