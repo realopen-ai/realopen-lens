@@ -1,20 +1,24 @@
-"""Focused regression coverage for experimental reranking."""
+"""Recall-preserving scope, disabled features, fresh-fold guards, and source isolation."""
 
 from copy import deepcopy
 import json
 from pathlib import Path
 import sys
 import subprocess
+
 from PIL import Image
 import pytest
+
 from benchmarks.datasets.downloads import digest, download, DownloadRateLimitError
 from benchmarks.datasets.expansion import build, copy_verified, near_duplicate, preview, safe_path
 from benchmarks.datasets.expansion_judgments import assemble
 from benchmarks.datasets.relevance import load as load_judgments
 from benchmarks.datasets.training_review import apply
 from benchmarks.datasets.photos import save_json
+from benchmarks.experiments.logistic_fit import fit
+from benchmarks.experiments.reranker_study import best, guard
 from realopen_lens.indexing.service import signature
-from realopen_lens.learning.features import NAMES
+from realopen_lens.learning.features import NAMES, EXCLUDED
 from realopen_lens.learning.logistic import load
 
 
@@ -34,53 +38,6 @@ def candidate(index):
         },
         "ocr_characters": 0,
     }
-
-
-def test_hybrid50_preserves_membership_and_tail_while_union_can_demote(tmp_path):
-    artifact = {
-        "version": 2,
-        "kind": "logistic_regression",
-        "feature_schema": 1,
-        "candidate_budget": 50,
-        "features": list(NAMES),
-        "mean": [0] * len(NAMES),
-        "scale": [1] * len(NAMES),
-        "weights": [-1] + [0] * (len(NAMES) - 1),
-        "intercept": 0,
-        "compatibility": {"model_registry": {}, "inference_sha256": "fixture"},
-        "feature_profile": "full",
-        "rerank_scope": "hybrid50",
-    }
-    path = tmp_path / "model.json"
-    save_json(path, artifact)
-    rows = [candidate(i) for i in range(70)]
-    model = load(path)
-    assert model.rank(list(reversed(rows))) == [
-        row["image_id"] for row in rows[:50][::-1] + rows[50:]
-    ]
-    assert set(model.rank(rows)[:50]) == {row["image_id"] for row in rows[:50]}
-    artifact["rerank_scope"] = "union"
-    save_json(path, artifact)
-    assert load(path).rank(rows).index("000") == 69
-    artifact["version"] = 1
-    del artifact["rerank_scope"]
-    del artifact["feature_profile"]
-    save_json(path, artifact)
-    assert load(path).scope == "union" and load(path).rank(rows).index("000") == 69
-
-
-def test_source_acquisition_preserves_server_retry_after(tmp_path, monkeypatch):
-    headers = tmp_path / "response.headers"
-
-    def limited(command, **kwargs):
-        headers.write_bytes(b"HTTP/2 429\r\nRetry-After: 600\r\n\r\n")
-        raise subprocess.CalledProcessError(22, command, stderr=b"HTTP 429")
-
-    monkeypatch.setattr(subprocess, "run", limited)
-    with pytest.raises(DownloadRateLimitError) as caught:
-        download("https://example.invalid/source.png", tmp_path / "image.png", headers=headers)
-    assert caught.value.retry_after == 600
-    assert not (tmp_path / "image.png").exists()
 
 
 def test_frozen_v2_sources_review_and_legacy_roles_are_auditable():
@@ -118,6 +75,20 @@ def test_frozen_v2_sources_review_and_legacy_roles_are_auditable():
                 for label in query["judgments"]
                 if label["grade"] > 0
             )
+
+
+def test_source_acquisition_preserves_server_retry_after(tmp_path, monkeypatch):
+    headers = tmp_path / "response.headers"
+
+    def limited(command, **kwargs):
+        headers.write_bytes(b"HTTP/2 429\r\nRetry-After: 600\r\n\r\n")
+        raise subprocess.CalledProcessError(22, command, stderr=b"HTTP 429")
+
+    monkeypatch.setattr(subprocess, "run", limited)
+    with pytest.raises(DownloadRateLimitError) as caught:
+        download("https://example.invalid/source.png", tmp_path / "image.png", headers=headers)
+    assert caught.value.retry_after == 600
+    assert not (tmp_path / "image.png").exists()
 
 
 def test_expansion_refuses_early_resume_after_rate_limit(tmp_path, monkeypatch):
@@ -217,6 +188,106 @@ def test_expansion_review_keeps_diagnostics_and_ambiguous_variants_out(tmp_path)
         assemble({"images": rows}, legacy, review)
 
 
+def test_hybrid50_preserves_membership_and_tail_while_union_can_demote(tmp_path):
+    artifact = {
+        "version": 2,
+        "kind": "logistic_regression",
+        "feature_schema": 1,
+        "candidate_budget": 50,
+        "features": list(NAMES),
+        "mean": [0] * len(NAMES),
+        "scale": [1] * len(NAMES),
+        "weights": [-1] + [0] * (len(NAMES) - 1),
+        "intercept": 0,
+        "compatibility": {"model_registry": {}, "inference_sha256": "fixture"},
+        "feature_profile": "full",
+        "rerank_scope": "hybrid50",
+    }
+    path = tmp_path / "model.json"
+    save_json(path, artifact)
+    rows = [candidate(i) for i in range(70)]
+    model = load(path)
+    assert model.rank(list(reversed(rows))) == [
+        row["image_id"] for row in rows[:50][::-1] + rows[50:]
+    ]
+    assert set(model.rank(rows)[:50]) == {row["image_id"] for row in rows[:50]}
+    artifact["rerank_scope"] = "union"
+    save_json(path, artifact)
+    assert load(path).rank(rows).index("000") == 69
+    artifact["version"] = 1
+    del artifact["rerank_scope"]
+    del artifact["feature_profile"]
+    save_json(path, artifact)
+    assert load(path).scope == "union" and load(path).rank(rows).index("000") == 69
+
+
+@pytest.mark.parametrize("profile", list(EXCLUDED))
+def test_ablation_has_neutral_disabled_parameters_and_roundtrips(tmp_path, profile):
+    rows = [
+        {
+            "query_id": "q",
+            "query_family": "f",
+            "query_split": "train",
+            "image_split": "train",
+            "training_eligible": True,
+            "label": int(i < 2),
+            "features": candidate(i),
+        }
+        for i in range(4)
+    ]
+    model = fit(
+        rows,
+        0.1,
+        {"model_registry": {}, "inference_sha256": "fixture"},
+        profile=profile,
+        scope="hybrid50",
+    )
+    path = tmp_path / "model.json"
+    save_json(path, model)
+    assert load(path).profile == profile
+    for name in EXCLUDED[profile]:
+        i = NAMES.index(name)
+        assert model["mean"][i] == model["weights"][i] == 0 and model["scale"][i] == 1
+        invalid = deepcopy(model)
+        invalid["weights"][i] = 0.01
+        save_json(path, invalid)
+        with pytest.raises(ValueError, match="Excluded features"):
+            load(path)
+
+
+def metrics(recall=1.0, mrr=0.5, ndcg=0.5):
+    return {"candidate_recall_at_50": recall, "mrr_at_10": mrr, "ndcg_at_10": ndcg}
+
+
+def test_validation_guard_catches_language_and_kind_losses_hidden_by_average():
+    baseline = {"all": metrics(), "language:fr": metrics(), "kind:documents": metrics()}
+    candidate_metrics = {key: metrics(mrr=0.6, ndcg=0.6) for key in baseline}
+    spec = {
+        "max_recall_at_50_drop": 0.0,
+        "min_mrr_at_10_delta": 0.0,
+        "min_ndcg_at_10_delta_exclusive": 0.0,
+        "tolerance": 1e-12,
+    }
+    assert guard(candidate_metrics, baseline, spec) == []
+    candidate_metrics["language:fr"]["candidate_recall_at_50"] = 0.9
+    candidate_metrics["kind:documents"]["candidate_recall_at_50"] = 0.9
+    assert set(guard(candidate_metrics, baseline, spec)) == {
+        "recall:language:fr",
+        "recall:kind:documents",
+    }
+    assert guard(baseline, baseline, spec) == ["ndcg_at_10"]
+
+
+def test_stable_selection_uses_validation_then_stronger_l2():
+    trials = [
+        {"profile": "core", "scope": "hybrid50", "l2": l2, "validation": {"all": metrics()}}
+        for l2 in (0.01, 0.1, 1)
+    ]
+    assert best(trials)["l2"] == 1
+    trials[0]["validation"]["all"]["ndcg_at_10"] = 0.8
+    assert best(trials)["l2"] == 0.01
+
+
 def test_expansion_copy_does_not_change_legacy_signatures(tmp_path):
     source = tmp_path / "original.png"
     Image.new("RGB", (128, 96), "red").save(source)
@@ -238,3 +309,136 @@ def test_duplicate_guard_preserves_color_and_recognizes_resized_copies(tmp_path)
     assert near_duplicate(preview(first), preview(second))
     Image.new("RGB", (64, 64), (0, 130, 0)).save(second)
     assert not near_duplicate(preview(first), preview(second))
+
+
+def test_protocol_profiles_match_implemented_ablation_allowlist():
+    path = Path(__file__).resolve().parents[1] / "benchmarks/sources/retrieval-v2/protocol.json"
+    protocol = json.loads(path.read_text(encoding="utf-8"))
+    assert protocol["feature_profiles"] == {key: list(value) for key, value in EXCLUDED.items()}
+    assert (
+        len(protocol["feature_profiles"])
+        * len(protocol["rerank_scopes"])
+        * len(protocol["l2_grid"])
+        == 40
+    )
+
+
+def test_study_runner_freezes_champions_and_keeps_hybrid_when_no_gain(tmp_path):
+    from types import SimpleNamespace
+    from benchmarks.experiments.reranker_study import run
+
+    root = Path(__file__).resolve().parents[1]
+    protocol = root / "benchmarks/sources/retrieval-v2/protocol.json"
+    images, queries, records = [], [], []
+    for fold in ("train", "validation", "test"):
+        for kind in ("documents", "screenshots", "photos"):
+            positive, negative = fold + "-" + kind + "-p", fold + "-" + kind + "-n"
+            for key in (positive, negative):
+                images.append(
+                    {
+                        "id": key,
+                        "path": key,
+                        "sha256": key,
+                        "pixel_sha256": key,
+                        "source_document": key,
+                        "duplicate_group": key,
+                        "split": fold,
+                        "category": kind,
+                    }
+                )
+            for lang in ("en", "fr", "ar"):
+                query = {
+                    "id": fold + "-" + kind + "-" + lang,
+                    "family": fold + "-" + kind,
+                    "text": fold + " " + kind + " " + lang,
+                    "language": lang,
+                    "kind": kind,
+                    "split": fold,
+                    "study_role": fold,
+                    "source_exposure": "fresh-v2",
+                    "review": {
+                        "status": "reviewed",
+                        "reviewer": "fixture",
+                        "method": "fixture",
+                        "date": "2026-10-20",
+                    },
+                    "judgments": [
+                        {"image_sha256": positive, "grade": 2, "reason": "match"},
+                        {"image_sha256": negative, "grade": 0, "reason": "distinct"},
+                    ],
+                }
+                queries.append(query)
+                a, b = candidate(0), candidate(1)
+                a["image_id"], b["image_id"] = positive, negative
+                records.append(
+                    {
+                        "query_id": query["id"],
+                        "query": query,
+                        "status": "ok",
+                        "quality_deferred": fold == "test",
+                        "trace": {
+                            "generation": "g",
+                            "searchable_images": 18,
+                            "candidates": [a, b],
+                            "rankings": {"hybrid": [positive, negative]},
+                        },
+                    }
+                )
+    corpus, judgments = tmp_path / "corpus.json", tmp_path / "judgments.json"
+    save_json(corpus, {"images": images, "protocol_sha256": digest(protocol)})
+    save_json(
+        judgments,
+        {
+            "version": 1,
+            "corpus_sha256": digest(corpus),
+            "protocol_sha256": digest(protocol),
+            "queries": queries,
+        },
+    )
+    baseline = tmp_path / "baseline"
+    baseline.mkdir()
+    save_json(
+        baseline / "config.json",
+        {
+            "corpus_sha256": digest(corpus),
+            "judgments_sha256": digest(judgments),
+            "candidate_feature_schema": 1,
+            "search_limit": 50,
+            "defer_test_metrics": True,
+            "snapshot": {
+                "generation": "g",
+                "pipeline_spec": {"model_registry": {}, "inference_sha256": "fixture"},
+            },
+        },
+    )
+    (baseline / "queries.jsonl").write_text(
+        "".join(json.dumps(r) + "\n" for r in records), encoding="utf-8"
+    )
+    args = SimpleNamespace(
+        corpus=corpus,
+        judgments=judgments,
+        protocol=protocol,
+        baseline_dir=baseline,
+        output=tmp_path / "out",
+        legacy_model=None,
+    )
+    result = run(args)
+    assert result["queries"] == 27 and result["trials"] == 40
+    assert result["selection"] is None and result["guarded_trials"] == 0
+    assert not (args.output / "model.json").exists()
+    assert (args.output / "champion-union.json").exists()
+    assert (args.output / "champion-hybrid50.json").exists()
+    assert (
+        len((args.output / "validation-trials.jsonl").read_text(encoding="utf-8").splitlines())
+        == 360
+    )
+    with pytest.raises(ValueError, match="new output directory"):
+        run(args)
+    config_path = baseline / "config.json"
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["defer_test_metrics"] = False
+    save_json(config_path, config)
+    args.output = tmp_path / "rejected"
+    with pytest.raises(ValueError, match="deferred until validation"):
+        run(args)
+    assert not args.output.exists()
