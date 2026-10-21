@@ -24,6 +24,25 @@ uv run --no-sync lens status --index-dir runs/personal-index
 uv run --no-sync lens search "database connection error" --index-dir runs/personal-index
 ```
 
+## Local gallery
+
+Browse collections, search by text or image, inspect results, and give explicit
+relevance feedback in the [local React gallery](docs/local-gallery.md). Indexing
+and search tasks stream live progress through SSE.
+
+```sh
+cd frontend
+npm ci
+npm run build
+cd ..
+uv sync --locked --extra web --no-editable --reinstall-package realopen-lens
+uv run --no-sync lens serve --index-dir runs/personal-index-fp32 --allow-root data
+```
+
+Open **http://127.0.0.1:8765**. Use your existing index directory; a fresh directory
+starts an empty library. Models and Tesseract language packs must be installed
+before indexing. Compiled assets run locally without a Vite server or internet.
+
 ## What you'll be able to do
 
 - Search images using natural-language descriptions in multiple languages.
