@@ -73,6 +73,8 @@ def search_similar(
     *,
     image_id: str | None = None,
     collection: str = "personal",
+    virtual_collection: str | None = None,
+    virtual_revision: int | None = None,
     index_dir: Path | None = None,
     models: Path = Path("models"),
     limit: int = 10,
@@ -119,6 +121,15 @@ def search_similar(
             raise ValueError("Unsupported collection SigLIP2 precision")
         if siglip_precision is not None and siglip_precision != precision:
             raise ValueError("Requested SigLIP2 precision differs from this collection")
+        scope = None
+        if virtual_collection is not None:
+            from realopen_lens.organization.collections import resolve_scope, ensure_scope
+
+            allowed, scope = resolve_scope(
+                catalog.root, found["id"], virtual_collection, virtual_revision
+            )
+        elif virtual_revision is not None:
+            raise ValueError("Virtual revision requires a virtual collection")
         visual, _ = matrices(catalog, manifest)
         ids = manifest["vision_ids"]
         reused = image_id in ids
@@ -153,6 +164,8 @@ def search_similar(
         if on_progress is not None:
             on_progress({"phase": "retrieval"})
         paths = source_paths(Path(found["root"]), manifest)
+        if scope is not None:
+            paths = {key: value for key, value in paths.items() if key in allowed}
         scores = vector_scores(visual, query, ids)
         ranking = sorted(
             (key for key in scores if key in paths and (include_self or key != image_id)),
@@ -168,6 +181,11 @@ def search_similar(
                 searchable_images=len(paths),
                 include_self=include_self,
             )
-        return search_results(catalog, manifest, paths, ranking, scores)
+        results = search_results(catalog, manifest, paths, ranking, scores)
+        if scope is not None:
+            ensure_scope(catalog.root, found["id"], scope)
+            if trace is not None:
+                trace["scope"] = scope
+        return results
     finally:
         catalog.close()

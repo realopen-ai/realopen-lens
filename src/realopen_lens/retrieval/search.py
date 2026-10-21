@@ -130,6 +130,8 @@ def search_collection(
     query: str,
     *,
     collection: str = "personal",
+    virtual_collection: str | None = None,
+    virtual_revision: int | None = None,
     index_dir: Path | None = None,
     models: Path = Path("models"),
     limit: int = 10,
@@ -170,7 +172,9 @@ def search_collection(
         raise ValueError("Candidate depths require hybrid mode")
     if siglip_precision is not None and siglip_precision not in {"int8", "fp32"}:
         raise ValueError("SigLIP2 precision must be int8 or fp32")
-    if reranker is None and mode == "hybrid" and use_active_reranker:
+    if virtual_collection is not None and reranker is not None:
+        raise ValueError("Rerankers require unscoped searches until scoped evaluation is supported")
+    if reranker is None and mode == "hybrid" and use_active_reranker and virtual_collection is None:
         from realopen_lens.learning.registry import active
 
         reranker = active(index_dir or default_directory(), collection)
@@ -228,6 +232,18 @@ def search_collection(
         if on_progress is not None:
             on_progress({"phase": "source_validation"})
         paths_by_id = source_paths(Path(found["root"]), manifest)
+        scope = None
+        if virtual_collection is not None:
+            from realopen_lens.organization.collections import resolve_scope, ensure_scope
+
+            allowed, scope = resolve_scope(
+                catalog.root, found["id"], virtual_collection, virtual_revision
+            )
+            paths_by_id = {key: value for key, value in paths_by_id.items() if key in allowed}
+            if trace is not None:
+                trace["scope"] = scope
+        elif virtual_revision is not None:
+            raise ValueError("Virtual revision requires a virtual collection")
         lookup = {
             row["image_id"]: row for row in manifest["images"] if row["image_id"] in paths_by_id
         }
@@ -245,6 +261,8 @@ def search_collection(
                     trace["rankings"]["logistic"] = []
                     trace["reranker_sha256"] = learned.sha256
                     trace["reranker_scope"] = learned.scope
+            if scope is not None:
+                ensure_scope(catalog.root, found["id"], scope)
             return []
         visual_query = semantic_query = None
         if mode != "lexical":
@@ -367,6 +385,8 @@ def search_collection(
         if on_progress is not None:
             on_progress({"phase": "result_validation"})
         results = search_results(catalog, manifest, paths_by_id, ranking, scores)
+        if scope is not None:
+            ensure_scope(catalog.root, found["id"], scope)
         stage("result_validation_seconds")
         return results
     finally:
