@@ -170,6 +170,10 @@ def search_collection(
         raise ValueError("Candidate depths require hybrid mode")
     if siglip_precision is not None and siglip_precision not in {"int8", "fp32"}:
         raise ValueError("SigLIP2 precision must be int8 or fp32")
+    if reranker is None and mode == "hybrid" and use_active_reranker:
+        from realopen_lens.learning.registry import active
+
+        reranker = active(index_dir or default_directory(), collection)
     learned = None
     if reranker is not None:
         from realopen_lens.learning.logistic import load
