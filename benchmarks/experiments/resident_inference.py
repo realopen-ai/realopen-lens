@@ -71,6 +71,7 @@ def measure(
             if session is None:
                 found = search_collection(
                     query["text"],
+                    use_feedback=False,
                     index_dir=index,
                     collection=collection,
                     models=models,
@@ -80,7 +81,9 @@ def measure(
                     profile=profile,
                 )
             else:
-                found = session.search(query["text"], limit=50, trace=trace, profile=profile)
+                found = session.search(
+                    query["text"], use_feedback=False, limit=50, trace=trace, profile=profile
+                )
             labels = {j["image_sha256"]: j["grade"] for j in query["judgments"]}
             result.update(
                 status="ok",

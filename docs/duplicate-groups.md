@@ -20,6 +20,8 @@ The panel shows two kinds of groups:
   exact-copy aliases included. Inspect the originals, then confirm, dismiss or
   reset the suggestion. Reviews persist locally. Confirmation does not hide images
   in search, merge identities, propagate relevance labels or delete files.
+  Confirmed links constrain split isolation when preparing a new training dataset;
+  see [feedback training](feedback-training.md).
 
 OCR differences produce an explicit warning. Similar layouts can contain different
 text; matching fingerprints at reduced resolution do not prove equivalent content.

@@ -10,10 +10,12 @@ import {
   type Collection,
   type ImageResult,
   type Task,
+  type MemoryDecision,
 } from "./api";
 import "./style.css";
 import { ThemeSwitch } from "./ThemeSwitch";
 import { Duplicates } from "./Duplicates";
+import { QueryMemory } from "./QueryMemory";
 import { Training } from "./Training";
 import {
   VirtualCollections,
@@ -113,6 +115,14 @@ function App() {
   const [reconnecting, setReconnecting] = useState(false);
   const [error, setError] = useState("");
   const [mode, setMode] = useState("hybrid");
+  const [useFeedback, setUseFeedback] = useState(true);
+  const [memoryEnabled, setMemoryEnabled] = useState(false);
+  const [undo, setUndo] = useState<{
+    image: ImageResult;
+    decision: MemoryDecision;
+    prior: string | null;
+    run: string;
+  } | null>(null);
   const [saveRun, setSaveRun] = useState(false);
   const [runId, setRunId] = useState<string | null>(null);
   const [repeatSearch, setRepeatSearch] = useState<RepeatSearch | null>(null);
@@ -160,6 +170,8 @@ function App() {
     const version = ++requestVersion.current;
     foreground.current = null;
     setRepeatSearch(null);
+    setUndo(null);
+    setMemoryEnabled(false);
     sessionStorage.removeItem("lens-task");
     if (selectedCollection.current !== value) {
       setVirtuals([]);
@@ -332,11 +344,17 @@ function App() {
           ? `${task.result.ranking.kind}${task.result.ranking.sha256 ? ` · ${task.result.ranking.sha256.slice(0, 8)}` : ""}`
           : "",
       );
+      setMemoryEnabled(Boolean(task.result.feedback?.enabled));
       setImages(task.result.results);
       setTotal(task.result.results.length);
       const savedRun = task.result.run_id || null;
       setRunId(savedRun);
-      setLabels({});
+      const remembered = Object.fromEntries(
+        task.result.results
+          .filter((image) => image.feedback?.label)
+          .map((image) => [image.image_id, image.feedback!.label!]),
+      );
+      setLabels(remembered);
       setLabelsLoading(Boolean(savedRun));
       if (savedRun)
         void api<{ judgments: { image_id: string; label: string }[] }>(
@@ -345,9 +363,10 @@ function App() {
           .then((value) => {
             if (foreground.current === task.id)
               setLabels(
-                Object.fromEntries(
-                  (value.judgments || []).map((j) => [j.image_id, j.label]),
-                ),
+                Object.fromEntries([
+                  ...(value.judgments || []).map((j) => [j.image_id, j.label]),
+                  ...Object.entries(remembered),
+                ]),
               );
           })
           .catch((e) => setError(String(e)))
@@ -468,6 +487,8 @@ function App() {
         ? { virtual_collection: scope.id, virtual_revision: scope.revision }
         : {}),
     };
+    setUndo(null);
+    setMemoryEnabled(false);
     setRepeatSearch({ kind, body: { ...body }, heading });
     setSelected(new Set());
     setOrganizationNotice("");
@@ -501,6 +522,8 @@ function App() {
     setSelected(new Set());
     setOrganizationNotice("");
     const scope = virtualScope.current;
+    setUndo(null);
+    setMemoryEnabled(false);
     setRepeatSearch({ kind: "upload", file });
     if (file.size > 64 * 1024 * 1024) {
       setError("Select an image no larger than 64 MiB.");
@@ -558,11 +581,22 @@ function App() {
     setLabelsLoading(true);
     try {
       const old = labels[image.image_id];
-      await api(`/feedback/runs/${runId}/${image.image_id}`, {
-        method: old === value ? "DELETE" : "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: old === value ? undefined : JSON.stringify({ label: value }),
-      });
+      const expected = memoryEnabled
+        ? image.feedback?.event_id || 0
+        : undefined;
+      const suffix =
+        expected === undefined ? "" : `?expected_event_id=${expected}`;
+      const result = await api<{ memory: MemoryDecision | null }>(
+        `/feedback/runs/${runId}/${image.image_id}${suffix}`,
+        {
+          method: old === value ? "DELETE" : "PUT",
+          headers: { "Content-Type": "application/json" },
+          body:
+            old === value
+              ? undefined
+              : JSON.stringify({ label: value, expected_event_id: expected }),
+        },
+      );
       if (foreground.current !== taskId) return;
       setLabels((oldLabels) => {
         const next = { ...oldLabels };
@@ -570,6 +604,79 @@ function App() {
         else next[image.image_id] = value;
         return next;
       });
+      if (memoryEnabled && result.memory) {
+        const decision = result.memory;
+        if (decision.label === "irrelevant") {
+          setImages((rows) =>
+            rows.filter((row) => row.image_id !== image.image_id),
+          );
+          setTotal((count) => Math.max(0, count - 1));
+          setSelected((current) => {
+            const next = new Set(current);
+            next.delete(image.image_id);
+            return next;
+          });
+          setUndo({ image, decision, prior: old || null, run: runId });
+        } else {
+          setImages((rows) =>
+            rows
+              .map((row) =>
+                row.image_id === image.image_id
+                  ? { ...row, feedback: decision }
+                  : row,
+              )
+              .sort(
+                (a, b) =>
+                  Number(b.feedback?.label === "relevant") -
+                    Number(a.feedback?.label === "relevant") || a.rank - b.rank,
+              ),
+          );
+        }
+      }
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      if (foreground.current === taskId) setLabelsLoading(false);
+    }
+  }
+  async function undoFeedback() {
+    if (!undo || labelsLoading) return;
+    const action = undo;
+    const taskId = foreground.current;
+    setLabelsLoading(true);
+    try {
+      const path = `/feedback/runs/${action.run}/${action.image.image_id}`;
+      const result = await api<{ memory: MemoryDecision }>(
+        action.prior
+          ? path
+          : `${path}?expected_event_id=${action.decision.event_id}`,
+        {
+          method: action.prior ? "PUT" : "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: action.prior
+            ? JSON.stringify({
+                label: action.prior,
+                expected_event_id: action.decision.event_id,
+              })
+            : undefined,
+        },
+      );
+      if (foreground.current !== taskId) return;
+      setImages((rows) =>
+        [...rows, { ...action.image, feedback: result.memory }].sort(
+          (a, b) =>
+            Number(b.feedback?.label === "relevant") -
+              Number(a.feedback?.label === "relevant") || a.rank - b.rank,
+        ),
+      );
+      setTotal((count) => count + 1);
+      setLabels((current) => {
+        const next = { ...current };
+        if (action.prior) next[action.image.image_id] = action.prior;
+        else delete next[action.image.image_id];
+        return next;
+      });
+      setUndo(null);
     } catch (e) {
       setError(String(e));
     } finally {
@@ -702,7 +809,14 @@ function App() {
               if (query.trim() && collection)
                 void start(
                   "search",
-                  { query, collection, mode, save_run: saveRun, limit: 50 },
+                  {
+                    query,
+                    collection,
+                    mode,
+                    save_run: saveRun,
+                    use_feedback: useFeedback,
+                    limit: 50,
+                  },
                   `Results for “${query}”`,
                 );
             }}
@@ -765,6 +879,14 @@ function App() {
               <label className="checkbox">
                 <input
                   type="checkbox"
+                  checked={useFeedback}
+                  onChange={(e) => setUseFeedback(e.target.checked)}
+                />
+                Remember query feedback
+              </label>
+              <label className="checkbox">
+                <input
+                  type="checkbox"
                   checked={saveRun}
                   onChange={(e) => setSaveRun(e.target.checked)}
                 />
@@ -772,6 +894,42 @@ function App() {
               </label>
             </div>
           </div>
+          {!isBrowse && !loading && repeatSearch?.kind === "search" && (
+            <>
+              <p className="memory-status">
+                {memoryEnabled
+                  ? "Query feedback enabled"
+                  : "Baseline results · query feedback disabled"}
+              </p>
+              <QueryMemory
+                enabled={memoryEnabled}
+                key={JSON.stringify(repeatSearch.body)}
+                collection={String(repeatSearch.body.collection)}
+                query={String(repeatSearch.body.query)}
+                scope={
+                  repeatSearch.body.virtual_collection as string | undefined
+                }
+                revision={
+                  repeatSearch.body.virtual_revision as number | undefined
+                }
+              />
+            </>
+          )}
+          {undo && (
+            <div className="memory-heading" role="status">
+              <span>
+                Image hidden for this query. Search again to fill the remaining
+                places.
+              </span>
+              <button
+                className="secondary"
+                disabled={labelsLoading}
+                onClick={() => void undoFeedback()}
+              >
+                Undo feedback
+              </button>
+            </div>
+          )}
           {virtualId && (
             <div className="scope-banner">
               <span>
@@ -1039,7 +1197,9 @@ function App() {
                       : unavailable
                         ? "No saved images are available"
                         : "This collection is empty"
-                    : "Nothing here yet"
+                    : !isBrowse
+                      ? "No matching images"
+                      : "Nothing here yet"
                   : "Make room for a little discovery."}
               </h2>
               <p>
@@ -1050,10 +1210,12 @@ function App() {
                       : unavailable
                         ? "Restore the source files and refresh their folder index to see them here again."
                         : "Select images from the library or search results, then add them to this collection."
-                    : "Try another search or index a folder to start exploring."
+                    : !isBrowse
+                      ? "Try another query, review hidden images, or browse the library."
+                      : "Try another search or index a folder to start exploring."
                   : "Add a folder of photos, screenshots, documents or diagrams. Lens keeps your original files right where they are."}
               </p>
-              {virtualId ? (
+              {virtualId || (collection && !isBrowse) ? (
                 <button
                   className="primary"
                   onClick={() => void browse(collection)}

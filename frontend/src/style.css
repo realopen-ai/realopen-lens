@@ -374,6 +374,7 @@ h1 {
 }
 .search-options > div {
   display: flex;
+  flex-wrap: wrap;
   gap: 18px;
   align-items: center;
 }
@@ -1724,4 +1725,50 @@ footer > span:first-child {
 .duplicate-images summary {
   font-size: 12px;
   cursor: pointer;
+}
+
+.query-memory {
+  margin: 12px 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.memory-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0;
+}
+.memory-status {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+.hidden-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.hidden-images article {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.hidden-images img {
+  width: 100%;
+  height: 110px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.hidden-images span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .memory-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }

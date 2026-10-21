@@ -209,3 +209,168 @@ def test_modified_frozen_labels_require_new_review(reviewed, tmp_path):
     path.write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(ValueError, match="snapshot changed"):
         workflow.train(path, store)
+
+
+def test_feedback_audit_is_readonly_and_separates_provenance_cohorts(reviewed):
+    from realopen_lens.learning.review import audit
+
+    store, review_path, plan = reviewed
+    with feedback.FeedbackStore(store, readonly=True) as db:
+        before = "\n".join(db.db.iterdump())
+    result = audit(store)
+    with feedback.FeedbackStore(store, readonly=True) as db:
+        assert "\n".join(db.db.iterdump()) == before
+    assert len(result["runs"]) == 3 and len(result["cohorts"]) == 1
+    assert len(result["cohorts"][0]["eligible_run_ids"]) == 3
+    assert result["cohorts"][0]["labels"] == {"relevant": 3, "irrelevant": 3}
+    runs = list(plan["runs"])
+    with feedback.FeedbackStore(store) as db:
+        saved = db.run(runs[1])
+        saved["ranking_sources"]["search.py"] = "different-recorded-source"
+        db.db.execute("UPDATE searches SET payload=? WHERE id=?", (json.dumps(saved), runs[1]))
+        db.db.commit()
+    changed = audit(store)
+    assert len(changed["cohorts"]) == 2
+    assert sum(sum(c["labels"].values()) for c in changed["cohorts"]) == 6
+
+
+def test_known_duplicate_bridge_blocks_mislabeled_manual_groups(reviewed, monkeypatch, tmp_path):
+    from realopen_lens.learning import review as reviewing
+
+    store, review_path, plan = reviewed
+    keys = list(plan["image_groups"])
+    component = min(keys[0], keys[2])
+    constraints = {
+        "version": 1,
+        "collection_id": "test-source",
+        "components": {keys[0]: component, keys[2]: component},
+        "evidence": {
+            "groups": [{"kind": "confirmed", "image_ids": [keys[0], "unlabeled-bridge", keys[2]]}]
+        },
+    }
+    monkeypatch.setattr(reviewing, "duplicate_constraints", lambda *a: constraints)
+    with pytest.raises(ValueError, match="Known exact/confirmed duplicate"):
+        dataset.prepare(store, review_path, tmp_path / "leaking")
+    assert not (tmp_path / "leaking").exists()
+
+
+def test_frozen_duplicate_constraints_are_rechecked_at_training(reviewed, tmp_path):
+    store, review_path, plan = reviewed
+    dataset.prepare(store, review_path, tmp_path / "frozen-groups")
+    path = tmp_path / "frozen-groups/dataset.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    keys = list(plan["image_groups"])
+    data["duplicate_constraints"]["personal"]["components"] = {keys[0]: keys[0], keys[2]: keys[0]}
+    with pytest.raises(ValueError, match="Frozen exact/confirmed duplicate"):
+        dataset.validate_frozen(data)
+
+
+def test_duplicate_review_links_constrain_splits_without_propagating_labels(reviewed):
+    from realopen_lens.learning.review import duplicate_constraints
+    from realopen_lens.organization import duplicates
+    from realopen_lens.storage.artifacts import load_manifest, atomic_bytes
+    from realopen_lens.storage.catalog import Catalog
+
+    store, review_path, plan = reviewed
+    with_catalog = Catalog(store, readonly=True)
+    found, generation = with_catalog.snapshot("personal")
+    manifest = load_manifest(with_catalog, generation)
+    with_catalog.close()
+    keys = list(plan["image_groups"])
+    # Synthetic reviewed constraints test closure through an unlabeled identity;
+    # this does not assert a real perceptual match or create relevance judgments.
+    value = {
+        "policy": duplicates.POLICY,
+        "key": duplicates._key(manifest),
+        "exact": [{"id": "exact", "image_ids": [keys[0], "bridge"]}],
+        "near": [
+            {"id": "yes", "image_ids": ["bridge", keys[2]]},
+            {"id": "no", "image_ids": [keys[2], keys[4]]},
+        ],
+    }
+    atomic_bytes(store / "duplicates" / (value["key"] + ".json"), json.dumps(value).encode())
+    atomic_bytes(
+        store / "duplicates/reviews" / (found["id"] + ".json"),
+        json.dumps({"yes": "confirmed", "no": "dismissed"}).encode(),
+    )
+    result = duplicate_constraints(store, "personal")
+    assert result["components"][keys[0]] == result["components"][keys[2]]
+    assert keys[4] not in result["components"]
+    assert len(result["evidence"]["groups"]) == 2
+    with feedback.FeedbackStore(store, readonly=True) as db:
+        assert db.db.execute("SELECT COUNT(*) FROM judgments").fetchone()[0] == 6
+
+
+def test_audit_and_prepare_keep_duplicate_presentation_policies_separate(reviewed, tmp_path):
+    from realopen_lens.learning.review import audit
+
+    store, review_path, plan = reviewed
+    run_id = next(iter(plan["runs"]))
+    with feedback.FeedbackStore(store) as db:
+        saved = db.run(run_id)
+        saved["ranking"].update(duplicate_policy="pixels-v1", duplicate_snapshot="scan-key")
+        db.db.execute("UPDATE searches SET payload=? WHERE id=?", (json.dumps(saved), run_id))
+        db.db.commit()
+    report = audit(store)
+    assert len(report["cohorts"]) == 2
+    export = review_path.with_name(plan["feedback_file"])
+    feedback.export_feedback(export, index_dir=store, overwrite=True)
+    plan["feedback_sha256"] = digest(export)
+    review_path.write_text(json.dumps(plan), encoding="utf-8")
+    with pytest.raises(ValueError, match="Mixed duplicate presentation"):
+        dataset.prepare(store, review_path, tmp_path / "mixed-policy")
+
+
+def test_training_audit_cli_reports_cohorts_without_training(reviewed):
+    from typer.testing import CliRunner
+    from realopen_lens.cli import app
+
+    store, review_path, plan = reviewed
+    result = CliRunner().invoke(app, ["training", "audit", "--index-dir", str(store)])
+    assert result.exit_code == 0, result.output
+    assert len(json.loads(result.stdout)["runs"]) == 3
+    assert not (store / "rerankers").exists()
+
+
+def test_production_pair_order_and_progress_ignore_training_sessions(reviewed, tmp_path):
+    from realopen_lens.learning.evaluation import production
+
+    store, review_path, plan = reviewed
+    directory = tmp_path / "ordered"
+    dataset.prepare(store, review_path, directory)
+    trained = workflow.train(directory / "dataset.json", store)
+    data = json.loads((directory / "dataset.json").read_text(encoding="utf-8"))
+    by_split = {session["split"]: session for session in data["sessions"]}
+    data["sessions"] = [by_split["validation"], by_split["train"], by_split["test"]]
+    model = store / "rerankers" / trained["id"] / "model.json"
+    progress = []
+    output = tmp_path / "paired.jsonl"
+    production(data, model, store, tmp_path / "unused-models", output, progress.append)
+    records = [json.loads(line) for line in output.read_text(encoding="utf-8").splitlines()]
+    assert [r["execution_order"] for r in records] == ["hybrid_first", "logistic_first"]
+    phases = [event for event in progress if event["phase"] == "evaluating"]
+    assert [(p["query"], p["queries"]) for p in phases] == [(1, 2), (2, 2)]
+
+
+def test_personalized_searches_and_superseded_labels_cannot_train(reviewed, tmp_path):
+    from realopen_lens.learning.review import audit
+
+    store, review, plan = reviewed
+    first = next(iter(plan["runs"]))
+    with feedback.FeedbackStore(store) as db:
+        payload = db.run(first)
+        ids = [row["image_id"] for row in db.judgments(first)]
+        payload["ranking"]["feedback_memory"] = {"enabled": True, "applied": True}
+        personalized = db.add_run(payload)
+        db.judge(personalized, ids[0], "relevant")
+    # Current query memory must not contaminate baseline evaluation/training.
+    with pytest.raises(ValueError, match="superseded"):
+        dataset.prepare(store, review, tmp_path / "invalid")
+    reasons = [reason for row in audit(store)["runs"] for reason in row["reasons"]]
+    assert any("query memory applied" in reason for reason in reasons)
+    assert any("superseded" in reason for reason in reasons)
+    # A fresh export still preserves the contradicted history explicitly.
+    output = tmp_path / "fresh.jsonl"
+    feedback.export_feedback(output, index_dir=store)
+    rows = [json.loads(line) for line in output.read_text(encoding="utf-8").splitlines()]
+    assert any(row.get("superseded") for row in rows if row["run_id"] == first)

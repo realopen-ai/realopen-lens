@@ -50,6 +50,11 @@ how to build it rather than returning a blank page.
   is recorded until you enable feedback. You can also select **Save for feedback**
   before searching. Click a selected judgment again to remove it. Saved judgments
   are restored when reopening the remembered search in the same browser tab.
+- **Remember query feedback** applies exact-query relevance memory to text searches.
+  Relevant images move first; irrelevant images disappear with **Undo feedback**.
+  **Show hidden images** lets you clear remembered negatives. Rerun to fill places
+  after local changes. Disable memory before collecting baseline training searches.
+  See [query memory](relevance-feedback.md#remembered-text-query-feedback).
 - Add or refresh a folder, selecting its collection, precision and installed OCR
   languages. Originals are never moved. Existing collections retain their precision.
 
@@ -129,6 +134,7 @@ Do not expose the factory through an external listener or multiple API workers.
 | Task snapshots | `GET /api/tasks` or `GET /api/tasks/{id}` |
 | Live progress | `GET /api/tasks/{id}/events` |
 | Request cancellation | `POST /api/tasks/{id}/cancel` |
+| Browse hidden query results | `GET /api/feedback/hidden?query=...&collection=...` |
 | Saved results and judgments | `GET /api/feedback/runs/{run_id}` |
 | Set/correct or remove a judgment | `PUT` or `DELETE /api/feedback/runs/{run_id}/{image_id}` |
 

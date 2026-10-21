@@ -79,13 +79,15 @@ def run(source: Path, output: Path, collection: str, models: Path):
     with SearchSession(index_dir=output / "index", collection=collection, models=models) as session:
         baseline = {}
         for query in queries:
-            baseline[query] = [asdict(r) for r in session.search(query, limit=50)]
+            baseline[query] = [
+                asdict(r) for r in session.search(query, use_feedback=False, limit=50)
+            ]
         started = perf_counter()
         scan = duplicates.scan(output / "index", collection)
         scan_seconds = perf_counter() - started
         for query in queries:
             started = perf_counter()
-            result = [asdict(r) for r in session.search(query, limit=50)]
+            result = [asdict(r) for r in session.search(query, use_feedback=False, limit=50)]
             expected_ids = [r["image_id"] for r in baseline[query]]
             # Representatives must keep their relative baseline order; backfill can
             # introduce later candidates. No qrels/accuracy claim is made here.

@@ -147,6 +147,7 @@ def _run(args, encoder: ResidentQueryEncoder | None = None):
                     trace: dict = {}
                     results = search_collection(
                         query["text"],
+                        use_feedback=False,
                         collection=args.collection,
                         index_dir=args.index_dir,
                         models=args.models,

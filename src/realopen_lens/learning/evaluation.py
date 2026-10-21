@@ -74,15 +74,14 @@ def production(
     process = psutil.Process()
     load(model)
     with output.open("x", encoding="utf-8", newline="\n") as stream:
-        for position, session in enumerate(dataset["sessions"]):
-            if session["split"] == "train":
-                continue
+        evaluated = [session for session in dataset["sessions"] if session["split"] != "train"]
+        for position, session in enumerate(evaluated):
             if on_progress:
                 on_progress(
                     {
                         "phase": "evaluating",
                         "query": position + 1,
-                        "queries": len(dataset["sessions"]),
+                        "queries": len(evaluated),
                     }
                 )
             record = {
@@ -128,6 +127,7 @@ def production(
                         observed: dict = {}
                         result = search.search(
                             session["query"]["text"],
+                            use_feedback=False,
                             reranker=model if variant == "logistic" else None,
                             use_active_reranker=False,
                             trace=observed,

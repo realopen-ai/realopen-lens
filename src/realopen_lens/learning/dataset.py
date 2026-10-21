@@ -3,13 +3,12 @@
 import hashlib
 import json
 from pathlib import Path
-import unicodedata
 
 from realopen_lens.learning.features import matrix
-from realopen_lens.learning.feedback import export_feedback
+from realopen_lens.learning.feedback import export_feedback, superseded_judgments
 from realopen_lens.models.manager import digest
 from realopen_lens.storage.artifacts import atomic_bytes
-from realopen_lens.storage.feedback import FeedbackStore
+from realopen_lens.storage.feedback import FeedbackStore, normalize_query
 
 SPLITS = {"train", "validation", "test"}
 
@@ -50,7 +49,10 @@ def _prepare(index_dir: Path, review: Path, output: Path, on_progress=None) -> d
     pairs: set[tuple[str, str]] = set()
     compatibility = None
     sources = None
+    duplicate_policy = None
     sessions = []
+    constraints: dict[str, dict] = {}
+    constrained_splits: dict[tuple[str, str], str] = {}
     with FeedbackStore(index_dir, readonly=True) as store:
         store.db.execute("BEGIN")
         for position, (run_id, assignment) in enumerate(sorted(selected.items())):
@@ -63,6 +65,10 @@ def _prepare(index_dir: Path, review: Path, output: Path, on_progress=None) -> d
                 raise ValueError("Query family leaks across splits")
             families[family] = split
             run = store.run(run_id)
+            if superseded_judgments(store, index_dir, run):
+                raise ValueError(
+                    "Selected feedback has superseded judgments; review current labels"
+                )
             if run["query"]["kind"] != "text" or run["ranking"]["mode"] != "hybrid":
                 raise ValueError("Training supports text hybrid searches only")
             if run.get("scope") is not None:
@@ -70,7 +76,20 @@ def _prepare(index_dir: Path, review: Path, output: Path, on_progress=None) -> d
                     "Scoped feedback requires a scope-aware evaluation review; "
                     "use unscoped runs for training"
                 )
+            if run["collection"] not in constraints:
+                from realopen_lens.learning.review import duplicate_constraints
+
+                constraints[run["collection"]] = duplicate_constraints(index_dir, run["collection"])
+            grouping = constraints[run["collection"]]
             ranking = run["ranking"]
+            if ranking.get("feedback_memory", {}).get("applied"):
+                raise ValueError("Training requires baseline searches without applied query memory")
+            current_policy = {
+                key: ranking.get(key) for key in ("duplicate_policy", "duplicate_snapshot")
+            }
+            if duplicate_policy is not None and duplicate_policy != current_policy:
+                raise ValueError("Mixed duplicate presentation policies in feedback")
+            duplicate_policy = current_policy
             if (
                 ranking["siglip_precision"] != run["encoder_spec"].get("siglip_precision", "int8")
                 or ranking.get("reranker_sha256")
@@ -79,7 +98,7 @@ def _prepare(index_dir: Path, review: Path, output: Path, on_progress=None) -> d
                 raise ValueError(
                     "Use unreranked precision-compatible hybrid searches with 50/channel"
                 )
-            query = unicodedata.normalize("NFKC", run["query"]["text"]).casefold().strip()
+            query = normalize_query(run["query"]["text"])
             if query in queries:
                 raise ValueError("Select only one run per normalized query")
             queries[query] = run_id
@@ -123,6 +142,14 @@ def _prepare(index_dir: Path, review: Path, output: Path, on_progress=None) -> d
                 if group in groups and groups[group] != split:
                     raise ValueError("Source/duplicate group leaks across splits")
                 groups[group] = split
+                component = grouping["components"].get(key, key)
+                component_key = (grouping["collection_id"], component)
+                if (
+                    component_key in constrained_splits
+                    and constrained_splits[component_key] != split
+                ):
+                    raise ValueError("Known exact/confirmed duplicate group leaks across splits")
+                constrained_splits[component_key] = split
                 labels[key] = row["label"]
             if not any(labels.values()):
                 raise ValueError("Every query needs a reviewed positive")
@@ -145,12 +172,14 @@ def _prepare(index_dir: Path, review: Path, output: Path, on_progress=None) -> d
         "version": 1,
         "compatibility": compatibility,
         "ranking_sources": sources,
+        "duplicate_policy": duplicate_policy,
         "review_sha256": digest(review),
         "feedback_sha256": digest(source),
         "reviewer": plan["reviewer"],
         "independent_holdout": plan.get("independent_holdout") is True,
         "evaluation_scope": "saved displayed-candidate replay; known explicit judgments only",
         "sessions": sessions,
+        "duplicate_constraints": constraints,
     }
     output.mkdir(parents=True, exist_ok=False)
     atomic_bytes(output / "dataset.json", canonical(dataset))
@@ -190,13 +219,14 @@ def validate_frozen(dataset: dict) -> None:
         groups: dict[str, str] = {}
         queries = set()
         images: dict[str, str] = {}
+        constrained_splits: dict[tuple[str, str], str] = {}
         for session in sessions:
             split = session["split"]
             family = session["family"]
             if not family or (family in families and families[family] != split):
                 raise ValueError("Frozen query family leaks across splits")
             families[family] = split
-            query = unicodedata.normalize("NFKC", session["query"]["text"]).casefold().strip()
+            query = normalize_query(session["query"]["text"])
             if query in queries:
                 raise ValueError("Frozen dataset repeats a normalized query")
             queries.add(query)
@@ -218,6 +248,18 @@ def validate_frozen(dataset: dict) -> None:
                 if not group or (group in groups and groups[group] != split):
                     raise ValueError("Frozen source/duplicate group leaks across splits")
                 groups[group] = split
+                grouping = dataset.get("duplicate_constraints", {}).get(session["collection"])
+                if grouping is not None:
+                    component = grouping["components"].get(key, key)
+                    component_key = (grouping["collection_id"], component)
+                    if (
+                        component_key in constrained_splits
+                        and constrained_splits[component_key] != split
+                    ):
+                        raise ValueError(
+                            "Frozen exact/confirmed duplicate group leaks across splits"
+                        )
+                    constrained_splits[component_key] = split
     except (KeyError, TypeError, AttributeError) as error:
         raise ValueError("Malformed frozen dataset") from error
 

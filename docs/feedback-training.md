@@ -7,11 +7,14 @@ required; optimization uses NumPy.
 
 ## Review before training
 
-Save text searches with feedback enabled and label results relevant or irrelevant.
+Save text searches with **Save for feedback** enabled and **Remember query feedback**
+disabled, then label results relevant or irrelevant. In the CLI, use
+`lens search QUERY --save-run --no-feedback`.
 Unlabeled images are never inferred negatives. This first workflow accepts baseline
 hybrid searches with 50 candidates per channel and one consistent encoder precision
 and ranking-source version. Image-similarity searches, mixed encoder versions and
-already reranked searches are rejected as training inputs. Virtual-collection
+already reranked searches are rejected as training inputs. Searches with applied
+query memory and runs containing superseded labels are also rejected. Virtual-collection
 feedback retains its scope in exports but requires a scope-aware evaluation workflow;
 current preparation accepts full-library searches only.
 
@@ -31,8 +34,9 @@ retains the exact feedback snapshot locally. Fill in:
 Do not manufacture extra labels or mark a previously inspected benchmark as an
 untouched holdout. If the available labels do not permit all three disjoint splits
 and both training classes, collect more feedback. Lens rejects invalid input.
-Grouping is explicitly reviewed; automatic near-duplicate discovery is not part of
-this workflow.
+Source and query grouping remain explicitly reviewed. Existing exact-copy groups
+and confirmed near-duplicate reviews also enforce split isolation; automatic
+near-duplicate discovery is not run during preparation.
 
 Upload the reviewed JSON, choose **Prepare reviewed dataset**, then select the
 prepared dataset and **Train and evaluate logistic model**. Live job progress and
@@ -155,3 +159,52 @@ Disabling restores hybrid ranking and retains model files and activation history
 Removing a feedback label does not rewrite frozen datasets or trained models.
 Disable affected models and prepare a fresh reviewed snapshot before retraining.
 No automatic learning or neural reranker is included.
+
+## Audit real feedback before preparing a dataset
+
+```sh
+uv run --no-sync lens training audit --index-dir runs/personal-index-fp32
+```
+
+The read-only audit reports labeled runs, eligibility reasons, positive-only runs
+and exact provenance cohorts. Cohorts separate encoder compatibility, recorded
+ranking-source versions and duplicate presentation policies. Old generations,
+scoped/image/already-reranked searches and runs without positives are identified
+explicitly. An audit does not assign query families, choose splits or attest that a
+holdout is independent. Do not rewrite old source hashes to combine cohorts.
+
+The gallery's downloaded review template includes this audit context for each
+source represented in the export. Select a compatible cohort, then complete the
+source-document and query-family review. Positive-only queries are usable, but
+provide limited information about false positives. Unjudged results remain unknown.
+
+When preparing a new dataset, current exact pixel groups and **confirmed**
+near-duplicate pairs constrain split isolation automatically. Connected links,
+including paths through unlabeled images, must stay in one split. Dismissed and
+unreviewed suggestions do not add constraints. These links do not copy relevance
+labels, hide search results or assert that related images have the same relevance.
+Manual source-document, crop/page and query-family grouping is still required.
+
+The dataset freezes the constraint components and their review/snapshot evidence.
+Training rechecks them alongside the existing review and feedback checksums. New
+review decisions do not rewrite old datasets or models; prepare a fresh dataset
+when those decisions affect isolation.
+
+For a read-only source snapshot experiment, the benchmark adapter can copy the
+published index and feedback into a new output directory. An optional duplicate
+index must match the same published source snapshot:
+
+```sh
+uv run --no-sync python -m benchmarks.experiments.reviewed_feedback \
+  --source-index runs/personal-index-fp32 \
+  --output runs/reviewed-feedback-new
+```
+
+Without `--review`, this saves the snapshot and audit only. Add `--review PATH` to
+prepare the supplied plan and run the existing logistic selection/evaluation, or
+`--duplicate-index PATH` to import matching duplicate-review context from another
+snapshot copy. JSON progress goes to stderr. It retains audit, freeze, selection,
+per-query evaluation and error artifacts; it never activates a model.
+
+See the [first reviewed-feedback diagnostic](benchmarks/2026-10-21-reviewed-feedback.md)
+for measured results and the limits of a small, sparsely judged cohort.

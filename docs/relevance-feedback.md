@@ -1,7 +1,8 @@
 # Explicit relevance feedback
 
 Save a search, then mark individual results relevant or irrelevant. Feedback stays
-in a local SQLite database. It does not change search ordering or trigger training.
+in a local SQLite database. Text-query memory applies judgments immediately;
+model training remains explicit.
 Text search, image similarity and resident text-search sessions are supported.
 
 ## Save a search
@@ -42,7 +43,7 @@ uv run --no-sync lens feedback set RUN_ID IMAGE_ID irrelevant \
   --index-dir runs/personal-index
 ```
 
-`set` corrects an existing judgment. Repeating the same label is idempotent.
+`set` corrects an existing judgment. Repeating the current effective label is idempotent.
 Only `relevant` and `irrelevant` are accepted, and only images actually returned
 by that saved search can be judged. Byte-identical source copies share one
 content ID and one result judgment within a run.
@@ -163,3 +164,57 @@ The original personal indexes were not given synthetic feedback. Local test
 artifacts are retained under `runs/relevance-feedback-v1/`. Native execution was
 validated on macOS; cross-platform type checks do not establish native Windows
 or Linux behavior.
+
+## Remembered text-query feedback
+
+Text searches apply existing explicit judgments by default, after ordinary ranking:
+relevant images come first, irrelevant images are hidden, and unjudged images keep
+their baseline order. An available remembered positive can return even when absent
+from the current candidate pools. Hybrid backfill stays within the bounded channel
+union; a search may return fewer results when that union is exhausted. No score
+bonuses, new model or index rebuild are involved.
+
+Matching uses Unicode NFKC, case folding and collapsed whitespace. Punctuation,
+identifiers and diacritics remain significant. Memory belongs to the source collection
+identity and the virtual collection ID, or the full library when unscoped. It applies
+across text search modes, but does not propagate to paraphrases or image queries.
+Renaming a virtual collection retains memory; membership/source validation still
+controls which images are available. Exact decoded-pixel copies share the latest
+explicit decision after duplicate scanning; approximate duplicate reviews do not
+propagate relevance.
+
+The latest explicit action across matching saved runs wins, including clearing a
+judgment. Repeating an older run's label after a newer opposite judgment records a
+new action. Historical per-run labels remain auditable. Existing version-1 databases
+are readable without migration; the next feedback write transactionally builds the
+version-2 lookup projection from their event history.
+
+Disable memory when collecting baseline training data or inspecting ordinary ranking:
+
+```sh
+uv run --no-sync lens search "pizza" --index-dir runs/personal-index \
+  --no-feedback --save-run
+
+uv run --no-sync lens feedback hidden "pizza" --index-dir runs/personal-index
+```
+
+`--feedback` is the default. Search results expose their effective `feedback` decision
+when present. Recorded text runs also retain the memory policy, whether it applied,
+its event watermark and decision/group fingerprint. The Python search API accepts
+`use_feedback=False` and an optional `feedback_trace` dictionary. Benchmark and
+production training evaluations explicitly disable memory.
+
+The gallery's **Remember query feedback** checkbox controls the next text search.
+A saved result marked irrelevant disappears immediately, with **Undo feedback**;
+marking relevant moves it ahead of unjudged results. **Show hidden images** browses
+hidden available images without encoder inference, including those outside the
+current candidate pools. **Clear judgment** removes the remembered decision. Rerun
+the search to fill places after a local hide or restore; feedback clicks do not create
+additional saved searches. A concurrent correction causes a conflict instead of an
+undo silently overwriting newer feedback. Refresh the search before retrying.
+
+Training exports retain historical active per-run labels and flag contradicted or
+cleared older labels with `superseded: true`. Dataset preparation rejects selected
+runs containing superseded judgments or applied query memory. Review current labels
+and record a baseline search instead. This prevents immediate personalization from
+being reported as a learned ranking improvement.
