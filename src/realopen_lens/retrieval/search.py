@@ -137,6 +137,7 @@ def search_collection(
     threads: int = 2,
     trace: dict | None = None,
     reranker: Path | None = None,
+    use_active_reranker: bool = True,
     candidate_depths: CandidateDepths | None = None,
     siglip_precision: str | None = None,
     query_encoder: ResidentQueryEncoder | None = None,
