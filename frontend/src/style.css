@@ -1113,3 +1113,294 @@ footer > span:first-child {
   accent-color: var(--green);
   margin-top: 4px;
 }
+
+.training-panel {
+  margin: 24px 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  overflow: clip;
+}
+.training-panel summary {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 16px 18px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+.training-panel summary::-webkit-details-marker {
+  display: none;
+}
+.training-panel summary:hover {
+  background: var(--surface-muted);
+}
+.training-panel summary:focus-visible {
+  outline-offset: -4px;
+}
+.training-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--green);
+}
+.training-mark svg {
+  width: 19px;
+  height: 19px;
+}
+.training-summary-note {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+.training-chevron {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--muted);
+  transition: transform 0.15s;
+}
+.training-panel[open] .training-chevron {
+  transform: rotate(180deg);
+}
+.training-body {
+  border-top: 1px solid var(--line);
+  padding: 20px;
+}
+.training-body p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+.training-intro {
+  max-width: 680px;
+}
+.training-body .training-active {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--text-strong);
+}
+.training-active strong {
+  color: var(--green);
+  font-size: 11px;
+  background: var(--surface-muted);
+  border-radius: 5px;
+  padding: 3px 9px;
+}
+.training-steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin: 24px 0;
+}
+.training-step {
+  min-width: 0;
+}
+.training-step + .training-step {
+  border-left: 1px solid var(--line);
+  padding-left: 24px;
+}
+.training-panel h3 {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0 0 16px;
+  color: var(--text-strong);
+}
+.training-step h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.training-step h3 span {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface-muted);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 500;
+}
+.training-step label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+  font-size: 11px;
+  color: var(--text-strong);
+}
+.training-panel input[type="file"],
+.training-panel select {
+  width: 100%;
+  max-width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: var(--text-strong);
+  background: var(--surface);
+  font-size: 12px;
+}
+.training-panel select {
+  cursor: pointer;
+}
+.training-panel input[type="file"] {
+  padding: 5px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.training-panel input[type="file"]::file-selector-button {
+  font: inherit;
+  font-weight: 500;
+  padding: 7px 10px;
+  margin-right: 10px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--surface-muted);
+  color: var(--green);
+  cursor: pointer;
+}
+.training-panel input[type="file"]::file-selector-button:hover {
+  background: var(--selection);
+}
+.training-panel button {
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.5;
+}
+.training-step > button {
+  margin-bottom: 12px;
+}
+.training-models-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+.training-models-heading h3 {
+  margin-bottom: 8px;
+}
+.training-models-heading > span {
+  color: var(--muted);
+  font-size: 10px;
+}
+.training-panel label.training-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  white-space: normal;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 12px 0 16px;
+}
+.training-consent input {
+  flex: 0 0 auto;
+  margin: 3px 0 0;
+  accent-color: var(--green);
+}
+.training-model-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.training-model {
+  min-width: 0;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 16px;
+  overflow-wrap: anywhere;
+}
+.training-model-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.training-model-heading strong {
+  font:
+    500 12px ui-monospace,
+    monospace;
+  color: var(--text-strong);
+}
+.training-status {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 3px 8px;
+  font-size: 10px;
+  color: var(--text-strong);
+  background: var(--surface-muted);
+}
+.training-model-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.training-model-actions button {
+  flex: 1 1 auto;
+  font-size: 11px;
+  padding: 8px 10px;
+}
+.training-body .training-error {
+  padding: 12px 14px;
+  color: var(--warning-text);
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-line);
+  border-radius: 7px;
+  overflow-wrap: anywhere;
+}
+.training-body .training-empty {
+  padding: 18px;
+  text-align: center;
+  border: 1px dashed var(--line);
+  border-radius: 7px;
+  margin-top: 16px;
+  color: var(--muted);
+}
+@media (max-width: 700px) {
+  .training-summary-note {
+    display: none;
+  }
+  .training-chevron {
+    margin-left: auto;
+  }
+  .training-body {
+    padding: 16px;
+  }
+  .training-steps,
+  .training-model-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .training-step + .training-step {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding: 20px 0 0;
+  }
+  .training-step > button {
+    width: 100%;
+  }
+}

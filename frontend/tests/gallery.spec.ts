@@ -318,3 +318,84 @@ test("unsaved results expose feedback and explicitly rerun the original search",
     ),
   ).toBeTruthy();
 });
+
+test("learning requires explicit activation and can restore hybrid", async ({
+  page,
+}) => {
+  await setup(page);
+  const version = "c".repeat(32);
+  let active: string | null = null;
+  const activations: unknown[] = [];
+  await page.route("**/api/training/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/activation")) {
+      const body = JSON.parse(route.request().postData() || "{}");
+      activations.push(body);
+      if (body.model_version && !body.acknowledge_experimental)
+        return route.fulfill({
+          status: 400,
+          contentType: "application/json",
+          body: JSON.stringify({
+            detail: "Explicit experimental acknowledgment required",
+          }),
+        });
+      active = body.model_version;
+      return route.fulfill({
+        json: { active: active ? { personal: active } : {} },
+      });
+    }
+    return route.fulfill({
+      json: {
+        active: active ? { personal: active } : {},
+        datasets: [],
+        versions: [
+          {
+            id: version,
+            status: "completed",
+            evaluation: {
+              failed: 0,
+              independent_holdout: false,
+              regressions: [],
+              hybrid: { mrr_at_10: 0.5, ndcg_at_10: 0.5 },
+              logistic: { mrr_at_10: 0.6, ndcg_at_10: 0.6 },
+            },
+          },
+        ],
+      },
+    });
+  });
+  await page.goto("/");
+  await expect(page.getByText("2 images in this collection")).toBeVisible();
+  await page.getByText("Learning & models", { exact: true }).click();
+  await expect(
+    page
+      .locator(".training-panel article")
+      .getByText("Diagnostic judgments", { exact: false }),
+  ).toBeVisible();
+  expect(activations).toHaveLength(0);
+  await page
+    .getByRole("button", { name: "Activate cccccccc", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toContainText("acknowledgment");
+  await page
+    .getByLabel("Allow experimental activation", { exact: false })
+    .check();
+  await page
+    .getByRole("button", { name: "Activate cccccccc", exact: true })
+    .click();
+  await expect(
+    page.getByText("Logistic cccccccc", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Restore hybrid ranking", exact: true })
+    .click();
+  await expect(
+    page.locator(".training-panel strong").filter({ hasText: /^Hybrid$/ }),
+  ).toBeVisible();
+  expect(activations).toHaveLength(3);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+  ).toBe(false);
+});
