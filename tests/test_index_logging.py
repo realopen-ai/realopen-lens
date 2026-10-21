@@ -54,3 +54,29 @@ def test_log_streams_before_completion_and_keeps_result_protocol_clean(
     indexing.index_collection(tmp_path, index_dir=tmp_path / "index")
     assert capfd.readouterr().err == ""
     assert [item["log"] for item in options] == [True, False]
+
+
+def test_progress_observer_runs_before_child_completion_and_reaps_on_error(tmp_path, monkeypatch):
+    import pytest
+    from realopen_lens.indexing import service as indexing
+
+    original_popen = subprocess.Popen
+    processes = []
+
+    def worker(command, **kwargs):
+        process = original_popen([sys.executable, "-c", "import time; time.sleep(60)"], **kwargs)
+        processes.append(process)
+        return process
+
+    monkeypatch.setattr(indexing.subprocess, "Popen", worker)
+    observed = []
+
+    def progress(state):
+        assert processes[0].poll() is None
+        observed.append(state)
+        raise RuntimeError("observer stopped")
+
+    with pytest.raises(RuntimeError, match="observer stopped"):
+        indexing.index_collection(tmp_path, index_dir=tmp_path / "index", on_progress=progress)
+    assert observed and processes[0].poll() is not None
+    assert not list((tmp_path / "index" / "requests").glob("*.json"))
