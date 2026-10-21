@@ -88,6 +88,12 @@ class JudgmentInput(BaseModel):
     label: Literal["relevant", "irrelevant"]
 
 
+class DuplicateReviewInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    collection: str = "personal"
+    state: Literal["confirmed", "dismissed", "unreviewed"]
+
+
 def create_app(
     *,
     index_dir: Path,
@@ -218,6 +224,22 @@ def create_app(
         return Response(
             json.dumps({"detail": str(error)}), status_code=409, media_type="application/json"
         )
+
+    @app.post("/api/tasks/duplicates", status_code=202)
+    def scan_duplicates(body: Input):
+        return submit("duplicates", body.model_dump())
+
+    @app.get("/api/duplicates")
+    def duplicate_groups(collection: str = "personal", offset: int = 0, limit: int = 20):
+        from realopen_lens.organization.duplicates import browse
+
+        return browse(root, collection, offset, limit)
+
+    @app.post("/api/duplicates/{pair_id}/review")
+    def review_duplicate(pair_id: str, body: DuplicateReviewInput):
+        from realopen_lens.organization.duplicates import review
+
+        return review(root, body.collection, pair_id, body.state)
 
     @app.get("/api/virtual-collections")
     def virtual_collections(collection: str = "personal"):

@@ -11,6 +11,7 @@ from collections.abc import Callable
 import typer
 
 from realopen_lens.organization.cli import app as groups_app
+from realopen_lens.organization.duplicates_cli import app as duplicates_app
 
 app = typer.Typer(
     no_args_is_help=True, help="Private, offline collection indexing and image search."
@@ -460,6 +461,7 @@ def feedback_export(
 
 
 app.add_typer(groups_app, name="groups")
+app.add_typer(duplicates_app, name="duplicates")
 
 
 training_app = typer.Typer(

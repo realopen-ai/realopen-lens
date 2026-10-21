@@ -13,6 +13,7 @@ import {
 } from "./api";
 import "./style.css";
 import { ThemeSwitch } from "./ThemeSwitch";
+import { Duplicates } from "./Duplicates";
 import { Training } from "./Training";
 import {
   VirtualCollections,
@@ -229,11 +230,13 @@ function App() {
       setError(String(error));
     }
   }
-  function toggleImage(id: string) {
+  function toggleImage(image: ImageResult) {
+    const ids = [image.image_id, ...(image.duplicate_ids || [])];
     setSelected((old) => {
       const next = new Set(old);
-      if (next.has(id)) next.delete(id);
-      else if (next.size < 500) next.add(id);
+      if (ids.every((id) => next.has(id))) ids.forEach((id) => next.delete(id));
+      else if (new Set([...next, ...ids]).size <= 500)
+        ids.forEach((id) => next.add(id));
       else setError("Select up to 500 images per action.");
       return next;
     });
@@ -806,6 +809,7 @@ function App() {
             </p>
           )}
           <Training collection={collection} tasks={tasks} watch={watch} />
+          <Duplicates collection={collection} tasks={tasks} watch={watch} />
           {uploadBytes && (
             <section className="task-panel" aria-label="Upload progress">
               <span className="spinner" />
@@ -867,7 +871,9 @@ function App() {
                         ? "Training and evaluating"
                         : latest.kind === "prepare_training"
                           ? "Preparing reviewed data"
-                          : "Finding similar images"}{" "}
+                          : latest.kind === "duplicates"
+                            ? "Scanning duplicates"
+                            : "Finding similar images"}{" "}
                   · {latest.collection}
                 </strong>
                 <span>
@@ -884,10 +890,12 @@ function App() {
                       ? ` · ${latest.progress.files} files found`
                       : ""}
                   {latest.result?.images !== undefined
-                    ? ` · ${latest.result.images} searchable images`
+                    ? ` · ${latest.result.images} ${latest.kind === "duplicates" ? "indexed images" : "searchable images"}`
                     : ""}
                   {latest.status === "completed_with_errors"
-                    ? ` · ${latest.result?.failed_files || 0} failed, ${latest.result?.degraded_files || 0} degraded files`
+                    ? latest.kind === "duplicates"
+                      ? ` · ${latest.result?.errors?.length || 0} fingerprint errors`
+                      : ` · ${latest.result?.failed_files || 0} failed, ${latest.result?.degraded_files || 0} degraded files`
                     : ""}
                   {latest.error ? ` · ${latest.error}` : ""}
                 </span>
@@ -976,9 +984,23 @@ function App() {
             <div className="selection-controls">
               <button
                 className="text-button"
-                disabled={images.length > 500 || selectionBusy}
+                disabled={
+                  new Set(
+                    images.flatMap((image) => [
+                      image.image_id,
+                      ...(image.duplicate_ids || []),
+                    ]),
+                  ).size > 500 || selectionBusy
+                }
                 onClick={() =>
-                  setSelected(new Set(images.map((image) => image.image_id)))
+                  setSelected(
+                    new Set(
+                      images.flatMap((image) => [
+                        image.image_id,
+                        ...(image.duplicate_ids || []),
+                      ]),
+                    ),
+                  )
                 }
               >
                 Select visible images
@@ -1058,7 +1080,7 @@ function App() {
                       aria-label={`Select ${filename(image)}`}
                       checked={selected.has(image.image_id)}
                       disabled={selectionBusy || loading}
-                      onChange={() => toggleImage(image.image_id)}
+                      onChange={() => toggleImage(image)}
                     />
                   </label>
                   <button

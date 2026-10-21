@@ -77,12 +77,28 @@ def _record(
         config["query_runtime"] = "none"
     elif query["kind"] == "image" and trace["reused_embedding"]:
         config["query_runtime"] = "stored"
+    from realopen_lens.organization import duplicates, fingerprints
+
+    duplicate_snapshot = duplicates.snapshot(root, manifest)
+    if duplicate_snapshot is not None:
+        config["duplicate_snapshot"] = duplicate_snapshot["key"]
+        config["duplicate_policy"] = duplicate_snapshot["policy"]
     returned_ids = {r.image_id for r in results}
     candidates = {
         r["image_id"]: r for r in trace.get("candidates", []) if r["image_id"] in returned_ids
     }
     source_hashes = {}
-    for module in (search, images, ranking, identifiers, candidate_policy, features, logistic):
+    for module in (
+        search,
+        images,
+        ranking,
+        identifiers,
+        candidate_policy,
+        features,
+        logistic,
+        duplicates,
+        fingerprints,
+    ):
         if module.__file__ is None:
             raise ValueError("Ranking source provenance is unavailable")
         source = Path(module.__file__)
@@ -209,6 +225,8 @@ def export_feedback(output: Path, *, index_dir: Path | None = None, overwrite: b
         )
     }:
         raise ValueError("Export cannot replace an index database")
+    if output.is_relative_to((root / "duplicates").resolve()):
+        raise ValueError("Export cannot replace duplicate fingerprints or reviews")
     if output.exists() and not overwrite:
         raise ValueError("Export already exists; use overwrite explicitly")
     temporary = output.with_name(output.name + ".tmp-" + uuid4().hex)
@@ -257,6 +275,8 @@ def export_feedback(output: Path, *, index_dir: Path | None = None, overwrite: b
                         "candidate": candidate,
                         "candidate_schema": run.get("candidate_schema") if candidate else None,
                     }
+                    if result.get("duplicate_ids"):
+                        record["duplicate_ids"] = result["duplicate_ids"]
                     if "scope" in run:
                         record["scope"] = run["scope"]
                     stream.write(json.dumps(record, ensure_ascii=False, allow_nan=False) + "\n")

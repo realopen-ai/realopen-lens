@@ -370,3 +370,30 @@ def test_virtual_collections_cannot_add_unknown_sources_or_cross_parent(web):
         ).status_code
         == 422
     )
+
+
+def test_duplicate_scan_task_and_review_are_non_destructive(web):
+    from PIL import Image
+    from realopen_lens.models.manager import digest
+
+    client, root, store, run = web
+    with Image.open(root / "red.png") as source:
+        source.save(root / "alias.bmp")
+    run()
+    before = {p.name: digest(p) for p in root.iterdir()}
+    assert client.get("/api/duplicates").json()["scanned"] is False
+    response = client.post("/api/tasks/duplicates", json={"collection": "personal"})
+    assert response.status_code == 202
+    state = completed(client, response.json()["id"])
+    assert state["status"] == "completed", state
+    assert len(state["result"]["exact"]) == 1
+    events = client.get(f"/api/tasks/{state['id']}/events")
+    assert "finished" in events.text
+    page = client.get("/api/duplicates").json()
+    assert page["scanned"] and page["total"] == 1
+    assert len(page["groups"][0]["results"]) == 2
+    assert (
+        client.post("/api/duplicates/missing/review", json={"state": "confirmed"}).status_code
+        == 400
+    )
+    assert before == {p.name: digest(p) for p in root.iterdir()}

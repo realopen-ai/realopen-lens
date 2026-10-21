@@ -175,6 +175,12 @@ class TaskManager:
 
                     payload = train(Path(request["dataset"]), self.root, self.models, progress)
                 status = payload.get("status", "completed")
+            elif kind == "duplicates":
+                from realopen_lens.organization.duplicates import scan
+
+                self._release_session()
+                payload = scan(self.root, collection, progress)
+                status = payload["status"]
             elif kind == "index":
                 self._release_session()
                 result = index_collection(

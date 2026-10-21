@@ -164,13 +164,38 @@ def search_similar(
         if on_progress is not None:
             on_progress({"phase": "retrieval"})
         paths = source_paths(Path(found["root"]), manifest)
+        all_paths = paths
         if scope is not None:
             paths = {key: value for key, value in paths.items() if key in allowed}
         scores = vector_scores(visual, query, ids)
+        from realopen_lens.organization.duplicates import exact_groups, snapshot, collapse
+
+        groups = exact_groups(catalog.root, manifest, all_paths)
+        excluded = (
+            set(groups.get(image_id, (image_id,)))
+            if not include_self and image_id is not None
+            else set()
+        )
+        if not include_self:
+            duplicate_snapshot = snapshot(catalog.root, manifest)
+            if duplicate_snapshot is not None:
+                pixels = duplicate_snapshot.get("pixels", {})
+                query_pixels = pixels.get(image_id)
+                if query_pixels is None and image is not None:
+                    from realopen_lens.organization.fingerprints import fingerprint
+
+                    try:
+                        query_pixels = fingerprint(image)["pixels"]
+                    except (OSError, ValueError):
+                        query_pixels = None  # Same multi-frame/size eligibility as the scan.
+                    if digest(image) != image_id:
+                        raise ValueError("Query image changed during duplicate validation")
+                if query_pixels is not None:
+                    excluded.update(key for key, value in pixels.items() if value == query_pixels)
         ranking = sorted(
-            (key for key in scores if key in paths and (include_self or key != image_id)),
+            (key for key in scores if key in paths and key not in excluded),
             key=lambda key: (-scores[key], key),
-        )[:limit]
+        )
         if trace is not None:
             trace.update(
                 generation=generation["id"],
@@ -181,7 +206,8 @@ def search_similar(
                 searchable_images=len(paths),
                 include_self=include_self,
             )
-        results = search_results(catalog, manifest, paths, ranking, scores)
+        ranking = collapse(ranking, groups)[:limit]
+        results = search_results(catalog, manifest, paths, ranking, scores, deduplicate=True)
         if scope is not None:
             ensure_scope(catalog.root, found["id"], scope)
             if trace is not None:
