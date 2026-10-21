@@ -220,3 +220,10 @@ Create named selections from card checkboxes or the sidebar, then browse and sea
 their members. Rename/delete controls and revision checks keep concurrent edits
 explicit. See [virtual collections](virtual-collections.md) for membership semantics,
 source refreshes, CLI commands and scoped-feedback limitations.
+
+## Duplicate review
+
+The **Duplicate groups** panel scans the selected source with live SSE progress,
+then shows exact pixel groups and reviewable near-duplicate suggestions. Scanning
+enables exact-copy collapse in subsequent searches; folder browsing retains file
+identities. See [duplicate groups](duplicate-groups.md) for refresh and review rules.

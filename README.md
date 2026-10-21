@@ -238,3 +238,6 @@ activation and rollback. See [feedback training](docs/feedback-training.md).
 
 [Virtual collections](docs/virtual-collections.md) let you save named image selections,
 browse them and search within them while keeping source files in place.
+
+See [duplicate groups](docs/duplicate-groups.md) for exact pixel result collapse,
+local near-duplicate review and resumable scans.
