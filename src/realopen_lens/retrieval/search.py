@@ -203,8 +203,12 @@ def search_collection(
             raise ValueError("Unsupported collection SigLIP2 precision")
         if siglip_precision is not None and siglip_precision != precision:
             raise ValueError("Requested SigLIP2 precision differs from this collection")
-        if learned is not None and precision != "int8":
-            raise ValueError("Existing reranker encoder compatibility requires INT8 SigLIP2")
+        if learned is not None and precision != learned.compatibility.get(
+            "siglip_precision", "int8"
+        ):
+            if "siglip_precision" not in learned.compatibility:
+                raise ValueError("Existing reranker encoder compatibility requires INT8 SigLIP2")
+            raise ValueError("Reranker SigLIP2 precision differs from this collection")
         if learned is not None and any(
             manifest["config"]["spec"].get(key) != value
             for key, value in learned.compatibility.items()

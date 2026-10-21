@@ -58,7 +58,7 @@ def load(path: Path) -> LogisticReranker:
         model = json.loads(payload)
         if (
             type(model["version"]) is not int
-            or model["version"] not in (1, 2)
+            or model["version"] not in (1, 2, 3)
             or model["kind"] != "logistic_regression"
             or model["feature_schema"] != VERSION
             or model["features"] != list(NAMES)
@@ -72,11 +72,20 @@ def load(path: Path) -> LogisticReranker:
             or (arrays[1] <= 0).any()
             or not np.isfinite(intercept)
             or not isinstance(model["compatibility"], dict)
-            or set(model["compatibility"]) != {"model_registry", "inference_sha256"}
+            or set(model["compatibility"])
+            != (
+                {"model_registry", "inference_sha256", "siglip_precision"}
+                if model["version"] == 3
+                else {"model_registry", "inference_sha256"}
+            )
+            or (
+                model["version"] == 3
+                and model["compatibility"]["siglip_precision"] not in {"int8", "fp32"}
+            )
         ):
             raise ValueError("Invalid reranker parameters or encoder compatibility")
         scope, profile = "union", "full"
-        if model["version"] == 2:
+        if model["version"] in (2, 3):
             scope, profile = model["rerank_scope"], model["feature_profile"]
             if scope not in ("union", "hybrid50"):
                 raise ValueError("Unknown reranking scope")
