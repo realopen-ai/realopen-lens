@@ -38,6 +38,7 @@ class SearchInput(ScopedInput):
     mode: Literal["hybrid", "visual", "lexical", "semantic"] = "hybrid"
     limit: int = Field(default=50, ge=1, le=100)
     save_run: bool = False
+    use_feedback: bool = True
 
 
 class SimilarInput(ScopedInput):
@@ -86,6 +87,7 @@ class ActivationInput(Input):
 class JudgmentInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     label: Literal["relevant", "irrelevant"]
+    expected_event_id: int | None = Field(default=None, ge=0)
 
 
 class DuplicateReviewInput(BaseModel):
@@ -462,18 +464,52 @@ def create_app(
             stream(), media_type="text/event-stream", headers={"X-Accel-Buffering": "no"}
         )
 
+    from realopen_lens.storage.feedback import FeedbackConflict
+
+    @app.exception_handler(FeedbackConflict)
+    async def stale_feedback(request: Request, error: FeedbackConflict):
+        return Response(
+            json.dumps({"detail": str(error)}), status_code=409, media_type="application/json"
+        )
+
+    @app.get("/api/feedback/hidden")
+    def hidden_feedback(
+        query: str,
+        collection: str = "personal",
+        virtual_collection: str | None = None,
+        virtual_revision: int | None = None,
+        offset: int = 0,
+        limit: int = 50,
+    ):
+        from realopen_lens.retrieval.memory import hidden
+
+        return hidden(
+            root,
+            query,
+            collection=collection,
+            virtual_collection=virtual_collection,
+            virtual_revision=virtual_revision,
+            offset=offset,
+            limit=limit,
+        )
+
     @app.get("/api/feedback/runs/{run_id}")
     def saved(run_id: str):
         return feedback.saved_search(run_id, index_dir=root)
 
     @app.put("/api/feedback/runs/{run_id}/{image_id}")
     def judge(run_id: str, image_id: str, body: JudgmentInput):
-        return feedback.judge(run_id, image_id, body.label, index_dir=root)
+        result = feedback.change_judgment(
+            run_id, image_id, body.label, index_dir=root, expected_event_id=body.expected_event_id
+        )
+        return {**(result["judgment"] or {}), "memory": result["memory"]}
 
     @app.delete("/api/feedback/runs/{run_id}/{image_id}")
-    def remove(run_id: str, image_id: str):
-        feedback.remove_judgment(run_id, image_id, index_dir=root)
-        return {"removed": True}
+    def remove(run_id: str, image_id: str, expected_event_id: int | None = None):
+        result = feedback.change_judgment(
+            run_id, image_id, None, index_dir=root, expected_event_id=expected_event_id
+        )
+        return {"removed": True, "memory": result["memory"]}
 
     static = static_dir or Path(__file__).parent / "static"
     if static.is_dir():

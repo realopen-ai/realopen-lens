@@ -418,3 +418,28 @@ def test_feedback_review_download_includes_cohort_and_duplicate_audit_context(we
     assert audit["duplicate_constraints"]["components"] == {}
     assert template["runs"][run_id]["split"] == ""
     assert not template["independent_holdout"]
+
+
+def test_query_memory_is_applied_browsable_and_safely_cleared(web):
+    client, root, store, run = web
+    launch = client.post("/api/tasks/search", json={"query": "red", "save_run": True}).json()
+    baseline = completed(client, launch["id"])["result"]
+    saved, key = baseline["run_id"], baseline["results"][0]["image_id"]
+    path = f"/api/feedback/runs/{saved}/{key}"
+    changed = client.put(path, json={"label": "irrelevant", "expected_event_id": 0}).json()
+    event = changed["memory"]["event_id"]
+    assert client.delete(path + "?expected_event_id=0").status_code == 409
+    launch = client.post("/api/tasks/search", json={"query": "  RED  "}).json()
+    applied = completed(client, launch["id"])["result"]
+    assert applied["feedback"]["applied"]
+    assert key not in [row["image_id"] for row in applied["results"]]
+    hidden = client.get("/api/feedback/hidden", params={"query": "red"}).json()
+    assert hidden["total"] == 1 and hidden["results"][0]["feedback"]["event_id"] == event
+    launch = client.post("/api/tasks/search", json={"query": "red", "use_feedback": False}).json()
+    disabled = completed(client, launch["id"])["result"]
+    assert not disabled["feedback"]["enabled"]
+    assert [row["image_id"] for row in disabled["results"]] == [
+        row["image_id"] for row in baseline["results"]
+    ]
+    assert client.delete(path + f"?expected_event_id={event}").json()["memory"]["label"] is None
+    assert client.get("/api/feedback/hidden", params={"query": "red"}).json()["total"] == 0

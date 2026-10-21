@@ -208,7 +208,10 @@ class TaskManager:
                     )
                     self.identity = identity
                 assert self.session is not None
+                feedback_state: dict = {}
                 kwargs = {
+                    "use_feedback": request.get("use_feedback", True),
+                    "feedback_trace": feedback_state,
                     "limit": request["limit"],
                     "mode": request["mode"],
                     "on_progress": progress,
@@ -237,6 +240,7 @@ class TaskManager:
                     "results": [asdict(r) for r in results],
                     "run_id": run_id,
                     "ranking": ranking,
+                    "feedback": feedback_state,
                 }
                 status = "completed"
             else:
