@@ -1,6 +1,7 @@
 """Search a published collection with existing visual, lexical, and hybrid ranking."""
 
 from dataclasses import dataclass
+from collections.abc import Callable
 import json
 from pathlib import Path
 import sqlite3
@@ -140,6 +141,7 @@ def search_collection(
     siglip_precision: str | None = None,
     query_encoder: ResidentQueryEncoder | None = None,
     profile: dict | None = None,
+    on_progress: Callable[[dict], None] | None = None,
 ) -> list[SearchResult]:
     """Search the active generation; optional hybrid trace exposes bounded channel pools.
 
@@ -188,6 +190,8 @@ def search_collection(
         trace.clear()
         if mode != "hybrid":
             raise ValueError("Candidate tracing requires hybrid mode")
+    if on_progress is not None:
+        on_progress({"phase": "index_verification"})
     catalog = Catalog(index_dir or default_directory(), readonly=True)
     index = None
     try:
@@ -212,6 +216,8 @@ def search_collection(
                 manifest_sha256=generation["checksum"],
                 siglip_precision=precision,
             )
+        if on_progress is not None:
+            on_progress({"phase": "source_validation"})
         paths_by_id = source_paths(Path(found["root"]), manifest)
         lookup = {
             row["image_id"]: row for row in manifest["images"] if row["image_id"] in paths_by_id
@@ -246,12 +252,16 @@ def search_collection(
             for name in ("numpy", "onnxruntime", "tokenizers"):
                 if spec["packages"][name] != version(name):
                     raise ValueError("Query encoder dependencies changed; run 'lens index' again")
+            if on_progress is not None:
+                on_progress({"phase": "model_verification"})
             if query_encoder is None:
                 verify(models, "int8", precision)
             else:
                 query_encoder.verify(models, threads, precision)
             stage("model_verification_seconds")
             if mode in {"hybrid", "visual"}:
+                if on_progress is not None:
+                    on_progress({"phase": "encoding_visual_query"})
                 visual_query = (
                     query_encoder.encode(query, "siglip2", models, threads, precision)
                     if query_encoder is not None
@@ -263,12 +273,16 @@ def search_collection(
                 )
                 stage("visual_encoder_seconds")
             if mode in {"hybrid", "semantic"}:
+                if on_progress is not None:
+                    on_progress({"phase": "encoding_semantic_query"})
                 semantic_query = (
                     query_encoder.encode(query, "e5", models, threads, precision)
                     if query_encoder is not None
                     else query_vector(query, "e5", models, threads)
                 )
                 stage("semantic_encoder_seconds")
+        if on_progress is not None:
+            on_progress({"phase": "retrieval"})
         path = local_path(catalog.root, manifest["artifacts"]["lexical"]["path"])
         index = (
             sqlite3.connect(path.as_uri() + "?mode=ro", uri=True)
@@ -341,6 +355,8 @@ def search_collection(
                 trace["reranker_sha256"] = learned.sha256
                 trace["reranker_scope"] = learned.scope
         stage("retrieval_seconds")
+        if on_progress is not None:
+            on_progress({"phase": "result_validation"})
         results = search_results(catalog, manifest, paths_by_id, ranking, scores)
         stage("result_validation_seconds")
         return results

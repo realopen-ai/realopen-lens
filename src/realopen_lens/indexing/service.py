@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, asdict, field
 from importlib.metadata import version
+from collections.abc import Callable
 import json
 import logging
 import os
@@ -348,6 +349,7 @@ def index_collection(
     rehash: bool = False,
     log: bool = False,
     siglip_precision: str = "int8",
+    on_progress: Callable[[dict], None] | None = None,
 ) -> IndexResult:
     if not 1 <= threads <= 8 or not collection.strip() or len(collection) > 128:
         raise ValueError("Use 1–8 threads and a collection name of 1–128 characters")
@@ -368,6 +370,12 @@ def index_collection(
     request = store / "requests" / (identifier() + ".json")
     atomic_bytes(request, json.dumps(options).encode())
     process = None
+    previous_job = None
+    if on_progress is not None:
+        try:
+            previous_job = (collection_status(collection, store).get("job") or {}).get("id")
+        except (OSError, ValueError):
+            pass
     try:
         process = subprocess.Popen(
             [sys.executable, "-m", "realopen_lens.runtime.worker", "--request", str(request)],
@@ -376,15 +384,32 @@ def index_collection(
             env=environment(threads),
             start_new_session=sys.platform != "win32",
         )
-        output, errors = process.communicate()
+        if on_progress is None:
+            output, errors = process.communicate()
+        else:
+            while True:
+                progress: dict = {"phase": "starting"}
+                try:
+                    status = collection_status(collection, store)
+                    job = status.get("job")
+                    if job and job["id"] != previous_job:
+                        progress = job
+                except (OSError, ValueError):
+                    pass
+                on_progress(progress)
+                try:
+                    output, errors = process.communicate(timeout=0.5)
+                    break
+                except subprocess.TimeoutExpired:
+                    continue
         if process.returncode:
             raise RuntimeError(
                 (errors or b"").decode(errors="replace")[-2000:]
                 or "Index worker failed (see stderr for details)"
             )
         return IndexResult(**json.loads(output))
-    except KeyboardInterrupt:
-        if process is not None:
+    except BaseException:
+        if process is not None and process.poll() is None:
             if sys.platform != "win32":
                 os.kill(process.pid, signal.SIGTERM)
             else:
@@ -445,6 +470,9 @@ def collection_status(collection: str, index_dir: Path | None = None) -> dict:
                     if job["current_image"] is not None and r["image_id"] == job["current_image"]
                 ],
                 "phase_completed_images": completed,
+                "unique_images": len(
+                    {r["image_id"] for r in files if r["image_id"] and r["status"] != "error"}
+                ),
                 "failures": [
                     {"path": r["path"], "error": r["error"]}
                     for r in files

@@ -22,6 +22,10 @@ lens = "realopen_lens.cli:app"
 
 [project.optional-dependencies]
 text-regions = ["opencv-python-headless>=4.13,<6"]
+web = [
+    "fastapi>=0.115,<1",
+    "uvicorn>=0.34,<1",
+]
 
 [dependency-groups]
 dev = [
@@ -31,6 +35,7 @@ dev = [
   "ruff>=0.12,<1",
   "mypy>=1.17,<2",
   "types-psutil>=7,<8",
+  "httpx>=0.28,<1",
 ]
 ocr-eval = [
     "rapidocr[rtl]==3.10.0",
@@ -38,6 +43,9 @@ ocr-eval = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/realopen_lens"]
+
+[tool.hatch.build]
+artifacts = ["src/realopen_lens/api/static/**"]
 
 [tool.black]
 target-version = ["py312"]

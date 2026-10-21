@@ -1,6 +1,7 @@
 """Visual similarity queries against immutable saved collection generations."""
 
 from importlib.metadata import version
+from collections.abc import Callable
 import json
 from pathlib import Path
 import subprocess
@@ -79,6 +80,7 @@ def search_similar(
     include_self: bool = False,
     siglip_precision: str | None = None,
     trace: dict | None = None,
+    on_progress: Callable[[dict], None] | None = None,
 ) -> list[SearchResult]:
     """Find visually similar images using a local path OR a published image ID.
 
@@ -106,6 +108,8 @@ def search_similar(
         if query_signature["size"] > 64 * 1024 * 1024:
             raise ValueError("Query image exceeds 64 MiB encoded size")
         image_id = digest(image)
+    if on_progress is not None:
+        on_progress({"phase": "index_verification"})
     catalog = Catalog(index_dir or default_directory(), readonly=True)
     try:
         found, generation = catalog.snapshot(collection)
@@ -123,14 +127,31 @@ def search_similar(
         elif image is None:
             raise ValueError("Image ID is not in this collection's active generation")
         else:
+            if on_progress is not None:
+                on_progress({"phase": "model_verification"})
             verify_image_encoder(manifest["config"]["spec"], models, precision)
+            if on_progress is not None:
+                on_progress({"phase": "encoding_image"})
             query = image_vector(image, models, threads, precision)
-        if image is not None and signature(image) != query_signature:
-            raise ValueError("Query image changed during search; retry with a stable file")
+        if image is not None:
+            assert query_signature is not None
+            after = signature(image)
+            if after != query_signature:
+                # Reading a new file can trigger metadata-only ctime changes on
+                # some filesystems. Confirm its bytes rather than rejecting it.
+                stable = ("size", "mtime_ns", "device", "inode")
+                if (
+                    any(after[key] != query_signature[key] for key in stable)
+                    or digest(image) != image_id
+                    or any(signature(image)[key] != after[key] for key in stable)
+                ):
+                    raise ValueError("Query image changed during search; retry with a stable file")
         norm = np.linalg.norm(query)
         if query.shape != (768,) or not np.isfinite(norm) or norm == 0:
             raise ValueError("Invalid image query embedding")
         query = query / norm
+        if on_progress is not None:
+            on_progress({"phase": "retrieval"})
         paths = source_paths(Path(found["root"]), manifest)
         scores = vector_scores(visual, query, ids)
         ranking = sorted(
