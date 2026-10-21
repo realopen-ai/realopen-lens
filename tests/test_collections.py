@@ -1285,6 +1285,37 @@ def test_empty_recorded_search_has_no_implied_negative_labels(app):
     assert saved["results"] == [] and saved["judgments"] == [] and saved["candidates"] == {}
 
 
+def test_search_progress_reports_work_before_model_calls_without_changing_results(app, monkeypatch):
+    root, store, calls, run = app
+    image(root / "one.png")
+    run()
+    phases = []
+
+    def vector(text, kind, *args):
+        assert phases[-1] == (
+            "encoding_visual_query" if kind == "siglip2" else "encoding_semantic_query"
+        )
+        return np.eye(1, 768 if kind == "siglip2" else 384, dtype=np.float32)[0]
+
+    def verify(*args):
+        assert phases[-1] == "model_verification"
+
+    monkeypatch.setattr(search, "query_vector", vector)
+    monkeypatch.setattr(search, "verify", verify)
+    results = search.search_collection(
+        "ERR_42", index_dir=store, on_progress=lambda p: phases.append(p["phase"])
+    )
+    assert results and phases == [
+        "index_verification",
+        "source_validation",
+        "model_verification",
+        "encoding_visual_query",
+        "encoding_semantic_query",
+        "retrieval",
+        "result_validation",
+    ]
+
+
 @pytest.mark.parametrize("change_bytes", [False, True])
 def test_image_query_tolerates_metadata_only_changes_but_rechecks_content(
     app, monkeypatch, change_bytes
