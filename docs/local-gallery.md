@@ -199,3 +199,10 @@ Local results, SSE snapshots, diagnostics, scripts and screenshots are retained
 under `runs/local-gallery-v1/` and remain ignored because they can contain private
 paths or collection images. Both core-only and gallery-containing wheels were
 built successfully; installed Python and compiled-asset hashes matched checkout.
+
+## Reviewed local learning
+
+The **Learning & models** panel connects explicit feedback to reviewed dataset preparation,
+logistic training, production evaluation and explicit activation/rollback. Jobs use the same
+live progress and cancellation controls. See [feedback training](feedback-training.md) for
+review requirements, compatibility and metric limitations.
