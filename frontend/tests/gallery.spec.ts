@@ -39,6 +39,7 @@ async function setup(page: Page) {
         contentType: "application/json",
         body: JSON.stringify(body),
       });
+    if (path === "/api/virtual-collections") return json([]);
     if (path === "/api/session") return json({ allowed_roots: ["/photos"] });
     if (path === "/api/collections")
       return json([
@@ -469,4 +470,296 @@ test("theme switch works when browser storage is unavailable", async ({
   await page.goto("/");
   await page.getByRole("button", { name: "Switch to dark mode" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+});
+
+test("virtual collections create, add, browse, rename, remove and delete", async ({
+  page,
+}) => {
+  await setup(page);
+  let group: {
+    id: string;
+    name: string;
+    revision: number;
+    collection_id: string;
+  } | null = null;
+  const members = new Set<string>();
+  const first = {
+    rank: 1,
+    image_id: "a".repeat(64),
+    paths: ["/photos/red.png"],
+    thumbnail: "thumb",
+    width: 640,
+    height: 480,
+    text: "Invoice 004231",
+    visual_similarity: 0.8,
+    status: "ready",
+    issues: [],
+  };
+  await page.route("**/api/virtual-collections**", async (route) => {
+    const request = route.request(),
+      url = new URL(request.url()),
+      body = JSON.parse(request.postData() || "{}");
+    const value = () =>
+      group
+        ? {
+            ...group,
+            member_count: members.size,
+            available_count: members.size,
+            unavailable_count: 0,
+          }
+        : null;
+    if (url.pathname === "/api/virtual-collections") {
+      if (request.method() === "POST")
+        group = {
+          id: "c".repeat(32),
+          name: body.name,
+          revision: 1,
+          collection_id: "parent",
+        };
+      return route.fulfill({
+        json: request.method() === "POST" ? value() : group ? [value()] : [],
+      });
+    }
+    if (url.pathname.endsWith("/images"))
+      return route.fulfill({
+        json: {
+          results: members.size ? [first] : [],
+          total: members.size,
+          generation: "g",
+          member_count: members.size,
+          unavailable_count: 0,
+        },
+      });
+    if (url.pathname.endsWith("/members")) {
+      for (const id of body.image_ids) {
+        if (request.method() === "POST") members.add(id);
+        else members.delete(id);
+      }
+      group!.revision++;
+    } else if (request.method() === "PATCH") {
+      group!.name = body.name;
+      group!.revision++;
+    } else if (request.method() === "DELETE") group = null;
+    return route.fulfill({ json: value() || { deleted: true } });
+  });
+  await page
+    .getByRole("checkbox", { name: "Select red.png", exact: true })
+    .check();
+  await page
+    .getByRole("button", { name: "New collection", exact: true })
+    .click();
+  await expect(page.locator(".overlay")).toHaveCSS("position", "fixed");
+  const dialogBounds = await page.getByRole("dialog").boundingBox();
+  const viewport = page.viewportSize()!;
+  expect(dialogBounds!.x).toBeGreaterThanOrEqual(0);
+  expect(dialogBounds!.y).toBeGreaterThanOrEqual(0);
+  expect(dialogBounds!.x + dialogBounds!.width).toBeLessThanOrEqual(
+    viewport.width,
+  );
+  expect(dialogBounds!.y + dialogBounds!.height).toBeLessThanOrEqual(
+    viewport.height,
+  );
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+  ).toBe(false);
+  await page.getByLabel("Collection name", { exact: true }).fill("Work");
+  await page
+    .getByRole("button", { name: "Create collection", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Add selected", exact: true }).click();
+  await expect(page.getByRole("status")).toContainText("Saved the selection");
+  await page
+    .getByRole("button", { name: "Open virtual collection Work", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "View green.png", exact: true }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("checkbox", { name: "Select red.png", exact: true })
+    .check();
+  await page
+    .getByRole("button", { name: "Remove from collection", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "View red.png", exact: true }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("button", {
+      name: "Manage virtual collection Work",
+      exact: true,
+    })
+    .click();
+  await page.getByLabel("Collection name", { exact: true }).fill("Favorites");
+  await page.getByRole("button", { name: "Save name", exact: true }).click();
+  await page
+    .getByRole("button", {
+      name: "Manage virtual collection Favorites",
+      exact: true,
+    })
+    .click();
+  await page
+    .getByRole("button", { name: "Delete collection…", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toContainText(
+    "Original image files stay",
+  );
+  await page
+    .getByRole("button", { name: "Delete collection", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "View green.png", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", {
+      name: "Open virtual collection Favorites",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("checkbox", { name: "Select red.png", exact: true })
+    .check();
+  await expect(
+    page.getByRole("button", { name: "Add selected", exact: true }),
+  ).toBeDisabled();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+  ).toBe(false);
+});
+
+test("virtual search requests preserve scope and stale membership is explicit", async ({
+  page,
+}) => {
+  await setup(page);
+  const group = {
+    id: "c".repeat(32),
+    name: "I".repeat(80),
+    revision: 2,
+    collection_id: "parent",
+    member_count: 1,
+    available_count: 1,
+    unavailable_count: 0,
+  };
+  await page.route("**/api/virtual-collections**", async (route) => {
+    if (new URL(route.request().url()).pathname.endsWith("/images")) {
+      return route.fulfill({
+        json: {
+          results: [
+            {
+              rank: 1,
+              image_id: "a".repeat(64),
+              paths: ["/photos/red.png"],
+              thumbnail: "thumb",
+              width: 640,
+              height: 480,
+              text: "Invoice",
+              visual_similarity: 0.8,
+              status: "ready",
+              issues: [],
+            },
+          ],
+          total: 1,
+          generation: "g",
+          unavailable_count: 0,
+        },
+      });
+    }
+    if (route.request().method() === "POST") {
+      group.revision++;
+      return route.fulfill({
+        status: 409,
+        json: { detail: "Virtual collection changed; refresh and retry" },
+      });
+    }
+    return route.fulfill({ json: [group] });
+  });
+  await page.route("**/api/tasks/test/events", async (route) => {
+    const state = {
+      id: "test",
+      kind: "search",
+      collection: "personal",
+      virtual_collection: group.id,
+      virtual_revision: group.revision,
+      status: "completed",
+      phase: "finished",
+      revision: 2,
+      elapsed_seconds: 1,
+      error: null,
+      progress: {},
+      result: {
+        run_id: null,
+        results: [
+          {
+            rank: 1,
+            image_id: "a".repeat(64),
+            paths: ["/photos/red.png"],
+            thumbnail: "thumb",
+            width: 640,
+            height: 480,
+            text: "Invoice",
+            visual_similarity: 0.8,
+            status: "ready",
+            issues: [],
+          },
+        ],
+      },
+    };
+    return route.fulfill({
+      contentType: "text/event-stream",
+      body: `event: progress\ndata: ${JSON.stringify(state)}\n\n`,
+    });
+  });
+  await page.reload();
+  await page
+    .getByRole("button", {
+      name: `Open virtual collection ${group.name}`,
+      exact: true,
+    })
+    .click();
+  const requestPromise = page.waitForRequest(
+    (request) =>
+      request.url().endsWith("/api/tasks/search") &&
+      request.method() === "POST",
+  );
+  await page
+    .getByRole("textbox", { name: "Search images", exact: true })
+    .fill("invoice");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  const request = await requestPromise;
+  expect(request.postDataJSON()).toMatchObject({
+    virtual_collection: group.id,
+    virtual_revision: 2,
+  });
+  await expect(
+    page.getByRole("button", { name: "View red.png", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("checkbox", { name: "Select red.png", exact: true })
+    .check();
+  await page
+    .getByLabel("Add to virtual collection", { exact: true })
+    .selectOption(group.id);
+  await page.getByRole("button", { name: "Add selected", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText("refresh and retry");
+  await page
+    .getByRole("button", { name: "Refresh collection", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  const nextRequest = page.waitForRequest(
+    (request) =>
+      request.url().endsWith("/api/tasks/search") &&
+      request.method() === "POST",
+  );
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  expect((await nextRequest).postDataJSON()).toMatchObject({
+    virtual_revision: 3,
+  });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+  ).toBe(false);
 });
