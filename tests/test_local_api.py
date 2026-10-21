@@ -240,3 +240,54 @@ def test_verified_gallery_cache_invalidates_when_artifact_changes(web):
         catalog.close()
     (store / manifest["artifacts"]["vision"]["path"]).write_bytes(b"changed")
     assert client.get(route).status_code == 404
+
+
+def test_training_review_rejects_unscoped_inputs_and_unavailable_datasets(web):
+    client, root, store, run = web
+    assert client.get("/api/training/models").json()["active"] == {}
+    response = client.post(
+        "/api/tasks/prepare-training", json={"review": {"feedback_file": "../feedback.sqlite3"}}
+    )
+    assert response.status_code == 400
+    assert client.post("/api/tasks/train", json={"dataset_id": "a" * 32}).status_code == 400
+    assert client.post("/api/tasks/train", json={"dataset_id": "../escape"}).status_code == 422
+    assert (
+        client.post("/api/training/activation", json={"model_version": "../escape"}).status_code
+        == 422
+    )
+    assert client.post("/api/training/activation", json={}).json()["active"] == {}
+
+
+def test_training_tasks_use_existing_queue_and_observable_progress(web, monkeypatch):
+    client, root, store, run = web
+    from realopen_lens.learning import dataset, workflow
+
+    def prepare(index_dir, review, output, on_progress):
+        assert index_dir == store.resolve()
+        assert review.is_file()
+        on_progress({"phase": "preparing", "completed": 1, "total": 3})
+        output.mkdir(parents=True)
+        (output / "dataset.json").write_text("{}", encoding="utf-8")
+        return {"dataset": str(output), "queries": 3}
+
+    def train(path, index_dir, models, on_progress):
+        assert path.name == "dataset.json"
+        on_progress({"phase": "training", "step": 2, "max_steps": 100})
+        return {"id": "b" * 32, "status": "completed"}
+
+    monkeypatch.setattr(dataset, "prepare", prepare)
+    monkeypatch.setattr(workflow, "train", train)
+    queued = client.post(
+        "/api/tasks/prepare-training", json={"review": {"feedback_file": "a" * 32 + ".jsonl"}}
+    )
+    assert queued.status_code == 202
+    prepared = completed(client, queued.json()["id"])
+    assert prepared["kind"] == "prepare_training" and prepared["status"] == "completed"
+    dataset_id = Path(prepared["result"]["dataset"]).name
+    response = client.post("/api/tasks/train", json={"dataset_id": dataset_id})
+    trained = completed(client, response.json()["id"])
+    assert trained["kind"] == "train" and trained["status"] == "completed"
+    assert trained["progress"]["step"] == 2
+    events = client.get(f"/api/tasks/{trained['id']}/events")
+    assert '"kind": "train"' in events.text
+    assert '"step": 2' in events.text
