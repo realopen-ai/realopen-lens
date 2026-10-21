@@ -1772,3 +1772,239 @@ footer > span:first-child {
     flex-direction: column;
   }
 }
+
+[hidden] {
+  display: none !important;
+}
+.sidebar {
+  overflow-y: auto;
+}
+.tools-label {
+  margin-top: 24px;
+}
+.tools-nav {
+  display: grid;
+  gap: 4px;
+}
+.tools-nav .nav-item {
+  font-size: 12px;
+  padding: 10px;
+}
+.tools-nav .mobile-library {
+  display: none;
+}
+.content {
+  padding-top: 24px;
+}
+.library-search .page-heading {
+  margin-bottom: 16px;
+}
+.library-search .page-heading h1 {
+  font-size: 26px;
+  margin: 0;
+}
+.search-options {
+  padding-bottom: 8px;
+}
+.query-options {
+  margin: 4px 0 10px;
+  font-size: 12px;
+}
+.query-options > summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+.query-options .query-memory {
+  max-width: 680px;
+  font-size: 13px;
+}
+.gallery-heading {
+  border-top: 0;
+  padding-top: 12px;
+  margin-bottom: 12px;
+}
+.ranking-caption,
+.feedback-caption {
+  font-size: 11px;
+  color: var(--muted);
+}
+.feedback-caption {
+  margin: 0 0 10px;
+}
+.task-panel[data-task-id] {
+  position: fixed;
+  bottom: 16px;
+  left: 242px;
+  right: 24px;
+  max-width: 780px;
+  z-index: 5;
+  box-shadow: 0 5px 24px var(--shadow);
+  margin: 0;
+}
+.task-panel[data-task-id] .task-description {
+  max-height: 100px;
+  overflow-y: auto;
+}
+.view-learning > div:not([hidden]) > h1,
+.view-duplicates > div:not([hidden]) > h1 {
+  margin-top: 0;
+}
+.workspace-panel {
+  max-width: 900px;
+  padding-bottom: 30px;
+}
+.workspace-panel h1 {
+  margin-top: 0;
+}
+.workspace-panel p {
+  line-height: 1.6;
+}
+.workspace-facts {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 14px;
+  margin: 28px 0;
+  font-size: 13px;
+}
+.workspace-facts dt {
+  color: var(--muted);
+}
+.workspace-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.workspace-details {
+  padding: 14px 0;
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.workspace-import {
+  margin-top: 20px;
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.workspace-import h2 {
+  font-size: 19px;
+  margin-top: 0;
+}
+.workspace-import label {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0;
+  font-size: 13px;
+}
+.workspace-import input,
+.workspace-import textarea {
+  width: 100%;
+  color: var(--text);
+  background: var(--surface-soft);
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  padding: 11px;
+  font: inherit;
+}
+.workspace-import textarea {
+  resize: vertical;
+}
+.import-preview {
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface-muted);
+  overflow-wrap: anywhere;
+}
+.import-preview code {
+  display: block;
+  white-space: pre-wrap;
+  font-size: 12px;
+}
+.activity-row {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.activity-row > span {
+  color: var(--muted);
+}
+@media (max-width: 650px) {
+  .sidebar {
+    overflow: visible;
+  }
+  .tools-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 12px;
+  }
+  .tools-nav .nav-item,
+  .tools-nav .mobile-library {
+    display: inline-flex;
+    width: auto;
+    padding: 7px;
+    font-size: 10px;
+    gap: 5px;
+  }
+  .tools-nav .nav-item svg {
+    width: 14px;
+    height: 14px;
+  }
+  .content {
+    padding-top: 18px;
+  }
+  .library-search .page-heading {
+    display: flex;
+    gap: 10px;
+  }
+  .library-search .page-heading > .primary {
+    margin-top: 0;
+    padding: 9px;
+  }
+  .library-search .page-heading h1 {
+    font-size: 24px;
+  }
+  .task-panel[data-task-id] {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+  }
+  .workspace-facts {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+  .workspace-facts dd {
+    margin-bottom: 10px;
+  }
+  .workspace-import {
+    padding: 14px;
+  }
+  .workspace-import button {
+    white-space: normal;
+  }
+  .gallery-context .ranking-caption {
+    display: none;
+  }
+}
+
+.topbar-actions .add-folder {
+  padding: 7px 10px;
+  font-size: 11px;
+  gap: 5px;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

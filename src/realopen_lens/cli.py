@@ -10,6 +10,7 @@ from collections.abc import Callable
 
 import typer
 
+from realopen_lens.workspace.cli import app as workspace_app
 from realopen_lens.organization.cli import app as groups_app
 from realopen_lens.organization.duplicates_cli import app as duplicates_app
 
@@ -20,6 +21,7 @@ models_app = typer.Typer(
     no_args_is_help=True, help="Explicit model downloads and integrity checks."
 )
 app.add_typer(models_app, name="models")
+app.add_typer(workspace_app, name="workspace")
 feedback_app = typer.Typer(no_args_is_help=True, help="Explicit local search relevance judgments.")
 app.add_typer(feedback_app, name="feedback")
 
@@ -587,7 +589,7 @@ def training_disable(collection: str, index_dir: Annotated[Path | None, typer.Op
 @app.command("serve")
 def serve_gallery(
     index_dir: Annotated[Path | None, typer.Option()] = None,
-    models: Annotated[Path, typer.Option()] = Path("models"),
+    models: Annotated[Path | None, typer.Option()] = None,
     allow_root: Annotated[
         list[Path] | None, typer.Option(help="Allowed image import root; repeatable")
     ] = None,
@@ -601,10 +603,13 @@ def serve_gallery(
         from realopen_lens.api.app import create_app
         from realopen_lens.storage.catalog import default_directory
 
+        from realopen_lens.workspace.identity import models_directory
+
+        workspace_root = index_dir or default_directory()
         roots = tuple(allow_root or ([Path("data")] if Path("data").is_dir() else []))
         api = create_app(
-            index_dir=index_dir or default_directory(),
-            models=models,
+            index_dir=workspace_root,
+            models=models or models_directory(workspace_root),
             allowed_roots=roots,
             threads=threads,
             port=port,

@@ -443,3 +443,68 @@ def test_query_memory_is_applied_browsable_and_safely_cleared(web):
     ]
     assert client.delete(path + f"?expected_event_id={event}").json()["memory"]["label"] is None
     assert client.get("/api/feedback/hidden", params={"query": "red"}).json()["total"] == 0
+
+
+def test_workspace_identity_and_queued_preview_import_preserve_active_index(web, tmp_path):
+    client, root, store, run = web
+    info = client.get("/api/workspace").json()
+    assert info["directory"] == str(store.resolve())
+    assert info["build"]["version"]
+    assert len(info["build"]["code_sha256"]) == 64
+    assert info["checkout"]["code_matches"]
+    destination = tmp_path / "everyday"
+    body = {"sources": [str(store)], "destination": str(destination)}
+    response = client.post("/api/tasks/workspace-preview", json=body)
+    assert response.status_code == 202
+    task = completed(client, response.json()["id"])
+    assert task["status"] == "completed", task
+    plan = task["result"]
+    assert plan["images"] == 2 and not destination.exists()
+    response = client.post(
+        "/api/tasks/workspace-import", json={**body, "plan_sha256": plan["plan_sha256"]}
+    )
+    task = completed(client, response.json()["id"])
+    assert task["status"] == "completed", task
+    assert (destination / "workspace.json").is_file()
+    assert client.get("/api/workspace").json()["directory"] == info["directory"]
+    assert len(client.get("/api/collections/personal/images").json()["results"]) == 2
+
+
+def test_workspace_import_rejects_unreviewed_changes_and_existing_destination(web, tmp_path):
+    client, root, store, run = web
+    body = {"sources": [str(store)], "destination": str(tmp_path / "everyday")}
+    response = client.post("/api/tasks/workspace-import", json={**body, "plan_sha256": "0" * 64})
+    task = completed(client, response.json()["id"])
+    assert task["status"] == "failed" and "preview changed" in task["error"]
+    assert not (tmp_path / "everyday").exists()
+    response = client.post(
+        "/api/tasks/workspace-preview", json={"sources": [str(store)], "destination": str(store)}
+    )
+    task = completed(client, response.json()["id"])
+    assert task["status"] == "failed" and "new destination" in task["error"]
+    assert (
+        client.post(
+            "/api/tasks/workspace-preview", json={"sources": [], "destination": "x"}
+        ).status_code
+        == 422
+    )
+
+
+def test_empty_active_workspace_can_initialize_without_restarting(web, tmp_path):
+    client, root, source, run = web
+    destination = tmp_path / "empty-active"
+    empty = create_app(index_dir=destination, port=8770)
+    with TestClient(empty, base_url="http://127.0.0.1:8770") as active:
+        active.get("/api/session")
+        assert active.get("/api/collections").json() == []
+        body = {"sources": [str(source)], "destination": str(destination)}
+        response = active.post("/api/tasks/workspace-preview", json=body)
+        task = completed(active, response.json()["id"])
+        assert task["status"] == "completed", task
+        response = active.post(
+            "/api/tasks/workspace-import",
+            json={**body, "plan_sha256": task["result"]["plan_sha256"]},
+        )
+        task = completed(active, response.json()["id"])
+        assert task["status"] == "completed", task
+        assert len(active.get("/api/collections/personal/images").json()["results"]) == 2

@@ -23,7 +23,10 @@ class Cancelled(KeyboardInterrupt):
 
 
 class TaskManager:
-    def __init__(self, index_dir: Path, models: Path, threads: int = 2):
+    def __init__(
+        self, index_dir: Path, models: Path, threads: int = 2, *, owns_server: bool = False
+    ):
+        self.owns_server = owns_server
         self.root, self.models, self.threads = index_dir, models, threads
         self.directory = index_dir / "api-tasks"
         self.lock = threading.RLock()
@@ -162,7 +165,25 @@ class TaskManager:
                 )
                 request = {**request, "virtual_revision": scope["revision"]}
                 self.update(task_id, virtual_revision=scope["revision"])
-            if kind in {"prepare_training", "train"}:
+            if kind in {"workspace_preview", "workspace_import"}:
+                from realopen_lens.workspace.service import preview, initialize
+
+                self._release_session()
+                sources = [Path(value) for value in request["sources"]]
+                destination = Path(request["destination"])
+                if kind == "workspace_preview":
+                    payload = preview(sources, destination, progress)
+                else:
+                    payload = initialize(
+                        sources,
+                        destination,
+                        request["plan_sha256"],
+                        models=self.models,
+                        on_progress=progress,
+                        owned_server=self.root if self.owns_server else None,
+                    )
+                status = "completed"
+            elif kind in {"prepare_training", "train"}:
                 self._release_session()
                 if kind == "prepare_training":
                     from realopen_lens.learning.dataset import prepare

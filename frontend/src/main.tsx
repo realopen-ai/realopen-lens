@@ -15,6 +15,7 @@ import {
 import "./style.css";
 import { ThemeSwitch } from "./ThemeSwitch";
 import { Duplicates } from "./Duplicates";
+import { Workspace } from "./Workspace";
 import { QueryMemory } from "./QueryMemory";
 import { Training } from "./Training";
 import {
@@ -92,6 +93,9 @@ type RepeatSearch =
   | { kind: "upload"; file: File };
 
 function App() {
+  const [view, setView] = useState<
+    "library" | "learning" | "duplicates" | "workspace" | "activity"
+  >("library");
   const [collections, setCollections] = useState<Collection[]>([]);
   const [collection, setCollection] = useState("");
   const selectedCollection = useRef("");
@@ -167,6 +171,7 @@ function App() {
     offset = 0,
     group: VirtualCollection | null = null,
   ) {
+    setView("library");
     const version = ++requestVersion.current;
     foreground.current = null;
     setRepeatSearch(null);
@@ -480,6 +485,7 @@ function App() {
     body: Record<string, unknown>,
     heading: string,
   ) {
+    setView("library");
     const scope = virtualScope.current;
     body = {
       ...body,
@@ -716,7 +722,7 @@ function App() {
         </a>
         <div className="workspace-label">YOUR WORKSPACE</div>
         <button
-          className={`nav-item ${!virtualId ? "selected" : ""}`}
+          className={`nav-item ${view === "library" && !virtualId ? "selected" : ""}`}
           onClick={() => collection && void browse(collection)}
         >
           <Icon name="grid" />
@@ -758,6 +764,47 @@ function App() {
           onChanged={organizationChanged}
           onCreated={setTargetVirtual}
         />
+        <div className="workspace-label tools-label">TOOLS</div>
+        <nav className="tools-nav" aria-label="Workspace tools">
+          <button
+            className="nav-item mobile-library"
+            onClick={() => setView("library")}
+          >
+            <Icon name="grid" />
+            Library
+          </button>
+          {(
+            [
+              ["learning", "Learning"],
+              ["duplicates", "Duplicates"],
+              ["activity", "Activity"],
+              ["workspace", "Workspace settings"],
+            ] as const
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              className={`nav-item ${view === key ? "selected" : ""}`}
+              aria-current={view === key ? "page" : undefined}
+              onClick={() => setView(key)}
+            >
+              <Icon
+                name={
+                  key === "duplicates"
+                    ? "similar"
+                    : key === "learning"
+                      ? "grid"
+                      : key === "activity"
+                        ? "check"
+                        : "folder"
+                }
+              />
+              {label}
+              {key === "activity" && active.length > 0 && (
+                <span className="pill">{active.length}</span>
+              )}
+            </button>
+          ))}
+        </nav>
         <div className="sidebar-bottom">
           <span className="local-badge">
             <span className="status-dot" />
@@ -775,9 +822,27 @@ function App() {
         <header className="topbar">
           <span>
             <span className="muted">Workspace</span>
-            <span className="breadcrumb">/</span>Image library
+            <span className="breadcrumb">/</span>
+            {view === "library"
+              ? "Image library"
+              : view === "learning"
+                ? "Learning & models"
+                : view === "duplicates"
+                  ? "Duplicate groups"
+                  : view === "activity"
+                    ? "Activity"
+                    : "Settings"}
           </span>
           <div className="topbar-actions">
+            {view === "library" && collections.length > 0 && (
+              <button
+                className="primary add-folder"
+                onClick={() => setImporting(true)}
+              >
+                <Icon name="plus" size={16} />
+                Add folder
+              </button>
+            )}
             <span className="privacy">
               <Icon name="shield" size={16} />
               Private by design
@@ -785,189 +850,244 @@ function App() {
             <ThemeSwitch />
           </div>
         </header>
-        <div className="content">
-          <div className="page-heading">
-            <div>
-              <div className="eyebrow">
-                A LITTLE LESS SEARCHING. A LITTLE MORE FINDING.
-              </div>
-              <h1>Your images, within reach.</h1>
-              <p className="subtitle">
-                Find a moment, a screenshot, or that thing you can almost
-                remember.
-              </p>
-            </div>
-            <button className="primary" onClick={() => setImporting(true)}>
-              <Icon name="plus" size={17} />
-              Add folder
-            </button>
-          </div>
-          <form
-            className="search-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (query.trim() && collection)
-                void start(
-                  "search",
-                  {
-                    query,
-                    collection,
-                    mode,
-                    save_run: saveRun,
-                    use_feedback: useFeedback,
-                    limit: 50,
-                  },
-                  `Results for “${query}”`,
-                );
-            }}
-          >
-            <Icon name="search" size={23} />
-            <input
-              aria-label="Search images"
-              placeholder="Describe what you're looking for…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              disabled={!collection}
+        <div className={`content view-${view}`}>
+          <div hidden={view !== "learning"}>
+            <h1>Learning & models</h1>
+            <Training
+              collection={collection}
+              tasks={tasks}
+              watch={watch}
+              active={view === "learning"}
             />
-            <input
-              type="file"
-              ref={fileInput}
-              hidden
-              accept="image/jpeg,image/png,image/webp,image/tiff,image/bmp"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) void upload(file);
-                e.target.value = "";
+          </div>
+          <div hidden={view !== "duplicates"}>
+            <h1>Duplicate groups</h1>
+            <Duplicates
+              collection={collection}
+              tasks={tasks}
+              watch={watch}
+              active={view === "duplicates"}
+            />
+          </div>
+          <div hidden={view !== "workspace"}>
+            <Workspace
+              active={view === "workspace"}
+              onReady={() => {
+                void loadCollections()
+                  .then((values) => {
+                    if (values.length) void browse(values[0].name);
+                  })
+                  .catch((e) => setError(String(e)));
               }}
+              tasks={tasks}
+              watch={watch}
             />
-            <button
-              type="button"
-              className="image-search"
-              aria-label="Search by image"
-              title="Search by image"
-              disabled={!collection}
-              onClick={() => fileInput.current?.click()}
-            >
-              <Icon name="image" />
-            </button>
-            <button
-              type="submit"
-              aria-label="Search"
-              className="search-submit"
-              disabled={!collection || !query.trim()}
-            >
-              <span>Search</span>
-              <Icon name="arrow" size={18} />
-            </button>
-          </form>
-          <div className="search-options">
-            <span>Search by meaning or words inside an image.</span>
-            <div>
-              <label>
-                Search mode{" "}
-                <select
-                  aria-label="Search mode"
-                  value={mode}
-                  onChange={(e) => setMode(e.target.value)}
-                >
-                  <option value="hybrid">Hybrid</option>
-                  <option value="visual">Visual</option>
-                  <option value="lexical">Exact text</option>
-                  <option value="semantic">Text meaning</option>
-                </select>
-              </label>
-              <label className="checkbox">
-                <input
-                  type="checkbox"
-                  checked={useFeedback}
-                  onChange={(e) => setUseFeedback(e.target.checked)}
-                />
-                Remember query feedback
-              </label>
-              <label className="checkbox">
-                <input
-                  type="checkbox"
-                  checked={saveRun}
-                  onChange={(e) => setSaveRun(e.target.checked)}
-                />
-                Save for feedback
-              </label>
-            </div>
           </div>
-          {!isBrowse && !loading && repeatSearch?.kind === "search" && (
-            <>
-              <p className="memory-status">
-                {memoryEnabled
-                  ? "Query feedback enabled"
-                  : "Baseline results · query feedback disabled"}
-              </p>
-              <QueryMemory
-                enabled={memoryEnabled}
-                key={JSON.stringify(repeatSearch.body)}
-                collection={String(repeatSearch.body.collection)}
-                query={String(repeatSearch.body.query)}
-                scope={
-                  repeatSearch.body.virtual_collection as string | undefined
-                }
-                revision={
-                  repeatSearch.body.virtual_revision as number | undefined
-                }
+          <section hidden={view !== "activity"} aria-label="Task history">
+            <h1>Activity</h1>
+            <p className="subtitle">
+              Recent local tasks. Active work continues when you browse your
+              images.
+            </p>
+            {tasks.length ? (
+              tasks.map((task) => (
+                <article className="activity-row" key={task.id}>
+                  <strong>
+                    {task.kind.replaceAll("_", " ")} · {task.collection}
+                  </strong>
+                  <span>
+                    {task.status.replaceAll("_", " ")} ·{" "}
+                    {task.phase.replaceAll("_", " ")}
+                  </span>
+                  {task.error && <p role="alert">{task.error}</p>}
+                </article>
+              ))
+            ) : (
+              <p>No tasks yet.</p>
+            )}
+          </section>
+          <section hidden={view !== "library"} className="library-search">
+            {collections.length > 0 ? (
+              <h1 className="visually-hidden">Image library</h1>
+            ) : (
+              <div className="page-heading">
+                <div>
+                  {!collections.length && (
+                    <div className="eyebrow">
+                      A LITTLE LESS SEARCHING. A LITTLE MORE FINDING.
+                    </div>
+                  )}
+                  <h1>
+                    {collections.length
+                      ? "Image library"
+                      : "Your images, within reach."}
+                  </h1>
+                  {!collections.length && (
+                    <p className="subtitle">
+                      Find a moment, a screenshot, or that thing you can almost
+                      remember.
+                    </p>
+                  )}
+                </div>
+                <button className="primary" onClick={() => setImporting(true)}>
+                  <Icon name="plus" size={17} />
+                  Add folder
+                </button>
+              </div>
+            )}
+            <form
+              className="search-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (query.trim() && collection)
+                  void start(
+                    "search",
+                    {
+                      query,
+                      collection,
+                      mode,
+                      save_run: saveRun,
+                      use_feedback: useFeedback,
+                      limit: 50,
+                    },
+                    `Results for “${query}”`,
+                  );
+              }}
+            >
+              <Icon name="search" size={23} />
+              <input
+                aria-label="Search images"
+                placeholder="Describe what you're looking for…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                disabled={!collection}
               />
-            </>
-          )}
-          {undo && (
-            <div className="memory-heading" role="status">
-              <span>
-                Image hidden for this query. Search again to fill the remaining
-                places.
-              </span>
+              <input
+                type="file"
+                ref={fileInput}
+                hidden
+                accept="image/jpeg,image/png,image/webp,image/tiff,image/bmp"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void upload(file);
+                  e.target.value = "";
+                }}
+              />
               <button
-                className="secondary"
-                disabled={labelsLoading}
-                onClick={() => void undoFeedback()}
+                type="button"
+                className="image-search"
+                aria-label="Search by image"
+                title="Search by image"
+                disabled={!collection}
+                onClick={() => fileInput.current?.click()}
               >
-                Undo feedback
+                <Icon name="image" />
               </button>
+              <button
+                type="submit"
+                aria-label="Search"
+                className="search-submit"
+                disabled={!collection || !query.trim()}
+              >
+                <span>Search</span>
+                <Icon name="arrow" size={18} />
+              </button>
+            </form>
+            <div className="search-options">
+              <span>Search by meaning or words inside an image.</span>
+              <div>
+                <label>
+                  Search mode{" "}
+                  <select
+                    aria-label="Search mode"
+                    value={mode}
+                    onChange={(e) => setMode(e.target.value)}
+                  >
+                    <option value="hybrid">Hybrid</option>
+                    <option value="visual">Visual</option>
+                    <option value="lexical">Exact text</option>
+                    <option value="semantic">Text meaning</option>
+                  </select>
+                </label>
+                <label className="checkbox">
+                  <input
+                    type="checkbox"
+                    checked={useFeedback}
+                    onChange={(e) => setUseFeedback(e.target.checked)}
+                  />
+                  Remember query feedback
+                </label>
+                <label className="checkbox">
+                  <input
+                    type="checkbox"
+                    checked={saveRun}
+                    onChange={(e) => setSaveRun(e.target.checked)}
+                  />
+                  Save for feedback
+                </label>
+              </div>
             </div>
-          )}
-          {virtualId && (
-            <div className="scope-banner">
-              <span>
-                Searching within{" "}
-                <strong>
-                  {virtuals.find((group) => group.id === virtualId)?.name ||
-                    "virtual collection"}
-                </strong>
-              </span>
-              <button
-                className="text-button"
-                disabled={loading}
-                onClick={() => void refreshVirtual()}
-              >
-                Refresh collection
-              </button>
-              <button
-                className="text-button"
-                onClick={() => void browse(collection)}
-              >
-                Search all images
-              </button>
-            </div>
-          )}
-          {virtualId && (
-            <p className="scope-help">
-              Collection searches use hybrid ranking unless you choose another
-              search mode. Learned models apply to full-library searches.
-            </p>
-          )}
-          {virtualId && saveRun && (
-            <p className="scope-help">
-              Collection feedback is saved with its scope. Current training
-              preparation uses full-library searches.
-            </p>
-          )}
-          <Training collection={collection} tasks={tasks} watch={watch} />
-          <Duplicates collection={collection} tasks={tasks} watch={watch} />
+            {!isBrowse && !loading && repeatSearch?.kind === "search" && (
+              <details className="query-options">
+                <summary className="memory-status">
+                  {memoryEnabled
+                    ? "Query feedback enabled"
+                    : "Baseline results · query feedback disabled"}
+                </summary>
+                <QueryMemory
+                  enabled={memoryEnabled}
+                  key={JSON.stringify(repeatSearch.body)}
+                  collection={String(repeatSearch.body.collection)}
+                  query={String(repeatSearch.body.query)}
+                  scope={
+                    repeatSearch.body.virtual_collection as string | undefined
+                  }
+                  revision={
+                    repeatSearch.body.virtual_revision as number | undefined
+                  }
+                />
+              </details>
+            )}
+            {undo && (
+              <div className="memory-heading" role="status">
+                <span>
+                  Image hidden for this query. Search again to fill the
+                  remaining places.
+                </span>
+                <button
+                  className="secondary"
+                  disabled={labelsLoading}
+                  onClick={() => void undoFeedback()}
+                >
+                  Undo feedback
+                </button>
+              </div>
+            )}
+            {virtualId && (
+              <div className="scope-banner">
+                <span>
+                  Searching within{" "}
+                  <strong>
+                    {virtuals.find((group) => group.id === virtualId)?.name ||
+                      "virtual collection"}
+                  </strong>
+                </span>
+                <button
+                  className="text-button"
+                  disabled={loading}
+                  onClick={() => void refreshVirtual()}
+                >
+                  Refresh collection
+                </button>
+                <button
+                  className="text-button"
+                  onClick={() => void browse(collection)}
+                >
+                  Search all images
+                </button>
+              </div>
+            )}
+          </section>
           {uploadBytes && (
             <section className="task-panel" aria-label="Upload progress">
               <span className="spinner" />
@@ -1001,7 +1121,7 @@ function App() {
               </button>
             </div>
           )}
-          {latest && (
+          {latest && (!terminal(latest) || latest.status !== "completed") && (
             <section
               className={`task-panel ${terminal(latest) ? "finished" : ""}`}
               aria-label="Task progress"
@@ -1031,7 +1151,11 @@ function App() {
                           ? "Preparing reviewed data"
                           : latest.kind === "duplicates"
                             ? "Scanning duplicates"
-                            : "Finding similar images"}{" "}
+                            : latest.kind === "workspace_preview"
+                              ? "Checking workspace sources"
+                              : latest.kind === "workspace_import"
+                                ? "Importing workspace"
+                                : "Finding similar images"}{" "}
                   · {latest.collection}
                 </strong>
                 <span>
@@ -1085,281 +1209,278 @@ function App() {
               )}
             </section>
           )}
-          <div className="gallery-heading">
-            <div>
-              <h2>{title}</h2>
-              <span className="count">
-                {total.toLocaleString()}{" "}
-                {isBrowse ? "images in this collection" : "results"}
-              </span>
-            </div>
-            <div className="gallery-context">
-              {current && <span className="pill">{current.name}</span>}
-              <Icon name="grid" size={18} />
-            </div>
-          </div>
-          {!isBrowse && !loading && resultRanking && (
-            <p className="muted">Ranking used: {resultRanking}</p>
-          )}
-          {!isBrowse && !loading && images.length > 0 && (
-            <section className="feedback-notice" aria-label="Search feedback">
+          <section hidden={view !== "library"} className="library-results">
+            <div className="gallery-heading">
               <div>
-                <strong>
-                  {runId
-                    ? "Was this result useful?"
-                    : "Want to rate these results?"}
-                </strong>
-                <p>
-                  {runId
-                    ? "Mark images relevant or irrelevant below. Click a selected label again to remove it."
-                    : repeatSearch
-                      ? "Run this search with feedback enabled to rate the results. Your judgments stay on this device."
-                      : "Enable Save for feedback before your next search to rate its results."}
-                </p>
+                <h2>{title}</h2>
+                <span className="count">
+                  {total.toLocaleString()}{" "}
+                  {isBrowse ? "images in this collection" : "results"}
+                </span>
               </div>
-              {!runId && (
-                <button className="secondary" onClick={enableFeedback}>
-                  {repeatSearch
-                    ? "Search again with feedback"
-                    : "Enable for next search"}
-                </button>
-              )}
-            </section>
-          )}
-          {unavailable > 0 && virtualId && isBrowse && (
-            <p className="scope-help">
-              {unavailable} saved{" "}
-              {unavailable === 1 ? "image is" : "images are"} unavailable in the
-              current source index. Membership is retained.
-            </p>
-          )}
-          {organizationNotice && (
-            <p className="organization-notice" role="status">
-              {organizationNotice}
-            </p>
-          )}
-          {images.length > 0 && !loading && (
-            <div className="selection-controls">
-              <button
-                className="text-button"
-                disabled={
-                  new Set(
-                    images.flatMap((image) => [
-                      image.image_id,
-                      ...(image.duplicate_ids || []),
-                    ]),
-                  ).size > 500 || selectionBusy
-                }
-                onClick={() =>
-                  setSelected(
+              <div className="gallery-context">
+                {current && <span className="pill">{current.name}</span>}
+                {!isBrowse && resultRanking && (
+                  <span className="ranking-caption">{resultRanking}</span>
+                )}
+                <Icon name="grid" size={18} />
+              </div>
+            </div>
+            {!isBrowse && !loading && images.length > 0 && (
+              <div className="feedback-caption" aria-label="Search feedback">
+                {runId ? (
+                  <span>
+                    Feedback saved · mark images relevant or irrelevant below.
+                  </span>
+                ) : (
+                  <button className="text-button" onClick={enableFeedback}>
+                    {repeatSearch
+                      ? "Search again with feedback"
+                      : "Enable for next search"}
+                  </button>
+                )}
+              </div>
+            )}
+            {unavailable > 0 && virtualId && isBrowse && (
+              <p className="scope-help">
+                {unavailable} saved{" "}
+                {unavailable === 1 ? "image is" : "images are"} unavailable in
+                the current source index. Membership is retained.
+              </p>
+            )}
+            {organizationNotice && (
+              <p className="organization-notice" role="status">
+                {organizationNotice}
+              </p>
+            )}
+            {images.length > 0 && !loading && (
+              <div className="selection-controls">
+                <button
+                  className="text-button"
+                  disabled={
                     new Set(
                       images.flatMap((image) => [
                         image.image_id,
                         ...(image.duplicate_ids || []),
                       ]),
-                    ),
-                  )
-                }
-              >
-                Select visible images
-              </button>
-              <span>Select up to 500 images per action</span>
-            </div>
-          )}
-          <SelectionToolbar
-            selected={selected.size}
-            groups={virtuals}
-            target={targetVirtual}
-            setTarget={setTargetVirtual}
-            activeId={virtualId}
-            busy={selectionBusy}
-            onAdd={() => void changeSelection()}
-            onRemove={() => void changeSelection(true)}
-            onClear={() => setSelected(new Set())}
-            onCreate={() => setCreatingVirtual(true)}
-          />
-          {loading && (
-            <div className="loading-label" role="status">
-              <span className="spinner" />
-              Working locally. Progress appears above.
-            </div>
-          )}
-          {!images.length && !loading ? (
-            <section className="empty">
-              <div className="empty-icon">
-                <Icon name={collection ? "search" : "image"} size={35} />
+                    ).size > 500 || selectionBusy
+                  }
+                  onClick={() =>
+                    setSelected(
+                      new Set(
+                        images.flatMap((image) => [
+                          image.image_id,
+                          ...(image.duplicate_ids || []),
+                        ]),
+                      ),
+                    )
+                  }
+                >
+                  Select visible images
+                </button>
+                <span>Select up to 500 images per action</span>
               </div>
-              <h2>
-                {collection
-                  ? virtualId
-                    ? !isBrowse
-                      ? "No matching images"
-                      : unavailable
-                        ? "No saved images are available"
-                        : "This collection is empty"
-                    : !isBrowse
-                      ? "No matching images"
-                      : "Nothing here yet"
-                  : "Make room for a little discovery."}
-              </h2>
-              <p>
-                {collection
-                  ? virtualId
-                    ? !isBrowse
-                      ? "Try a different query or search all images in the source folder."
-                      : unavailable
-                        ? "Restore the source files and refresh their folder index to see them here again."
-                        : "Select images from the library or search results, then add them to this collection."
-                    : !isBrowse
-                      ? "Try another query, review hidden images, or browse the library."
-                      : "Try another search or index a folder to start exploring."
-                  : "Add a folder of photos, screenshots, documents or diagrams. Lens keeps your original files right where they are."}
-              </p>
-              {virtualId || (collection && !isBrowse) ? (
-                <button
-                  className="primary"
-                  onClick={() => void browse(collection)}
-                >
-                  Browse source images
-                </button>
-              ) : (
-                <button className="primary" onClick={() => setImporting(true)}>
-                  <Icon name="plus" size={17} />
-                  Add your first folder
-                </button>
-              )}
-            </section>
-          ) : (
-            <div className={`gallery ${loading ? "working" : ""}`}>
-              {images.map((image) => (
-                <article
-                  className={`image-card ${selected.has(image.image_id) ? "is-selected" : ""}`}
-                  key={image.image_id}
-                >
-                  <label className="image-select">
-                    <input
-                      type="checkbox"
-                      aria-label={`Select ${filename(image)}`}
-                      checked={selected.has(image.image_id)}
-                      disabled={selectionBusy || loading}
-                      onChange={() => toggleImage(image)}
-                    />
-                  </label>
+            )}
+            <SelectionToolbar
+              selected={selected.size}
+              groups={virtuals}
+              target={targetVirtual}
+              setTarget={setTargetVirtual}
+              activeId={virtualId}
+              busy={selectionBusy}
+              onAdd={() => void changeSelection()}
+              onRemove={() => void changeSelection(true)}
+              onClear={() => setSelected(new Set())}
+              onCreate={() => setCreatingVirtual(true)}
+            />
+            {loading && (
+              <div className="loading-label" role="status">
+                <span className="spinner" />
+                Working locally. Progress appears above.
+              </div>
+            )}
+            {!images.length && !loading ? (
+              <section className="empty">
+                <div className="empty-icon">
+                  <Icon name={collection ? "search" : "image"} size={35} />
+                </div>
+                <h2>
+                  {collection
+                    ? virtualId
+                      ? !isBrowse
+                        ? "No matching images"
+                        : unavailable
+                          ? "No saved images are available"
+                          : "This collection is empty"
+                      : !isBrowse
+                        ? "No matching images"
+                        : "Nothing here yet"
+                    : "Make room for a little discovery."}
+                </h2>
+                <p>
+                  {collection
+                    ? virtualId
+                      ? !isBrowse
+                        ? "Try a different query or search all images in the source folder."
+                        : unavailable
+                          ? "Restore the source files and refresh their folder index to see them here again."
+                          : "Select images from the library or search results, then add them to this collection."
+                      : !isBrowse
+                        ? "Try another query, review hidden images, or browse the library."
+                        : "Try another search or index a folder to start exploring."
+                    : "Add a folder of photos, screenshots, documents or diagrams. Lens keeps your original files right where they are."}
+                </p>
+                {virtualId || (collection && !isBrowse) ? (
                   <button
-                    className="image-frame"
-                    aria-label={`View ${filename(image)}`}
-                    onClick={() => setDetail(image)}
+                    className="primary"
+                    onClick={() => void browse(collection)}
                   >
-                    <img
-                      src={media(collection, image, "thumbnail", generation)}
-                      alt={filename(image)}
-                      loading="lazy"
-                      onLoad={(e) =>
-                        e.currentTarget.classList.remove("unavailable")
-                      }
-                      onError={(e) => {
-                        e.currentTarget.classList.add("unavailable");
-                      }}
-                    />
-                    <span className="rank-tag">{image.rank}</span>
-                    {image.status === "degraded" && (
-                      <span className="degraded">Partial text</span>
-                    )}
+                    Browse source images
                   </button>
-                  <div className="card-caption">
+                ) : (
+                  <button
+                    className="primary"
+                    onClick={() => setImporting(true)}
+                  >
+                    <Icon name="plus" size={17} />
+                    Add your first folder
+                  </button>
+                )}
+              </section>
+            ) : (
+              <div className={`gallery ${loading ? "working" : ""}`}>
+                {images.map((image) => (
+                  <article
+                    className={`image-card ${selected.has(image.image_id) ? "is-selected" : ""}`}
+                    key={image.image_id}
+                  >
+                    <label className="image-select">
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${filename(image)}`}
+                        checked={selected.has(image.image_id)}
+                        disabled={selectionBusy || loading}
+                        onChange={() => toggleImage(image)}
+                      />
+                    </label>
                     <button
+                      className="image-frame"
+                      aria-label={`View ${filename(image)}`}
                       onClick={() => setDetail(image)}
-                      title={filename(image)}
                     >
-                      {filename(image)}
+                      <img
+                        src={media(collection, image, "thumbnail", generation)}
+                        alt={filename(image)}
+                        loading="lazy"
+                        onLoad={(e) =>
+                          e.currentTarget.classList.remove("unavailable")
+                        }
+                        onError={(e) => {
+                          e.currentTarget.classList.add("unavailable");
+                        }}
+                      />
+                      <span className="rank-tag">{image.rank}</span>
+                      {image.status === "degraded" && (
+                        <span className="degraded">Partial text</span>
+                      )}
                     </button>
-                    <span>
-                      {image.width} × {image.height}
-                      {image.paths.length > 1
-                        ? ` · ${image.paths.length} copies`
-                        : ""}
-                    </span>
-                  </div>
-                  <div className="card-actions">
-                    <button
-                      title="Find similar images"
-                      onClick={() =>
-                        void start(
-                          "similar",
-                          {
-                            collection,
-                            image_id: image.image_id,
-                            save_run: saveRun,
-                            limit: 50,
-                          },
-                          `Similar to ${filename(image)}`,
-                        )
-                      }
-                    >
-                      <Icon name="similar" size={15} />
-                      Similar
-                    </button>
-                  </div>
-                  {!isBrowse && (
-                    <div
-                      className="feedback-actions"
-                      aria-label={`Feedback for ${filename(image)}`}
-                    >
+                    <div className="card-caption">
                       <button
-                        className={
-                          labels[image.image_id] === "relevant" ? "chosen" : ""
-                        }
-                        disabled={!runId || labelsLoading}
-                        aria-label={`Mark ${filename(image)} relevant`}
-                        aria-pressed={labels[image.image_id] === "relevant"}
-                        title={
-                          runId
-                            ? "Relevant (click again to remove)"
-                            : "Run this search with feedback enabled to label results"
-                        }
-                        onClick={() => void label(image, "relevant")}
+                        onClick={() => setDetail(image)}
+                        title={filename(image)}
                       >
-                        <Icon name="check" size={14} />
-                        <span>Relevant</span>
+                        {filename(image)}
                       </button>
+                      <span>
+                        {image.width} × {image.height}
+                        {image.paths.length > 1
+                          ? ` · ${image.paths.length} copies`
+                          : ""}
+                      </span>
+                    </div>
+                    <div className="card-actions">
                       <button
-                        className={
-                          labels[image.image_id] === "irrelevant"
-                            ? "chosen"
-                            : ""
+                        title="Find similar images"
+                        onClick={() =>
+                          void start(
+                            "similar",
+                            {
+                              collection,
+                              image_id: image.image_id,
+                              save_run: saveRun,
+                              limit: 50,
+                            },
+                            `Similar to ${filename(image)}`,
+                          )
                         }
-                        disabled={!runId || labelsLoading}
-                        aria-label={`Mark ${filename(image)} irrelevant`}
-                        aria-pressed={labels[image.image_id] === "irrelevant"}
-                        title={
-                          runId
-                            ? "Irrelevant (click again to remove)"
-                            : "Run this search with feedback enabled to label results"
-                        }
-                        onClick={() => void label(image, "irrelevant")}
                       >
-                        <Icon name="close" size={14} />
-                        <span>Irrelevant</span>
+                        <Icon name="similar" size={15} />
+                        Similar
                       </button>
                     </div>
-                  )}
-                </article>
-              ))}
-            </div>
-          )}
-          {isBrowse && images.length < total && (
-            <div className="load-more">
-              <button
-                className="secondary"
-                disabled={loading}
-                onClick={() =>
-                  void browse(collection, images.length, virtualScope.current)
-                }
-              >
-                Load more images
-              </button>
-            </div>
-          )}
+                    {!isBrowse && (
+                      <div
+                        className="feedback-actions"
+                        aria-label={`Feedback for ${filename(image)}`}
+                      >
+                        <button
+                          className={
+                            labels[image.image_id] === "relevant"
+                              ? "chosen"
+                              : ""
+                          }
+                          disabled={!runId || labelsLoading}
+                          aria-label={`Mark ${filename(image)} relevant`}
+                          aria-pressed={labels[image.image_id] === "relevant"}
+                          title={
+                            runId
+                              ? "Relevant (click again to remove)"
+                              : "Run this search with feedback enabled to label results"
+                          }
+                          onClick={() => void label(image, "relevant")}
+                        >
+                          <Icon name="check" size={14} />
+                          <span>Relevant</span>
+                        </button>
+                        <button
+                          className={
+                            labels[image.image_id] === "irrelevant"
+                              ? "chosen"
+                              : ""
+                          }
+                          disabled={!runId || labelsLoading}
+                          aria-label={`Mark ${filename(image)} irrelevant`}
+                          aria-pressed={labels[image.image_id] === "irrelevant"}
+                          title={
+                            runId
+                              ? "Irrelevant (click again to remove)"
+                              : "Run this search with feedback enabled to label results"
+                          }
+                          onClick={() => void label(image, "irrelevant")}
+                        >
+                          <Icon name="close" size={14} />
+                          <span>Irrelevant</span>
+                        </button>
+                      </div>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
+            {isBrowse && images.length < total && (
+              <div className="load-more">
+                <button
+                  className="secondary"
+                  disabled={loading}
+                  onClick={() =>
+                    void browse(collection, images.length, virtualScope.current)
+                  }
+                >
+                  Load more images
+                </button>
+              </div>
+            )}
+          </section>
           <footer>
             <span>
               <span className="status-dot" />

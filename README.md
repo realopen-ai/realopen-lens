@@ -9,7 +9,8 @@ retrieval, with a lightweight ranking model that can learn from explicit feedbac
 
 > **Status: early development.** Persistent folder indexing and CLI search are
 > available, alongside inference and retrieval benchmarks and an opt-in experimental
-> logistic reranker. The gallery, API, feedback, and neural ranking are still planned.
+> logistic reranker. A local gallery/API, explicit query feedback and reviewed training
+> workflows are implemented. Neural ranking and standalone app bundles remain planned.
 
 Start with the [collection indexing and search guide](docs/collections.md), the
 [benchmark setup and usage guide](docs/benchmark.md), or the
@@ -23,6 +24,13 @@ uv run --no-sync lens index data --index-dir runs/personal-index --log
 uv run --no-sync lens status --index-dir runs/personal-index
 uv run --no-sync lens search "database connection error" --index-dir runs/personal-index
 ```
+
+## Everyday workspace
+
+Keep saved searches, relevance labels, virtual collections and duplicate reviews
+together in a [persistent workspace](docs/workspace.md). Existing matching indexes
+can be previewed and imported without modifying their originals. After setup,
+`uv run --no-sync lens serve` opens the default workspace on port 8765.
 
 ## Local gallery
 

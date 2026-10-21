@@ -247,7 +247,7 @@ test("find similar submits indexed identity", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Similar to red.png" }),
   ).toBeVisible();
-  await expect(page.getByLabel("Task progress")).toContainText("finished");
+  await expect(page.getByLabel("Task progress")).toHaveCount(0);
   const request = requests.find((r) => r.url === "/api/tasks/similar");
   expect(JSON.parse(String(request?.body)).image_id).toBe("a".repeat(64));
 });
@@ -326,7 +326,7 @@ test("unsaved results expose feedback and explicitly rerun the original search",
   await expect(relevant).toBeVisible();
   await expect(relevant).toBeDisabled();
   await expect(page.getByLabel("Search feedback")).toContainText(
-    "Want to rate these results?",
+    "Search again with feedback",
   );
   expect(requests.filter((r) => r.url === "/api/tasks/search")).toHaveLength(1);
   await page
@@ -338,7 +338,7 @@ test("unsaved results expose feedback and explicitly rerun the original search",
   await expect(relevant).toBeEnabled();
   await expect(page.getByLabel("Save for feedback")).toBeChecked();
   await expect(page.getByLabel("Search feedback")).toContainText(
-    "Mark images relevant or irrelevant",
+    "mark images relevant or irrelevant",
   );
   const searches = requests.filter((r) => r.url === "/api/tasks/search");
   expect(searches).toHaveLength(2);
@@ -403,7 +403,7 @@ test("learning requires explicit activation and can restore hybrid", async ({
   });
   await page.goto("/");
   await expect(page.getByText("2 images in this collection")).toBeVisible();
-  await page.getByText("Learning & models", { exact: true }).click();
+  await page.getByRole("button", { name: "Learning", exact: true }).click();
   await expect(
     page
       .locator(".training-panel article")
@@ -456,7 +456,7 @@ test("theme follows the system until a persistent choice is made", async ({
   );
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  await page.getByText("Learning & models", { exact: true }).click();
+  await page.getByRole("button", { name: "Learning", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Download review template" }),
   ).toBeVisible();
@@ -869,7 +869,7 @@ test("duplicate review preserves separate originals and provides scan controls",
     });
   });
   await page.goto("/");
-  await page.getByText("Duplicate groups", { exact: true }).click();
+  await page.getByRole("button", { name: "Duplicates", exact: true }).click();
   await expect(
     page.getByText("No scan for the current index snapshot.", { exact: false }),
   ).toBeVisible();
@@ -974,6 +974,7 @@ test("query feedback hides immediately, supports undo and browsable clearing", a
   await page
     .getByRole("button", { name: "Mark green.png irrelevant", exact: true })
     .click();
+  await page.locator(".query-options > summary").click();
   await page
     .getByRole("button", { name: "Show hidden images", exact: true })
     .click();
@@ -1030,4 +1031,148 @@ test("baseline search can disable query memory", async ({ page }) => {
     (r) => r.method === "POST" && r.url === "/api/tasks/search",
   )!;
   expect(JSON.parse(request.body as string).use_feedback).toBe(false);
+});
+
+test("library gives images priority and tools retain their own destinations", async ({
+  page,
+}, info) => {
+  await setup(page);
+  const first = page.getByRole("button", { name: "View red.png", exact: true });
+  expect((await first.boundingBox())!.y).toBeLessThan(
+    info.project.name === "mobile" ? 760 : 420,
+  );
+  await expect(page.locator(".training-panel:visible")).toHaveCount(0);
+  await page.getByRole("button", { name: "Learning", exact: true }).click();
+  await expect(first).toBeHidden();
+  await expect(
+    page.getByRole("button", { name: "Download review template", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "personal", exact: true }).click();
+  await expect(first).toBeVisible();
+  await expect(page.locator(".training-panel:visible")).toHaveCount(0);
+  await page.screenshot({
+    path: `../runs/local-workspace-v1/library-${info.project.name}-light.png`,
+    fullPage: true,
+    animations: "disabled",
+  });
+  await page.getByRole("button", { name: "Switch to dark mode" }).click();
+  await page.screenshot({
+    path: `../runs/local-workspace-v1/library-${info.project.name}-dark.png`,
+    fullPage: true,
+    animations: "disabled",
+  });
+});
+
+test("workspace previews before import and keeps progress visible outside settings", async ({
+  page,
+}, info) => {
+  await setup(page);
+  const plan = {
+    plan_sha256: "f".repeat(64),
+    destination: "/local/Lens",
+    sources: ["/old/index"],
+    images: 2227,
+    searches: 15,
+    events: 144,
+    judgments: 143,
+    virtual_collections: 1,
+    duplicate_reviews: 44,
+    exclusions: [],
+  };
+  await page.route("**/api/workspace", (route) =>
+    route.fulfill({
+      json: {
+        directory: "/old/index",
+        default_directory: "/local/Lens",
+        models_directory: "/models",
+        initialized: true,
+        is_default: false,
+        workspace_id: null,
+        build: {
+          version: "0.1.0",
+          code_sha256: "a".repeat(64),
+          gallery_sha256: "b".repeat(64),
+          package_path: "/installed/lens",
+        },
+        checkout: { code_matches: false, gallery_matches: false },
+      },
+    }),
+  );
+  const base = {
+    collection: "workspace",
+    status: "queued",
+    phase: "queued",
+    elapsed_seconds: 0,
+    revision: 0,
+    progress: {},
+    error: null,
+    result: null,
+  };
+  await page.route("**/api/tasks/workspace-preview", (route) =>
+    route.fulfill({
+      status: 202,
+      json: { ...base, id: "wp-preview", kind: "workspace_preview" },
+    }),
+  );
+  await page.route("**/api/tasks/wp-preview/events", (route) =>
+    route.fulfill({
+      contentType: "text/event-stream",
+      body: `event: progress\ndata: ${JSON.stringify({ ...base, id: "wp-preview", kind: "workspace_preview", status: "completed", phase: "finished", result: plan })}\n\n`,
+    }),
+  );
+  await page.route("**/api/tasks/workspace-import", async (route) => {
+    expect(route.request().postDataJSON()).toMatchObject({
+      plan_sha256: plan.plan_sha256,
+      sources: plan.sources,
+    });
+    await route.fulfill({
+      status: 202,
+      json: { ...base, id: "wp-import", kind: "workspace_import" },
+    });
+  });
+  await page.route("**/api/tasks/wp-import/events", (route) =>
+    route.fulfill({
+      contentType: "text/event-stream",
+      body: `event: progress\ndata: ${JSON.stringify({ ...base, id: "wp-import", kind: "workspace_import", status: "running", phase: "copying_artifacts", progress: { step: 4, max_steps: 10 } })}\n\n`,
+    }),
+  );
+  await page
+    .getByRole("button", { name: "Workspace settings", exact: true })
+    .click();
+  await expect(page.getByText("/old/index", { exact: true })).toBeVisible();
+  await expect(page.getByRole("alert")).toContainText(
+    "running installation differs",
+  );
+  await page
+    .getByLabel("Source index directories", { exact: true })
+    .fill("/old/index");
+  await page
+    .getByRole("button", { name: "Preview workspace import", exact: true })
+    .click();
+  await expect(page.getByLabel("Workspace import preview")).toContainText(
+    "143 current per-search labels",
+  );
+  await page
+    .getByRole("button", {
+      name: "Create workspace from this preview",
+      exact: true,
+    })
+    .click();
+  await expect(page.getByLabel("Task progress")).toContainText(
+    "Importing workspace",
+  );
+  await page.getByRole("button", { name: "personal", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "View red.png", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Task progress")).toBeVisible();
+  await page.getByRole("button", { name: /^Activity/ }).click();
+  await expect(page.getByLabel("Task history")).toContainText(
+    "workspace import",
+  );
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBeTruthy();
 });

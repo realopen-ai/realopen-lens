@@ -40,6 +40,13 @@ how to build it rather than returning a blank page.
 
 ## Gallery workflow
 
+The image library leads with search and images. **Learning**, **Duplicates**,
+**Activity** and **Workspace settings** are separate sidebar destinations. Active
+tasks retain a compact floating progress strip while successful completed tasks
+remain in Activity. See [everyday workspaces](workspace.md) for setup/import, build
+identity and a stable launch/update workflow.
+
+
 - Select a saved collection and browse thumbnails, with bounded pagination.
 - Search by visual meaning, exact OCR terms, OCR meaning, or default hybrid search.
 - Open a result to inspect its image, dimensions, source paths, OCR preview and issues.
@@ -135,6 +142,8 @@ Do not expose the factory through an external listener or multiple API workers.
 | Live progress | `GET /api/tasks/{id}/events` |
 | Request cancellation | `POST /api/tasks/{id}/cancel` |
 | Browse hidden query results | `GET /api/feedback/hidden?query=...&collection=...` |
+| Active workspace and build | `GET /api/workspace` |
+| Workspace preview/import jobs | `POST /api/tasks/workspace-preview` or `/api/tasks/workspace-import` |
 | Saved results and judgments | `GET /api/feedback/runs/{run_id}` |
 | Set/correct or remove a judgment | `PUT` or `DELETE /api/feedback/runs/{run_id}/{image_id}` |
 
