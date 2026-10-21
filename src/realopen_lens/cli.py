@@ -445,5 +445,41 @@ def feedback_export(
     _feedback_echo(export_feedback, output, index_dir=index_dir, overwrite=overwrite)
 
 
+@app.command("serve")
+def serve_gallery(
+    index_dir: Annotated[Path | None, typer.Option()] = None,
+    models: Annotated[Path, typer.Option()] = Path("models"),
+    allow_root: Annotated[
+        list[Path] | None, typer.Option(help="Allowed image import root; repeatable")
+    ] = None,
+    port: Annotated[int, typer.Option(min=1, max=65535)] = 8765,
+    threads: Annotated[int, typer.Option(min=1, max=8)] = 2,
+    dev_origin: Annotated[str | None, typer.Option(help="Explicit loopback Vite origin")] = None,
+):
+    """Serve the private local gallery on 127.0.0.1 (one API worker)."""
+    try:
+        import uvicorn
+        from realopen_lens.api.app import create_app
+        from realopen_lens.storage.catalog import default_directory
+
+        roots = tuple(allow_root or ([Path("data")] if Path("data").is_dir() else []))
+        api = create_app(
+            index_dir=index_dir or default_directory(),
+            models=models,
+            allowed_roots=roots,
+            threads=threads,
+            port=port,
+            dev_origin=dev_origin,
+        )
+        typer.echo(f"RealOpen Lens: http://127.0.0.1:{port} (local access only)")
+        uvicorn.run(api, host="127.0.0.1", port=port, workers=1, access_log=False)
+    except ImportError as error:
+        typer.echo("Install the web adapter with 'uv sync --extra web'.", err=True)
+        raise typer.Exit(1) from error
+    except (OSError, ValueError) as error:
+        typer.echo(f"Error: {error}", err=True)
+        raise typer.Exit(1) from error
+
+
 if __name__ == "__main__":
     app()
