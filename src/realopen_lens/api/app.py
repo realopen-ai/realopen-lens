@@ -357,6 +357,11 @@ def create_app(
             "runs": {r["run_id"]: {"family": "", "split": "", "query": r["query"]} for r in rows},
             "image_groups": {r["image_id"]: "" for r in rows},
         }
+        from realopen_lens.learning.review import audit
+
+        template["audit"] = {
+            name: audit(root, name) for name in sorted({row["collection"] for row in rows})
+        }
         for run_id, assignment in template["runs"].items():
             saved = feedback.saved_search(run_id, index_dir=root)
             selected_ids = {r["image_id"] for r in rows if r["run_id"] == run_id}

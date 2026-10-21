@@ -397,3 +397,24 @@ def test_duplicate_scan_task_and_review_are_non_destructive(web):
         == 400
     )
     assert before == {p.name: digest(p) for p in root.iterdir()}
+
+
+def test_feedback_review_download_includes_cohort_and_duplicate_audit_context(web):
+    client, root, store, run = web
+    launched = client.post("/api/tasks/search", json={"query": "red", "save_run": True}).json()
+    state = completed(client, launched["id"])
+    run_id = state["result"]["run_id"]
+    key = state["result"]["results"][0]["image_id"]
+    assert (
+        client.put(f"/api/feedback/runs/{run_id}/{key}", json={"label": "relevant"}).status_code
+        == 200
+    )
+    response = client.post("/api/training/snapshot", json={})
+    assert response.status_code == 200, response.text
+    template = response.json()["review_template"]
+    audit = template["audit"]["personal"]
+    assert len(audit["cohorts"]) == 1
+    assert audit["runs"][0]["positive_only"]
+    assert audit["duplicate_constraints"]["components"] == {}
+    assert template["runs"][run_id]["split"] == ""
+    assert not template["independent_holdout"]

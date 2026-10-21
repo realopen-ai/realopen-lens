@@ -499,6 +499,17 @@ training_app = typer.Typer(
 app.add_typer(training_app, name="training")
 
 
+@training_app.command("audit")
+def training_audit(
+    index_dir: Annotated[Path | None, typer.Option()] = None,
+    collection: Annotated[str, typer.Option()] = "personal",
+):
+    from realopen_lens.learning.review import audit
+    from realopen_lens.storage.catalog import default_directory
+
+    _feedback_echo(audit, index_dir or default_directory(), collection)
+
+
 @training_app.command("prepare")
 def training_prepare(
     review: Path, output: Path, index_dir: Annotated[Path | None, typer.Option()] = None
