@@ -96,6 +96,16 @@ class DuplicateReviewInput(BaseModel):
     state: Literal["confirmed", "dismissed", "unreviewed"]
 
 
+class WorkspacePreviewInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    sources: list[str] = Field(min_length=1, max_length=16)
+    destination: str = Field(min_length=1, max_length=4096)
+
+
+class WorkspaceImportInput(WorkspacePreviewInput):
+    plan_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+
+
 def create_app(
     *,
     index_dir: Path,
@@ -109,6 +119,9 @@ def create_app(
     if not 1 <= threads <= 8 or not 1 <= port <= 65535:
         raise ValueError("Use 1–8 threads and a valid port")
     root = index_dir.resolve()
+    from realopen_lens.workspace.identity import build, describe
+
+    running_build = build()
     roots = tuple(p.expanduser().resolve() for p in allowed_roots)
     origins = {f"http://127.0.0.1:{port}", f"http://localhost:{port}"}
     if dev_origin is not None:
@@ -128,7 +141,7 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         with writer_lock(root / "api-server"):
-            manager = TaskManager(root, models.resolve(), threads)
+            manager = TaskManager(root, models.resolve(), threads, owns_server=True)
             app.state.manager = manager
             try:
                 yield
@@ -180,6 +193,22 @@ def create_app(
         )
         response.set_cookie(cookie_name, token, httponly=True, samesite="strict")
         return response
+
+    @app.get("/api/workspace")
+    def workspace():
+        return describe(root, models, running_build=running_build)
+
+    @app.post("/api/tasks/workspace-preview", status_code=202)
+    def preview_workspace(body: WorkspacePreviewInput):
+        return app.state.manager.submit(
+            "workspace_preview", {**body.model_dump(), "collection": "workspace"}
+        )
+
+    @app.post("/api/tasks/workspace-import", status_code=202)
+    def import_workspace(body: WorkspaceImportInput):
+        return app.state.manager.submit(
+            "workspace_import", {**body.model_dump(), "collection": "workspace"}
+        )
 
     @app.get("/api/collections")
     def collection_list():
