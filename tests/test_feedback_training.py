@@ -332,6 +332,26 @@ def test_training_audit_cli_reports_cohorts_without_training(reviewed):
     assert not (store / "rerankers").exists()
 
 
+def test_production_pair_order_and_progress_ignore_training_sessions(reviewed, tmp_path):
+    from realopen_lens.learning.evaluation import production
+
+    store, review_path, plan = reviewed
+    directory = tmp_path / "ordered"
+    dataset.prepare(store, review_path, directory)
+    trained = workflow.train(directory / "dataset.json", store)
+    data = json.loads((directory / "dataset.json").read_text(encoding="utf-8"))
+    by_split = {session["split"]: session for session in data["sessions"]}
+    data["sessions"] = [by_split["validation"], by_split["train"], by_split["test"]]
+    model = store / "rerankers" / trained["id"] / "model.json"
+    progress = []
+    output = tmp_path / "paired.jsonl"
+    production(data, model, store, tmp_path / "unused-models", output, progress.append)
+    records = [json.loads(line) for line in output.read_text(encoding="utf-8").splitlines()]
+    assert [r["execution_order"] for r in records] == ["hybrid_first", "logistic_first"]
+    phases = [event for event in progress if event["phase"] == "evaluating"]
+    assert [(p["query"], p["queries"]) for p in phases] == [(1, 2), (2, 2)]
+
+
 def test_personalized_searches_and_superseded_labels_cannot_train(reviewed, tmp_path):
     from realopen_lens.learning.review import audit
 

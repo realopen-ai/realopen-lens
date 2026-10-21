@@ -128,14 +128,16 @@ def run(source: Path, output: Path, collection: str, models: Path) -> dict:
         case("paged_membership", pages)
         with SearchSession(collection=collection, index_dir=index, models=models) as session:
             baseline_trace: dict = {}
-            baseline = session.search("pizza", limit=50, trace=baseline_trace)
+            baseline = session.search("pizza", use_feedback=False, limit=50, trace=baseline_trace)
             if len(paths) > 50:
                 hidden = next(key for key in ids if key not in {r.image_id for r in baseline})
                 only = organizing.create(index, collection, "Outside global top 50")
                 only = organizing.change_members(index, collection, only["id"], [hidden], 1)
 
                 def below50():
-                    results = session.search("pizza", virtual_collection=only["id"], limit=50)
+                    results = session.search(
+                        "pizza", use_feedback=False, virtual_collection=only["id"], limit=50
+                    )
                     assert [r.image_id for r in results] == [hidden]
                     return {"expected": hidden, "results": [asdict(r) for r in results]}
 
@@ -146,7 +148,12 @@ def run(source: Path, output: Path, collection: str, models: Path) -> dict:
                     trace: dict = {}
                     options = {"trace": trace} if mode == "hybrid" else {}
                     results = session.search(
-                        "pizza", mode=mode, limit=20, virtual_collection=group["id"], **options
+                        "pizza",
+                        use_feedback=False,
+                        mode=mode,
+                        limit=20,
+                        virtual_collection=group["id"],
+                        **options,
                     )
                     assert {r.image_id for r in results} <= set(ids[:61])
                     return {"mode": mode, "results": [asdict(r) for r in results], "trace": trace}
@@ -155,7 +162,7 @@ def run(source: Path, output: Path, collection: str, models: Path) -> dict:
 
             def unchanged():
                 trace: dict = {}
-                results = session.search("pizza", limit=50, trace=trace)
+                results = session.search("pizza", use_feedback=False, limit=50, trace=trace)
                 assert results == baseline and trace == baseline_trace
                 return {"count": len(results), "exact_trace_match": True}
 
@@ -163,7 +170,10 @@ def run(source: Path, output: Path, collection: str, models: Path) -> dict:
 
         def no_models():
             with SearchSession(collection=collection, index_dir=index, models=models) as session:
-                assert session.search("pizza", virtual_collection=empty["id"]) == []
+                assert (
+                    session.search("pizza", use_feedback=False, virtual_collection=empty["id"])
+                    == []
+                )
                 assert session.worker_pid is None
             return {"result_count": 0, "spawned_encoder": False}
 
