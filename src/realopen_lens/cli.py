@@ -245,6 +245,10 @@ def find_images(
     save_run: Annotated[
         bool, typer.Option(help="Save this search for explicit relevance feedback")
     ] = False,
+    feedback: Annotated[
+        bool,
+        typer.Option("--feedback/--no-feedback", help="Apply remembered exact-query relevance"),
+    ] = True,
     interactive: Annotated[
         bool, typer.Option(help="Reuse encoders for subsequent queries; empty line or EOF exits")
     ] = False,
@@ -268,6 +272,7 @@ def find_images(
             virtual_collection=virtual_collection,
             virtual_revision=virtual_revision,
             reranker=reranker,
+            use_feedback=feedback,
             candidate_depths=depths,
             siglip_precision=siglip_precision,
         )
@@ -405,6 +410,30 @@ def feedback_runs(
     from realopen_lens.learning.feedback import saved_runs
 
     _feedback_echo(saved_runs, index_dir=index_dir, limit=limit)
+
+
+@feedback_app.command("hidden")
+def feedback_hidden(
+    query: str,
+    index_dir: Annotated[Path | None, typer.Option()] = None,
+    collection: Annotated[str, typer.Option()] = "personal",
+    virtual_collection: Annotated[str | None, typer.Option()] = None,
+    offset: Annotated[int, typer.Option(min=0)] = 0,
+    limit: Annotated[int, typer.Option(min=1, max=100)] = 50,
+):
+    """Browse hidden exact-query results without model inference."""
+    from realopen_lens.retrieval.memory import hidden
+    from realopen_lens.storage.catalog import default_directory
+
+    _feedback_echo(
+        hidden,
+        index_dir or default_directory(),
+        query,
+        collection=collection,
+        virtual_collection=virtual_collection,
+        offset=offset,
+        limit=limit,
+    )
 
 
 @feedback_app.command("show")

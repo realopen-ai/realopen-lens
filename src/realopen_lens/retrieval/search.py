@@ -1,6 +1,6 @@
 """Search a published collection with existing visual, lexical, and hybrid ranking."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from collections.abc import Callable
 import json
 from pathlib import Path
@@ -41,6 +41,7 @@ class SearchResult:
     status: str = "ready"
     issues: tuple[dict, ...] = ()
     duplicate_ids: tuple[str, ...] = ()
+    feedback: dict | None = None
 
 
 def source_paths(root: Path, manifest: dict) -> dict[str, tuple[str, ...]]:
@@ -149,6 +150,8 @@ def search_collection(
     trace: dict | None = None,
     reranker: Path | None = None,
     use_active_reranker: bool = True,
+    use_feedback: bool = True,
+    feedback_trace: dict | None = None,
     candidate_depths: CandidateDepths | None = None,
     siglip_precision: str | None = None,
     query_encoder: ResidentQueryEncoder | None = None,
@@ -160,6 +163,8 @@ def search_collection(
     Tracing preserves scores and ordering. Raw BM25 is lower-is-better, cosine
     similarities are higher-is-better, and absent channel values remain None.
     """
+    if feedback_trace is not None:
+        feedback_trace.clear()
     started = checkpoint = perf_counter()
     if profile is not None:
         profile.clear()
@@ -256,6 +261,16 @@ def search_collection(
         lookup = {
             row["image_id"]: row for row in manifest["images"] if row["image_id"] in paths_by_id
         }
+        from realopen_lens.retrieval import memory
+
+        decisions: dict[str, dict] = {}
+        feedback_state = {"enabled": False, "policy": "exact-query-v1", "applied": False}
+        if use_feedback:
+            decisions, feedback_state = memory.resolve(
+                catalog.root, found["id"], query, virtual_collection or "", manifest, paths_by_id
+            )
+        if feedback_trace is not None:
+            feedback_trace.update(feedback_state)
         ocr_records = [r for r in manifest["ocr"] if r["image_id"] in lookup]
         stage("source_validation_seconds")
         if not lookup:
@@ -329,8 +344,8 @@ def search_collection(
         from realopen_lens.organization.duplicates import exact_groups, collapse
 
         duplicate_groups = exact_groups(catalog.root, manifest, paths_by_id)
-        retrieval_limit = len(lookup) if duplicate_groups else limit
-        if duplicate_groups and mode == "lexical":
+        retrieval_limit = len(lookup) if duplicate_groups or feedback_state["applied"] else limit
+        if (duplicate_groups or feedback_state["applied"]) and mode == "lexical":
             lexical = rank_lexical(index, query, limit=len(lookup))
         scores = {}
         if mode == "lexical":
@@ -399,8 +414,14 @@ def search_collection(
         stage("retrieval_seconds")
         if on_progress is not None:
             on_progress({"phase": "result_validation"})
+        if feedback_state["applied"]:
+            ranking = memory.apply(ranking, decisions)
         ranking = collapse(ranking, duplicate_groups)[:limit]
+        if trace is not None and feedback_state["applied"]:
+            trace["feedback_memory"] = feedback_state
+            trace["rankings"]["feedback"] = ranking
         results = search_results(catalog, manifest, paths_by_id, ranking, scores, deduplicate=True)
+        results = [replace(row, feedback=decisions.get(row.image_id)) for row in results]
         if scope is not None:
             ensure_scope(catalog.root, found["id"], scope)
         stage("result_validation_seconds")

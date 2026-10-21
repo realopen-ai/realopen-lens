@@ -68,6 +68,8 @@ def _record(
         "reranker_scope": trace.get("reranker_scope"),
         "query_runtime": "resident" if options.get("query_encoder") is not None else "one-shot",
     }
+    if query["kind"] == "text":
+        config["feedback_memory"] = options.get("feedback_trace", {})
     if query["kind"] == "image":
         config.update(
             include_self=options.get("include_self", False),
@@ -78,6 +80,7 @@ def _record(
     elif query["kind"] == "image" and trace["reused_embedding"]:
         config["query_runtime"] = "stored"
     from realopen_lens.organization import duplicates, fingerprints
+    from realopen_lens.retrieval import memory
 
     duplicate_snapshot = duplicates.snapshot(root, manifest)
     if duplicate_snapshot is not None:
@@ -98,6 +101,7 @@ def _record(
         logistic,
         duplicates,
         fingerprints,
+        memory,
     ):
         if module.__file__ is None:
             raise ValueError("Ranking source provenance is unavailable")
@@ -136,6 +140,7 @@ def search_and_record(
     if "trace" in options or "profile" in options:
         raise ValueError("Recorded search owns its trace and profile")
     trace: dict = {}
+    options.setdefault("feedback_trace", {})
     kwargs: dict[str, Any] = {"trace": trace} if options.get("mode", "hybrid") == "hybrid" else {}
     return _record(
         lambda: search.search_collection(query, index_dir=index_dir, **kwargs, **options),
@@ -177,29 +182,65 @@ def saved_search(run_id: str, *, index_dir: Path | None = None) -> dict:
         return {**store.run(run_id), "judgments": store.judgments(run_id)}
 
 
-def judge(run_id: str, image_id: str, label: str, *, index_dir: Path | None = None) -> dict | None:
-    """Set/correct a returned image's explicit judgment; repeating it is idempotent."""
-    if label not in {"relevant", "irrelevant"}:
-        raise ValueError("Label must be relevant or irrelevant")
+def change_judgment(
+    run_id: str,
+    image_id: str,
+    label: str | None,
+    *,
+    index_dir: Path | None = None,
+    expected_event_id: int | None = None,
+) -> dict:
+    from realopen_lens.retrieval.memory import aliases_for_run
+
+    if expected_event_id is not None and expected_event_id < 0:
+        raise ValueError("Expected event ID must be nonnegative")
     root = index_dir or default_directory()
     if not (root / "feedback.sqlite3").is_file():
         raise ValueError("No saved searches; use --save-run first")
     with FeedbackStore(root) as store:
-        return store.judge(run_id, image_id, label)
+        run = store.run(run_id)
+        aliases = aliases_for_run(root, run, image_id)
+        judgment, decision = store.change(
+            run_id, image_id, label, aliases=aliases, expected_event_id=expected_event_id
+        )
+        return {"judgment": judgment, "memory": decision}
+
+
+def judge(run_id: str, image_id: str, label: str, *, index_dir: Path | None = None) -> dict | None:
+    if label not in {"relevant", "irrelevant"}:
+        raise ValueError("Label must be relevant or irrelevant")
+    return change_judgment(run_id, image_id, label, index_dir=index_dir)["judgment"]
 
 
 def remove_judgment(run_id: str, image_id: str, *, index_dir: Path | None = None) -> None:
-    """Return a pair to unlabeled state; prior labels remain in the audit history."""
-    root = index_dir or default_directory()
-    if not (root / "feedback.sqlite3").is_file():
-        raise ValueError("No saved searches; use --save-run first")
-    with FeedbackStore(root) as store:
-        store.judge(run_id, image_id, None)
+    change_judgment(run_id, image_id, None, index_dir=index_dir)
 
 
 def judgment_history(run_id: str, *, index_dir: Path | None = None) -> list[dict]:
     with FeedbackStore(index_dir or default_directory(), readonly=True) as store:
         return store.history(run_id)
+
+
+def superseded_judgments(store: FeedbackStore, root: Path, run: dict) -> set[str]:
+    """Find contradicted or cleared historical labels without deleting history."""
+    from realopen_lens.storage.feedback import memory_key
+    from realopen_lens.retrieval.memory import aliases_for_run
+
+    key = memory_key(run)
+    if key is None:
+        return set()
+    rows = store.memory(key[0], run["query"]["text"], key[2])
+    invalid = set()
+    for judgment in store.judgments(run["run_id"]):
+        aliases = aliases_for_run(root, run, judgment["image_id"])
+        latest = max(
+            (row for row in rows if row["image_id"] in aliases),
+            key=lambda row: row["event_id"],
+            default=None,
+        )
+        if latest and latest["label"] != judgment["label"]:
+            invalid.add(judgment["image_id"])
+    return invalid
 
 
 def export_feedback(output: Path, *, index_dir: Path | None = None, overwrite: bool = False) -> int:
@@ -231,6 +272,7 @@ def export_feedback(output: Path, *, index_dir: Path | None = None, overwrite: b
         raise ValueError("Export already exists; use overwrite explicitly")
     temporary = output.with_name(output.name + ".tmp-" + uuid4().hex)
     count = 0
+    obsolete: dict[str, set[str]] = {}
     try:
         with FeedbackStore(root, readonly=True) as store:
             store.db.execute("BEGIN")
@@ -243,6 +285,10 @@ def export_feedback(output: Path, *, index_dir: Path | None = None, overwrite: b
             with temporary.open("w", encoding="utf-8", newline="\n") as stream:
                 for row in cursor:
                     run = json.loads(row["payload"])
+                    if row["run_id"] not in obsolete:
+                        obsolete[row["run_id"]] = superseded_judgments(
+                            store, root, {**run, "run_id": row["run_id"]}
+                        )
                     result = next(r for r in run["results"] if r["image_id"] == row["image_id"])
                     candidate = run["candidates"].get(row["image_id"])
                     record = {
@@ -275,6 +321,8 @@ def export_feedback(output: Path, *, index_dir: Path | None = None, overwrite: b
                         "candidate": candidate,
                         "candidate_schema": run.get("candidate_schema") if candidate else None,
                     }
+                    if row["image_id"] in obsolete[row["run_id"]]:
+                        record["superseded"] = True
                     if result.get("duplicate_ids"):
                         record["duplicate_ids"] = result["duplicate_ids"]
                     if "scope" in run:
