@@ -1404,3 +1404,58 @@ footer > span:first-child {
     width: 100%;
   }
 }
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --green: #a3cbae;
+  --accent-hover: #b8dbbf;
+  --on-accent: #162b1c;
+  --page: #141c18;
+  --text: #e3ebe1;
+  --text-strong: #c1d4bc;
+  --muted: #a8b8a1;
+  --faint: #96a78e;
+  --line: #334338;
+  --line-strong: #647f60;
+  --surface: #1b2620;
+  --surface-soft: #1e2a23;
+  --surface-muted: #26352b;
+  --selection: #344f3a;
+  --warning-bg: #362c22;
+  --warning-text: #e0be8e;
+  --error-text: #edb196;
+  --warning-line: #68503a;
+  --glass: #1b2620ed;
+  --overlay: #050c09c9;
+  --shadow: #00000050;
+}
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font-size: 11px;
+  min-height: 34px;
+}
+.theme-switch:hover {
+  background: var(--surface-muted);
+  border-color: var(--line-strong);
+}
+@media (max-width: 650px) {
+  .topbar-actions .privacy {
+    display: none;
+  }
+  .topbar-actions {
+    gap: 8px;
+  }
+}

@@ -399,3 +399,74 @@ test("learning requires explicit activation and can restore hybrid", async ({
     ),
   ).toBe(false);
 });
+
+test("theme follows the system until a persistent choice is made", async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: "dark" });
+  await setup(page);
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(
+    page.getByRole("button", { name: "Switch to light mode" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page.emulateMedia({ colorScheme: "light" });
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.getByRole("button", { name: "Switch to dark mode" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  expect(await page.evaluate(() => localStorage.getItem("lens-theme"))).toBe(
+    "dark",
+  );
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.getByText("Learning & models", { exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Download review template" }),
+  ).toBeVisible();
+  const palette = await page.evaluate(() => ({
+    page: getComputedStyle(document.documentElement).backgroundColor,
+    panel: getComputedStyle(document.querySelector(".training-panel")!)
+      .backgroundColor,
+    scheme: getComputedStyle(document.documentElement).colorScheme,
+  }));
+  expect(palette.scheme).toBe("dark");
+  expect(palette.page).toBe("rgb(20, 28, 24)");
+  expect(palette.panel).toBe("rgb(27, 38, 32)");
+  await page.getByRole("button", { name: "Switch to light mode" }).click();
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+  ).toBe(false);
+});
+
+test("theme switch works when browser storage is unavailable", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const get = Storage.prototype.getItem;
+    const set = Storage.prototype.setItem;
+    Object.defineProperty(Storage.prototype, "getItem", {
+      value(key: string) {
+        if (this === localStorage)
+          throw new DOMException("Unavailable", "SecurityError");
+        return get.call(this, key);
+      },
+    });
+    Object.defineProperty(Storage.prototype, "setItem", {
+      value(key: string, value: string) {
+        if (this === localStorage)
+          throw new DOMException("Unavailable", "SecurityError");
+        return set.call(this, key, value);
+      },
+    });
+  });
+  await page.emulateMedia({ colorScheme: "light" });
+  await setup(page);
+  await page.goto("/");
+  await page.getByRole("button", { name: "Switch to dark mode" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+});

@@ -12,6 +12,7 @@ import {
   type Task,
 } from "./api";
 import "./style.css";
+import { ThemeSwitch } from "./ThemeSwitch";
 import { Training } from "./Training";
 
 function Icon({ name, size = 20 }: { name: string; size?: number }) {
@@ -500,10 +501,13 @@ function App() {
             <span className="muted">Workspace</span>
             <span className="breadcrumb">/</span>Image library
           </span>
-          <span className="privacy">
-            <Icon name="shield" size={16} />
-            Private by design
-          </span>
+          <div className="topbar-actions">
+            <span className="privacy">
+              <Icon name="shield" size={16} />
+              Private by design
+            </span>
+            <ThemeSwitch />
+          </div>
         </header>
         <div className="content">
           <div className="page-heading">

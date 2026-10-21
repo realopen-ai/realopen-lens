@@ -206,3 +206,10 @@ The **Learning & models** panel connects explicit feedback to reviewed dataset p
 logistic training, production evaluation and explicit activation/rollback. Jobs use the same
 live progress and cancellation controls. See [feedback training](feedback-training.md) for
 review requirements, compatibility and metric limitations.
+
+## Appearance
+
+Use the Light/Dark switch in the header to choose an appearance. Lens follows the
+system preference until you select a mode, then remembers your choice locally in
+the browser. The preference is applied before the gallery loads. If browser
+storage is unavailable, the switch still works for the current page session.
