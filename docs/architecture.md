@@ -146,8 +146,9 @@ systems without requiring Docker or WSL for standalone Lens.
 
 ## Evaluation and initial implementation gate
 
-Before building the full UI, validate SigLIP2 ONNX inference, multilingual OCR
-quality, and memory behavior on an actual 8 GB machine. Evaluate visual,
+Validate SigLIP2 ONNX inference, multilingual OCR quality, and memory behavior
+on an actual 8 GB machine before release. Physical 8 GB validation is deferred
+and does not block implementation of the local API and gallery. Evaluate visual,
 lexical, semantic OCR, and hybrid baselines separately, with per-language and
 per-image-category results. Hold out query families and duplicate image groups;
 keep a final test set separate from feedback-based model selection.
