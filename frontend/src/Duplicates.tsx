@@ -37,12 +37,17 @@ export function Duplicates({
   collection,
   tasks,
   watch,
+  active = false,
 }: {
+  active?: boolean;
   collection: string;
   tasks: Task[];
   watch: (task: Task) => void;
 }) {
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (active) setOpen(true);
+  }, [active]);
   const [page, setPage] = useState<Page | null>(null);
   const [offset, setOffset] = useState(0);
   const [error, setError] = useState("");

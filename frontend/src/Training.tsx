@@ -23,12 +23,17 @@ export function Training({
   collection,
   tasks,
   watch,
+  active = false,
 }: {
+  active?: boolean;
   collection: string;
   tasks: Task[];
   watch: (task: Task) => void;
 }) {
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (active) setOpen(true);
+  }, [active]);
   const [models, setModels] = useState<Models>({ versions: [], active: {} });
   const [review, setReview] = useState("");
   const [dataset, setDataset] = useState("");
@@ -47,7 +52,7 @@ export function Training({
   }
   useEffect(() => {
     if (open) void refresh().catch((e) => setError(String(e)));
-  }, [open, completed]);
+  }, [open, completed, collection]);
   async function act(operation: () => Promise<void>) {
     setBusy(true);
     setError("");
@@ -99,6 +104,7 @@ export function Training({
   return (
     <details
       className="training-panel"
+      open={open}
       onToggle={(event) => setOpen(event.currentTarget.open)}
     >
       <summary>
