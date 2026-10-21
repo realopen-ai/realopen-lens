@@ -318,3 +318,155 @@ test("unsaved results expose feedback and explicitly rerun the original search",
     ),
   ).toBeTruthy();
 });
+
+test("learning requires explicit activation and can restore hybrid", async ({
+  page,
+}) => {
+  await setup(page);
+  const version = "c".repeat(32);
+  let active: string | null = null;
+  const activations: unknown[] = [];
+  await page.route("**/api/training/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/activation")) {
+      const body = JSON.parse(route.request().postData() || "{}");
+      activations.push(body);
+      if (body.model_version && !body.acknowledge_experimental)
+        return route.fulfill({
+          status: 400,
+          contentType: "application/json",
+          body: JSON.stringify({
+            detail: "Explicit experimental acknowledgment required",
+          }),
+        });
+      active = body.model_version;
+      return route.fulfill({
+        json: { active: active ? { personal: active } : {} },
+      });
+    }
+    return route.fulfill({
+      json: {
+        active: active ? { personal: active } : {},
+        datasets: [],
+        versions: [
+          {
+            id: version,
+            status: "completed",
+            evaluation: {
+              failed: 0,
+              independent_holdout: false,
+              regressions: [],
+              hybrid: { mrr_at_10: 0.5, ndcg_at_10: 0.5 },
+              logistic: { mrr_at_10: 0.6, ndcg_at_10: 0.6 },
+            },
+          },
+        ],
+      },
+    });
+  });
+  await page.goto("/");
+  await expect(page.getByText("2 images in this collection")).toBeVisible();
+  await page.getByText("Learning & models", { exact: true }).click();
+  await expect(
+    page
+      .locator(".training-panel article")
+      .getByText("Diagnostic judgments", { exact: false }),
+  ).toBeVisible();
+  expect(activations).toHaveLength(0);
+  await page
+    .getByRole("button", { name: "Activate cccccccc", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toContainText("acknowledgment");
+  await page
+    .getByLabel("Allow experimental activation", { exact: false })
+    .check();
+  await page
+    .getByRole("button", { name: "Activate cccccccc", exact: true })
+    .click();
+  await expect(
+    page.getByText("Logistic cccccccc", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Restore hybrid ranking", exact: true })
+    .click();
+  await expect(
+    page.locator(".training-panel strong").filter({ hasText: /^Hybrid$/ }),
+  ).toBeVisible();
+  expect(activations).toHaveLength(3);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+  ).toBe(false);
+});
+
+test("theme follows the system until a persistent choice is made", async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: "dark" });
+  await setup(page);
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(
+    page.getByRole("button", { name: "Switch to light mode" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page.emulateMedia({ colorScheme: "light" });
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.getByRole("button", { name: "Switch to dark mode" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  expect(await page.evaluate(() => localStorage.getItem("lens-theme"))).toBe(
+    "dark",
+  );
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.getByText("Learning & models", { exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Download review template" }),
+  ).toBeVisible();
+  const palette = await page.evaluate(() => ({
+    page: getComputedStyle(document.documentElement).backgroundColor,
+    panel: getComputedStyle(document.querySelector(".training-panel")!)
+      .backgroundColor,
+    scheme: getComputedStyle(document.documentElement).colorScheme,
+  }));
+  expect(palette.scheme).toBe("dark");
+  expect(palette.page).toBe("rgb(20, 28, 24)");
+  expect(palette.panel).toBe("rgb(27, 38, 32)");
+  await page.getByRole("button", { name: "Switch to light mode" }).click();
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+  ).toBe(false);
+});
+
+test("theme switch works when browser storage is unavailable", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const get = Storage.prototype.getItem;
+    const set = Storage.prototype.setItem;
+    Object.defineProperty(Storage.prototype, "getItem", {
+      value(key: string) {
+        if (this === localStorage)
+          throw new DOMException("Unavailable", "SecurityError");
+        return get.call(this, key);
+      },
+    });
+    Object.defineProperty(Storage.prototype, "setItem", {
+      value(key: string, value: string) {
+        if (this === localStorage)
+          throw new DOMException("Unavailable", "SecurityError");
+        return set.call(this, key, value);
+      },
+    });
+  });
+  await page.emulateMedia({ colorScheme: "light" });
+  await setup(page);
+  await page.goto("/");
+  await page.getByRole("button", { name: "Switch to dark mode" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+});

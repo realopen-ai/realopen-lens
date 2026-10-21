@@ -12,6 +12,8 @@ import {
   type Task,
 } from "./api";
 import "./style.css";
+import { ThemeSwitch } from "./ThemeSwitch";
+import { Training } from "./Training";
 
 function Icon({ name, size = 20 }: { name: string; size?: number }) {
   const paths: Record<string, React.ReactNode> = {
@@ -90,6 +92,7 @@ function App() {
   const [title, setTitle] = useState("All images");
   const [total, setTotal] = useState(0);
   const [generation, setGeneration] = useState<string | null>(null);
+  const [resultRanking, setResultRanking] = useState("");
   const [isBrowse, setIsBrowse] = useState(true);
   const [loading, setLoading] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
@@ -190,6 +193,11 @@ function App() {
       return;
     }
     if (task.status === "completed" && task.result?.results) {
+      setResultRanking(
+        task.result.ranking
+          ? `${task.result.ranking.kind}${task.result.ranking.sha256 ? ` · ${task.result.ranking.sha256.slice(0, 8)}` : ""}`
+          : "",
+      );
       setImages(task.result.results);
       setTotal(task.result.results.length);
       const savedRun = task.result.run_id || null;
@@ -493,10 +501,13 @@ function App() {
             <span className="muted">Workspace</span>
             <span className="breadcrumb">/</span>Image library
           </span>
-          <span className="privacy">
-            <Icon name="shield" size={16} />
-            Private by design
-          </span>
+          <div className="topbar-actions">
+            <span className="privacy">
+              <Icon name="shield" size={16} />
+              Private by design
+            </span>
+            <ThemeSwitch />
+          </div>
         </header>
         <div className="content">
           <div className="page-heading">
@@ -592,6 +603,7 @@ function App() {
               </label>
             </div>
           </div>
+          <Training collection={collection} tasks={tasks} watch={watch} />
           {uploadBytes && (
             <section className="task-panel" aria-label="Upload progress">
               <span className="spinner" />
@@ -649,11 +661,21 @@ function App() {
                     ? "Indexing"
                     : latest.kind === "search"
                       ? "Searching"
-                      : "Finding similar images"}{" "}
+                      : latest.kind === "train"
+                        ? "Training and evaluating"
+                        : latest.kind === "prepare_training"
+                          ? "Preparing reviewed data"
+                          : "Finding similar images"}{" "}
                   · {latest.collection}
                 </strong>
                 <span>
                   {latest.phase.replaceAll("_", " ")}
+                  {latest.progress.step !== undefined
+                    ? ` · step ${latest.progress.step}/${latest.progress.max_steps}`
+                    : ""}
+                  {latest.progress.query
+                    ? ` · query ${latest.progress.query}/${latest.progress.queries}`
+                    : ""}
                   {latest.progress.unique_images
                     ? ` · ${latest.progress.phase_completed_images || 0}/${latest.progress.unique_images} images`
                     : latest.progress.files
@@ -708,6 +730,9 @@ function App() {
               <Icon name="grid" size={18} />
             </div>
           </div>
+          {!isBrowse && !loading && resultRanking && (
+            <p className="muted">Ranking used: {resultRanking}</p>
+          )}
           {!isBrowse && !loading && images.length > 0 && (
             <section className="feedback-notice" aria-label="Search feedback">
               <div>

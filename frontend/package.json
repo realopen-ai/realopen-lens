@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "test": "playwright test",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
-    "format:check": "prettier --check src tests *.ts *.json index.html"
+    "format:check": "prettier --check src tests public *.ts *.json index.html"
   },
   "dependencies": {
     "react": "^19.2.0",

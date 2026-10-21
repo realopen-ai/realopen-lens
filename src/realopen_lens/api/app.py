@@ -48,6 +48,20 @@ class IndexInput(Input):
     rehash: bool = False
 
 
+class PrepareTrainingInput(Input):
+    review: dict
+
+
+class TrainInput(Input):
+    dataset_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+
+
+class ActivationInput(Input):
+    model_version: str | None = Field(default=None, pattern=r"^[a-f0-9]{32}$")
+    acknowledge_experimental: bool = False
+    rollback: bool = False
+
+
 class JudgmentInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     label: Literal["relevant", "irrelevant"]
@@ -215,6 +229,93 @@ def create_app(
         except BaseException:
             path.unlink(missing_ok=True)
             raise
+
+    @app.post("/api/training/snapshot")
+    def feedback_snapshot():
+        from realopen_lens.learning.dataset import export_snapshot
+        from realopen_lens.models.manager import digest
+
+        directory = root / "training-inputs"
+        directory.mkdir(parents=True, exist_ok=True)
+        path = directory / (identifier() + ".jsonl")
+        count = export_snapshot(root, path)
+        rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+        template: dict = {
+            "version": 1,
+            "reviewer": "",
+            "feedback_file": path.name,
+            "feedback_sha256": digest(path),
+            "independent_holdout": False,
+            "runs": {r["run_id"]: {"family": "", "split": "", "query": r["query"]} for r in rows},
+            "image_groups": {r["image_id"]: "" for r in rows},
+        }
+        for run_id, assignment in template["runs"].items():
+            saved = feedback.saved_search(run_id, index_dir=root)
+            selected_ids = {r["image_id"] for r in rows if r["run_id"] == run_id}
+            assignment["results"] = [
+                {
+                    "image_id": r["image_id"],
+                    "paths": r["paths"],
+                    "label": next(
+                        row["judgment"]
+                        for row in rows
+                        if row["run_id"] == run_id and row["image_id"] == r["image_id"]
+                    ),
+                }
+                for r in saved["results"]
+                if r["image_id"] in selected_ids
+            ]
+        return {"pairs": count, "review_template": template}
+
+    @app.post("/api/tasks/prepare-training", status_code=202)
+    def prepare_training(body: PrepareTrainingInput):
+        import re
+        from realopen_lens.learning.dataset import canonical
+        from realopen_lens.storage.artifacts import atomic_bytes
+
+        filename = body.review.get("feedback_file", "")
+        if not isinstance(filename, str) or not re.fullmatch(r"[a-f0-9]{32}\.jsonl", filename):
+            raise ValueError("Review must identify a local feedback snapshot")
+        dataset_id = identifier()
+        path = root / "training-inputs" / (dataset_id + ".review.json")
+        atomic_bytes(path, canonical(body.review))
+        return submit(
+            "prepare_training",
+            {
+                "collection": body.collection,
+                "review": str(path),
+                "output": str(root / "training-datasets" / dataset_id),
+            },
+        )
+
+    @app.post("/api/tasks/train", status_code=202)
+    def train_model(body: TrainInput):
+        path = root / "training-datasets" / body.dataset_id / "dataset.json"
+        if not path.is_file():
+            raise ValueError("Reviewed dataset does not exist")
+        return submit("train", {"collection": body.collection, "dataset": str(path)})
+
+    @app.get("/api/training/models")
+    def trained_models():
+        from realopen_lens.learning.registry import state, versions
+
+        datasets = []
+        for path in sorted((root / "training-datasets").glob("*/dataset.json")):
+            data = json.loads(path.read_text(encoding="utf-8"))
+            datasets.append({"id": path.parent.name, "queries": len(data["sessions"])})
+        return {"versions": versions(root), "datasets": datasets, **state(root)}
+
+    @app.post("/api/training/activation")
+    def activate_model(body: ActivationInput):
+        from realopen_lens.learning.registry import change
+
+        return change(
+            root,
+            body.collection,
+            body.model_version,
+            acknowledge_experimental=body.acknowledge_experimental,
+            rollback=body.rollback,
+        )
 
     @app.get("/api/tasks")
     def tasks():

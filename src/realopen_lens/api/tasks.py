@@ -148,7 +148,20 @@ class TaskManager:
                 "on_progress": progress,
             }
             collection = request["collection"]
-            if kind == "index":
+            if kind in {"prepare_training", "train"}:
+                self._release_session()
+                if kind == "prepare_training":
+                    from realopen_lens.learning.dataset import prepare
+
+                    payload = prepare(
+                        self.root, Path(request["review"]), Path(request["output"]), progress
+                    )
+                else:
+                    from realopen_lens.learning.workflow import train
+
+                    payload = train(Path(request["dataset"]), self.root, self.models, progress)
+                status = payload.get("status", "completed")
+            elif kind == "index":
                 self._release_session()
                 result = index_collection(
                     Path(request["root"]),
@@ -180,13 +193,29 @@ class TaskManager:
                     "mode": request["mode"],
                     "on_progress": progress,
                 }
+                ranking: dict = {"kind": request["mode"], "sha256": None}
                 if request.get("save_run"):
                     recorded = self.session.search_recorded(request["query"], **kwargs)
                     results, run_id = recorded.results, recorded.run_id
+                    from realopen_lens.learning.feedback import saved_search
+
+                    ranking["sha256"] = saved_search(run_id, index_dir=self.root)["ranking"][
+                        "reranker_sha256"
+                    ]
                 else:
+                    trace: dict = {}
+                    if request["mode"] == "hybrid":
+                        kwargs["trace"] = trace
                     results = self.session.search(request["query"], **kwargs)
                     run_id = None
-                payload = {"results": [asdict(r) for r in results], "run_id": run_id}
+                    ranking["sha256"] = trace.get("reranker_sha256")
+                if ranking["sha256"]:
+                    ranking["kind"] = "logistic"
+                payload = {
+                    "results": [asdict(r) for r in results],
+                    "run_id": run_id,
+                    "ranking": ranking,
+                }
                 status = "completed"
             else:
                 self._release_session()

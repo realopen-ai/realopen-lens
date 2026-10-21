@@ -445,6 +445,86 @@ def feedback_export(
     _feedback_echo(export_feedback, output, index_dir=index_dir, overwrite=overwrite)
 
 
+training_app = typer.Typer(
+    no_args_is_help=True, help="Reviewed feedback datasets and local reranker versions."
+)
+app.add_typer(training_app, name="training")
+
+
+@training_app.command("prepare")
+def training_prepare(
+    review: Path, output: Path, index_dir: Annotated[Path | None, typer.Option()] = None
+):
+    """Freeze reviewed labels and group-separated train/validation/test data."""
+    from realopen_lens.learning.dataset import prepare
+    from realopen_lens.storage.catalog import default_directory
+
+    _feedback_echo(prepare, index_dir or default_directory(), review, output)
+
+
+@training_app.command("train")
+def training_train(
+    dataset: Path,
+    index_dir: Annotated[Path | None, typer.Option()] = None,
+    models: Annotated[Path, typer.Option()] = Path("models"),
+):
+    """Train, select on validation, then evaluate production queries; progress goes to stderr."""
+    from realopen_lens.learning.workflow import train
+    from realopen_lens.storage.catalog import default_directory
+
+    try:
+        result = train(
+            dataset,
+            index_dir or default_directory(),
+            models,
+            on_progress=lambda p: typer.echo(json.dumps(p), err=True),
+        )
+        typer.echo(json.dumps(result, ensure_ascii=False, indent=2))
+        if result["status"] != "completed":
+            raise typer.Exit(1)
+    except (OSError, ValueError, RuntimeError, sqlite3.Error) as error:
+        typer.echo(f"Error: {error}", err=True)
+        raise typer.Exit(1) from error
+
+
+@training_app.command("list")
+def training_list(index_dir: Annotated[Path | None, typer.Option()] = None):
+    from realopen_lens.learning.registry import versions
+    from realopen_lens.storage.catalog import default_directory
+
+    _feedback_echo(versions, index_dir or default_directory())
+
+
+@training_app.command("activate")
+def training_activate(
+    collection: str,
+    version: str,
+    index_dir: Annotated[Path | None, typer.Option()] = None,
+    acknowledge_experimental: Annotated[bool, typer.Option()] = False,
+    rollback: Annotated[bool, typer.Option()] = False,
+):
+    from realopen_lens.learning.registry import change
+    from realopen_lens.storage.catalog import default_directory
+
+    _feedback_echo(
+        change,
+        index_dir or default_directory(),
+        collection,
+        version,
+        acknowledge_experimental=acknowledge_experimental,
+        rollback=rollback,
+    )
+
+
+@training_app.command("disable")
+def training_disable(collection: str, index_dir: Annotated[Path | None, typer.Option()] = None):
+    """Restore hybrid ranking for this collection; retain model and audit history."""
+    from realopen_lens.learning.registry import change
+    from realopen_lens.storage.catalog import default_directory
+
+    _feedback_echo(change, index_dir or default_directory(), collection, None)
+
+
 @app.command("serve")
 def serve_gallery(
     index_dir: Annotated[Path | None, typer.Option()] = None,

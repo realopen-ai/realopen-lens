@@ -137,6 +137,7 @@ def search_collection(
     threads: int = 2,
     trace: dict | None = None,
     reranker: Path | None = None,
+    use_active_reranker: bool = True,
     candidate_depths: CandidateDepths | None = None,
     siglip_precision: str | None = None,
     query_encoder: ResidentQueryEncoder | None = None,
@@ -169,6 +170,10 @@ def search_collection(
         raise ValueError("Candidate depths require hybrid mode")
     if siglip_precision is not None and siglip_precision not in {"int8", "fp32"}:
         raise ValueError("SigLIP2 precision must be int8 or fp32")
+    if reranker is None and mode == "hybrid" and use_active_reranker:
+        from realopen_lens.learning.registry import active
+
+        reranker = active(index_dir or default_directory(), collection)
     learned = None
     if reranker is not None:
         from realopen_lens.learning.logistic import load
@@ -203,8 +208,12 @@ def search_collection(
             raise ValueError("Unsupported collection SigLIP2 precision")
         if siglip_precision is not None and siglip_precision != precision:
             raise ValueError("Requested SigLIP2 precision differs from this collection")
-        if learned is not None and precision != "int8":
-            raise ValueError("Existing reranker encoder compatibility requires INT8 SigLIP2")
+        if learned is not None and precision != learned.compatibility.get(
+            "siglip_precision", "int8"
+        ):
+            if "siglip_precision" not in learned.compatibility:
+                raise ValueError("Existing reranker encoder compatibility requires INT8 SigLIP2")
+            raise ValueError("Reranker SigLIP2 precision differs from this collection")
         if learned is not None and any(
             manifest["config"]["spec"].get(key) != value
             for key, value in learned.compatibility.items()

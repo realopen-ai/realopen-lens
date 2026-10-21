@@ -26,12 +26,17 @@ export interface Task {
   revision: number;
   error: string | null;
   progress: {
+    step?: number;
+    max_steps?: number;
+    query?: number;
+    queries?: number;
     files?: number;
     phase_completed_images?: number;
     unique_images?: number;
     current_image?: string;
   };
   result: {
+    ranking?: { kind: string; sha256: string | null };
     results?: ImageResult[];
     run_id?: string | null;
     images?: number;

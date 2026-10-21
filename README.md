@@ -232,3 +232,6 @@ includes before/after results, failure analysis, resource costs and remaining li
 The [text-gating retrieval study](docs/benchmarks/2026-10-19-text-gating-retrieval.md)
 evaluates downstream search and exact identifiers on the historical corpus plus
 fresh text-presence and small/faint-text cases.
+
+Reviewed feedback can also train a versioned local logistic reranker, with explicit
+activation and rollback. See [feedback training](docs/feedback-training.md).
