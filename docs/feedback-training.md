@@ -11,7 +11,9 @@ Save text searches with feedback enabled and label results relevant or irrelevan
 Unlabeled images are never inferred negatives. This first workflow accepts baseline
 hybrid searches with 50 candidates per channel and one consistent encoder precision
 and ranking-source version. Image-similarity searches, mixed encoder versions and
-already reranked searches are rejected as training inputs.
+already reranked searches are rejected as training inputs. Virtual-collection
+feedback retains its scope in exports but requires a scope-aware evaluation workflow;
+current preparation accepts full-library searches only.
 
 Open **Learning & models** in the gallery and download a review template. The server
 retains the exact feedback snapshot locally. Fill in:

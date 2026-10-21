@@ -213,3 +213,10 @@ Use the Light/Dark switch in the header to choose an appearance. Lens follows th
 system preference until you select a mode, then remembers your choice locally in
 the browser. The preference is applied before the gallery loads. If browser
 storage is unavailable, the switch still works for the current page session.
+
+## Virtual collections
+
+Create named selections from card checkboxes or the sidebar, then browse and search
+their members. Rename/delete controls and revision checks keep concurrent edits
+explicit. See [virtual collections](virtual-collections.md) for membership semantics,
+source refreshes, CLI commands and scoped-feedback limitations.

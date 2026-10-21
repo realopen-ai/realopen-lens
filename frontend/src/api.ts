@@ -20,6 +20,8 @@ export interface Task {
   id: string;
   kind: string;
   collection: string;
+  virtual_collection?: string | null;
+  virtual_revision?: number | null;
   status: string;
   phase: string;
   elapsed_seconds: number;

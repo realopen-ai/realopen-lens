@@ -10,6 +10,8 @@ from collections.abc import Callable
 
 import typer
 
+from realopen_lens.organization.cli import app as groups_app
+
 app = typer.Typer(
     no_args_is_help=True, help="Private, offline collection indexing and image search."
 )
@@ -221,6 +223,10 @@ def show_status(
 def find_images(
     query: Annotated[str, typer.Argument()],
     collection: Annotated[str, typer.Option()] = "personal",
+    virtual_collection: Annotated[
+        str | None, typer.Option(help="Restrict to this virtual collection ID")
+    ] = None,
+    virtual_revision: Annotated[int | None, typer.Option(min=1)] = None,
     index_dir: Annotated[Path | None, typer.Option()] = None,
     models: Annotated[Path, typer.Option()] = Path("models"),
     limit: Annotated[int, typer.Option(min=1, max=100)] = 10,
@@ -258,6 +264,8 @@ def find_images(
         options: dict[str, Any] = dict(
             limit=limit,
             mode=mode,
+            virtual_collection=virtual_collection,
+            virtual_revision=virtual_revision,
             reranker=reranker,
             candidate_depths=depths,
             siglip_precision=siglip_precision,
@@ -330,6 +338,10 @@ def similar_images(
     ] = None,
     image_id: Annotated[str | None, typer.Option(help="Image ID in the active generation")] = None,
     collection: Annotated[str, typer.Option()] = "personal",
+    virtual_collection: Annotated[
+        str | None, typer.Option(help="Restrict to this virtual collection ID")
+    ] = None,
+    virtual_revision: Annotated[int | None, typer.Option(min=1)] = None,
     index_dir: Annotated[Path | None, typer.Option()] = None,
     models: Annotated[Path, typer.Option()] = Path("models"),
     limit: Annotated[int, typer.Option(min=1, max=100)] = 10,
@@ -352,6 +364,8 @@ def similar_images(
         options: dict[str, Any] = dict(
             image_id=image_id,
             collection=collection,
+            virtual_collection=virtual_collection,
+            virtual_revision=virtual_revision,
             index_dir=index_dir,
             models=models,
             limit=limit,
@@ -443,6 +457,9 @@ def feedback_export(
     from realopen_lens.learning.feedback import export_feedback
 
     _feedback_echo(export_feedback, output, index_dir=index_dir, overwrite=overwrite)
+
+
+app.add_typer(groups_app, name="groups")
 
 
 training_app = typer.Typer(

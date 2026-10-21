@@ -28,14 +28,19 @@ class Input(BaseModel):
     collection: str = Field(default="personal", min_length=1, max_length=128)
 
 
-class SearchInput(Input):
+class ScopedInput(Input):
+    virtual_collection: str | None = Field(default=None, pattern=r"^[a-f0-9]{32}$")
+    virtual_revision: int | None = Field(default=None, ge=1)
+
+
+class SearchInput(ScopedInput):
     query: str = Field(min_length=1, max_length=4096)
     mode: Literal["hybrid", "visual", "lexical", "semantic"] = "hybrid"
     limit: int = Field(default=50, ge=1, le=100)
     save_run: bool = False
 
 
-class SimilarInput(Input):
+class SimilarInput(ScopedInput):
     image_id: str = Field(pattern=r"^[a-f0-9]{64}$")
     limit: int = Field(default=50, ge=1, le=100)
     save_run: bool = False
@@ -46,6 +51,22 @@ class IndexInput(Input):
     languages: str = Field(default="eng+fra+ara", pattern=r"^[a-zA-Z0-9_+.-]{1,128}$")
     siglip_precision: Literal["int8", "fp32"] = "int8"
     rehash: bool = False
+
+
+class VirtualNameInput(Input):
+    name: str = Field(min_length=1, max_length=80)
+
+
+class VirtualRenameInput(VirtualNameInput):
+    revision: int = Field(ge=1)
+
+
+class VirtualRevisionInput(Input):
+    revision: int = Field(ge=1)
+
+
+class VirtualMembersInput(VirtualRevisionInput):
+    image_ids: list[str] = Field(min_length=1, max_length=500)
 
 
 class PrepareTrainingInput(Input):
@@ -189,6 +210,55 @@ def create_app(
         except ValueError as error:
             raise HTTPException(429, str(error)) from error
 
+    from realopen_lens.organization import collections as organizing
+    from realopen_lens.storage.organization import CollectionConflict
+
+    @app.exception_handler(CollectionConflict)
+    async def stale_virtual_collection(request: Request, error: CollectionConflict):
+        return Response(
+            json.dumps({"detail": str(error)}), status_code=409, media_type="application/json"
+        )
+
+    @app.get("/api/virtual-collections")
+    def virtual_collections(collection: str = "personal"):
+        return organizing.list_collections(root, collection)
+
+    @app.post("/api/virtual-collections", status_code=201)
+    def create_virtual(body: VirtualNameInput):
+        return organizing.create(root, body.collection, body.name)
+
+    @app.patch("/api/virtual-collections/{virtual_id}")
+    def rename_virtual(virtual_id: str, body: VirtualRenameInput):
+        return organizing.rename(root, body.collection, virtual_id, body.name, body.revision)
+
+    @app.delete("/api/virtual-collections/{virtual_id}")
+    def delete_virtual(virtual_id: str, body: VirtualRevisionInput):
+        organizing.remove(root, body.collection, virtual_id, body.revision)
+        return {"deleted": True}
+
+    @app.post("/api/virtual-collections/{virtual_id}/members")
+    def add_virtual_members(virtual_id: str, body: VirtualMembersInput):
+        return organizing.change_members(
+            root, body.collection, virtual_id, body.image_ids, body.revision
+        )
+
+    @app.delete("/api/virtual-collections/{virtual_id}/members")
+    def remove_virtual_members(virtual_id: str, body: VirtualMembersInput):
+        return organizing.change_members(
+            root, body.collection, virtual_id, body.image_ids, body.revision, remove=True
+        )
+
+    @app.get("/api/virtual-collections/{virtual_id}/images")
+    def virtual_images(
+        virtual_id: str,
+        collection: str = "personal",
+        offset: int = 0,
+        limit: int = 60,
+        revision: int | None = None,
+        generation: str | None = None,
+    ):
+        return organizing.browse(root, collection, virtual_id, offset, limit, revision, generation)
+
     @app.post("/api/tasks/search", status_code=202)
     def search(body: SearchInput):
         return submit("search", body.model_dump())
@@ -206,9 +276,18 @@ def create_app(
         return submit("index", {**body.model_dump(), "root": str(path)})
 
     @app.post("/api/tasks/upload", status_code=202)
-    async def upload(request: Request, collection: str = "personal", save_run: bool = False):
-        if len(collection) > 128:
-            raise ValueError("Invalid collection")
+    async def upload(
+        request: Request,
+        collection: str = "personal",
+        save_run: bool = False,
+        virtual_collection: str | None = None,
+        virtual_revision: int | None = None,
+    ):
+        ScopedInput(
+            collection=collection,
+            virtual_collection=virtual_collection,
+            virtual_revision=virtual_revision,
+        )
         directory = root / "api-uploads"
         directory.mkdir(parents=True, exist_ok=True)
         path = directory / (identifier() + ".image")
@@ -224,7 +303,14 @@ def create_app(
                 raise ValueError("Select a nonempty image")
             return submit(
                 "similar",
-                {"collection": collection, "save_run": save_run, "limit": 50, "upload": str(path)},
+                {
+                    "collection": collection,
+                    "save_run": save_run,
+                    "limit": 50,
+                    "upload": str(path),
+                    "virtual_collection": virtual_collection,
+                    "virtual_revision": virtual_revision,
+                },
             )
         except BaseException:
             path.unlink(missing_ok=True)

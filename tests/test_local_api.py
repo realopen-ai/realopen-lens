@@ -291,3 +291,82 @@ def test_training_tasks_use_existing_queue_and_observable_progress(web, monkeypa
     events = client.get(f"/api/tasks/{trained['id']}/events")
     assert '"kind": "train"' in events.text
     assert '"step": 2' in events.text
+
+
+def test_virtual_collection_crud_scoped_tasks_and_conflict_guards(web):
+    client, root, store, run = web
+    assert client.get("/api/virtual-collections").json() == []
+    group = client.post("/api/virtual-collections", json={"name": "Invoices"})
+    assert group.status_code == 201
+    group = group.json()
+    key = digest(root / "red.png")
+    changed = client.post(
+        f"/api/virtual-collections/{group['id']}/members", json={"revision": 1, "image_ids": [key]}
+    )
+    assert changed.status_code == 200
+    revision = changed.json()["revision"]
+    stale = client.patch(
+        f"/api/virtual-collections/{group['id']}", json={"name": "Old revision", "revision": 1}
+    )
+    assert stale.status_code == 409
+    page = client.get(f"/api/virtual-collections/{group['id']}/images?revision={revision}").json()
+    assert page["total"] == 1 and page["results"][0]["image_id"] == key
+    queued = client.post(
+        "/api/tasks/search",
+        json={
+            "query": "red",
+            "virtual_collection": group["id"],
+            "virtual_revision": revision,
+            "save_run": True,
+        },
+    )
+    result = completed(client, queued.json()["id"])
+    assert result["status"] == "completed"
+    assert result["virtual_collection"] == group["id"]
+    assert [r["image_id"] for r in result["result"]["results"]] == [key]
+    saved = client.get(f"/api/feedback/runs/{result['result']['run_id']}").json()
+    assert saved["scope"]["revision"] == revision
+    removed = client.request(
+        "DELETE",
+        f"/api/virtual-collections/{group['id']}/members",
+        json={"revision": revision, "image_ids": [key]},
+    )
+    assert removed.status_code == 200
+    renamed = client.patch(
+        f"/api/virtual-collections/{group['id']}",
+        json={"name": "Receipts", "revision": removed.json()["revision"]},
+    )
+    assert renamed.status_code == 200
+    assert client.get("/api/virtual-collections").json()[0]["name"] == "Receipts"
+    assert (
+        client.request(
+            "DELETE",
+            f"/api/virtual-collections/{group['id']}",
+            json={"revision": renamed.json()["revision"]},
+        ).status_code
+        == 200
+    )
+    assert (root / "red.png").is_file()
+    assert client.get("/api/virtual-collections").json() == []
+
+
+def test_virtual_collections_cannot_add_unknown_sources_or_cross_parent(web):
+    client, root, store, run = web
+    group = client.post("/api/virtual-collections", json={"name": "A"}).json()
+    response = client.post(
+        f"/api/virtual-collections/{group['id']}/members",
+        json={"image_ids": [digest(root / "red.png"), "0" * 64], "revision": 1},
+    )
+    assert response.status_code == 400
+    assert client.get(f"/api/virtual-collections/{group['id']}/images").json()["member_count"] == 0
+    run(collection="other")
+    assert (
+        client.get(f"/api/virtual-collections/{group['id']}/images?collection=other").status_code
+        == 400
+    )
+    assert (
+        client.post(
+            "/api/tasks/search", json={"query": "red", "virtual_collection": "../bad"}
+        ).status_code
+        == 422
+    )

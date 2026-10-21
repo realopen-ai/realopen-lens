@@ -99,6 +99,8 @@ class TaskManager:
             state = {
                 "id": task_id,
                 "kind": kind,
+                "virtual_collection": request.get("virtual_collection"),
+                "virtual_revision": request.get("virtual_revision"),
                 "collection": request["collection"],
                 "status": "queued",
                 "phase": "queued",
@@ -148,6 +150,18 @@ class TaskManager:
                 "on_progress": progress,
             }
             collection = request["collection"]
+            if kind in {"search", "similar"} and request.get("virtual_collection"):
+                from realopen_lens.organization.collections import parent, resolve_scope
+
+                found = parent(self.root, collection)
+                _, scope = resolve_scope(
+                    self.root,
+                    found["id"],
+                    request["virtual_collection"],
+                    request.get("virtual_revision"),
+                )
+                request = {**request, "virtual_revision": scope["revision"]}
+                self.update(task_id, virtual_revision=scope["revision"])
             if kind in {"prepare_training", "train"}:
                 self._release_session()
                 if kind == "prepare_training":
@@ -192,6 +206,8 @@ class TaskManager:
                     "limit": request["limit"],
                     "mode": request["mode"],
                     "on_progress": progress,
+                    "virtual_collection": request.get("virtual_collection"),
+                    "virtual_revision": request.get("virtual_revision"),
                 }
                 ranking: dict = {"kind": request["mode"], "sha256": None}
                 if request.get("save_run"):
@@ -223,6 +239,8 @@ class TaskManager:
                     "image_id": request.get("image_id"),
                     "collection": collection,
                     "limit": request["limit"],
+                    "virtual_collection": request.get("virtual_collection"),
+                    "virtual_revision": request.get("virtual_revision"),
                     **options,
                 }
                 path = Path(request["upload"]) if request.get("upload") else None
@@ -234,6 +252,9 @@ class TaskManager:
                     run_id = None
                 payload = {"results": [asdict(r) for r in results], "run_id": run_id}
                 status = "completed"
+            if kind in {"search", "similar"}:
+                payload["virtual_collection"] = request.get("virtual_collection")
+                payload["virtual_revision"] = request.get("virtual_revision")
             # Once an operation has committed (index/feedback), report its real outcome.
             self.update(
                 task_id, status=status, phase="finished", result=payload, finished_at=time()

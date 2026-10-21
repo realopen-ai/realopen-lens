@@ -14,6 +14,11 @@ import {
 import "./style.css";
 import { ThemeSwitch } from "./ThemeSwitch";
 import { Training } from "./Training";
+import {
+  VirtualCollections,
+  SelectionToolbar,
+  type VirtualCollection,
+} from "./VirtualCollections";
 
 function Icon({ name, size = 20 }: { name: string; size?: number }) {
   const paths: Record<string, React.ReactNode> = {
@@ -87,6 +92,15 @@ function App() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [collection, setCollection] = useState("");
   const selectedCollection = useRef("");
+  const [virtuals, setVirtuals] = useState<VirtualCollection[]>([]);
+  const [virtualId, setVirtualId] = useState<string | null>(null);
+  const virtualScope = useRef<VirtualCollection | null>(null);
+  const [unavailable, setUnavailable] = useState(0);
+  const [selected, setSelected] = useState(new Set<string>());
+  const [targetVirtual, setTargetVirtual] = useState("");
+  const [creatingVirtual, setCreatingVirtual] = useState(false);
+  const [selectionBusy, setSelectionBusy] = useState(false);
+  const [organizationNotice, setOrganizationNotice] = useState("");
   const [images, setImages] = useState<ImageResult[]>([]);
   const [query, setQuery] = useState("");
   const [title, setTitle] = useState("All images");
@@ -125,32 +139,62 @@ function App() {
     setCollections(values);
     return values;
   }
-  async function browse(value: string, offset = 0) {
+  async function loadVirtuals(source: string) {
+    const values = await api<VirtualCollection[]>(
+      `/virtual-collections?collection=${encodeURIComponent(source)}`,
+    );
+    if (selectedCollection.current === source) {
+      setVirtuals(values);
+      setTargetVirtual((current) =>
+        values.some((group) => group.id === current) ? current : "",
+      );
+    }
+    return values;
+  }
+  async function browse(
+    value: string,
+    offset = 0,
+    group: VirtualCollection | null = null,
+  ) {
     const version = ++requestVersion.current;
     foreground.current = null;
     setRepeatSearch(null);
     sessionStorage.removeItem("lens-task");
+    if (selectedCollection.current !== value) {
+      setVirtuals([]);
+      setTargetVirtual("");
+    }
     selectedCollection.current = value;
+    virtualScope.current = group;
+    setVirtualId(group?.id || null);
     setCollection(value);
     setLoading(true);
     setError("");
     setDetail(null);
     setRunId(null);
     setLabels({});
+    if (!offset) {
+      setSelected(new Set());
+      setOrganizationNotice("");
+    }
     try {
+      const url = group
+        ? `/virtual-collections/${group.id}/images?collection=${encodeURIComponent(value)}&revision=${group.revision}&offset=${offset}&limit=60${offset && generation ? `&generation=${generation}` : ""}`
+        : `/collections/${encodeURIComponent(value)}/images?offset=${offset}&limit=60`;
       const data = await api<{
         results: ImageResult[];
         total: number;
         generation: string;
-      }>(
-        `/collections/${encodeURIComponent(value)}/images?offset=${offset}&limit=60`,
-      );
+        unavailable_count?: number;
+      }>(url);
       if (version !== requestVersion.current) return;
       setImages((old) => (offset ? [...old, ...data.results] : data.results));
       setTotal(data.total);
       setGeneration(data.generation);
+      setUnavailable(data.unavailable_count || 0);
       setIsBrowse(true);
-      setTitle("All images");
+      setTitle(group?.name || "All images");
+      if (!offset) await loadVirtuals(value);
     } catch (e) {
       if (version === requestVersion.current) {
         setError(String(e));
@@ -158,6 +202,78 @@ function App() {
       }
     } finally {
       if (version === requestVersion.current) setLoading(false);
+    }
+  }
+  async function organizationChanged(id: string, source = collection) {
+    const values = await loadVirtuals(source);
+    if (source !== selectedCollection.current) return;
+    if (virtualScope.current?.id === id) {
+      await browse(source, 0, values.find((group) => group.id === id) || null);
+    }
+  }
+  async function refreshVirtual() {
+    const source = collection,
+      id = virtualId;
+    try {
+      const values = await loadVirtuals(source);
+      if (
+        selectedCollection.current === source &&
+        virtualScope.current?.id === id
+      )
+        await browse(
+          source,
+          0,
+          values.find((group) => group.id === id) || null,
+        );
+    } catch (error) {
+      setError(String(error));
+    }
+  }
+  function toggleImage(id: string) {
+    setSelected((old) => {
+      const next = new Set(old);
+      if (next.has(id)) next.delete(id);
+      else if (next.size < 500) next.add(id);
+      else setError("Select up to 500 images per action.");
+      return next;
+    });
+  }
+  async function changeSelection(remove = false) {
+    const source = collection;
+    const group = virtuals.find(
+      (value) => value.id === (remove ? virtualId : targetVirtual),
+    );
+    if (!selected.size) return;
+    if (!group) {
+      setError("Choose an available virtual collection.");
+      return;
+    }
+    setSelectionBusy(true);
+    setError("");
+    try {
+      await api(`/virtual-collections/${group.id}/members`, {
+        method: remove ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          collection: source,
+          revision: group.revision,
+          image_ids: [...selected],
+        }),
+      });
+      await organizationChanged(group.id, source);
+      if (selectedCollection.current === source) {
+        setSelected(new Set());
+        setOrganizationNotice(
+          remove
+            ? "Removed the selection from this collection."
+            : `Saved the selection to “${group.name}”.`,
+        );
+      }
+    } catch (e) {
+      if (selectedCollection.current === source) setError(String(e));
+      await loadVirtuals(source).catch(() => {});
+    } finally {
+      setSelectionBusy(false);
     }
   }
   function receive(task: Task) {
@@ -175,7 +291,22 @@ function App() {
     ) {
       void loadCollections()
         .then(() => {
-          if (!foreground.current) void browse(task.collection);
+          if (
+            !foreground.current &&
+            selectedCollection.current === task.collection
+          ) {
+            void loadVirtuals(task.collection)
+              .then((values) =>
+                browse(
+                  task.collection,
+                  0,
+                  values.find(
+                    (group) => group.id === virtualScope.current?.id,
+                  ) || null,
+                ),
+              )
+              .catch((e) => setError(String(e)));
+          }
         })
         .catch((e) => setError(String(e)));
       setImporting(false);
@@ -254,9 +385,22 @@ function App() {
       const previous = pending.find(
         (t) => t.id === remembered && t.kind !== "index",
       );
-      if (values.length) await browse(previous?.collection || values[0].name);
+      let restore = true;
+      if (values.length) {
+        const source = previous?.collection || values[0].name;
+        const scopes = await loadVirtuals(source);
+        const group =
+          scopes.find((value) => value.id === previous?.virtual_collection) ||
+          null;
+        restore = !previous?.virtual_collection || Boolean(group);
+        await browse(source, 0, group);
+        if (!restore)
+          setError(
+            "The saved search's virtual collection is unavailable. Choose a collection and search again.",
+          );
+      }
       setTasks(pending);
-      if (previous) {
+      if (previous && restore) {
         foreground.current = previous.id;
         sessionStorage.setItem("lens-task", previous.id);
         setTitle("Search results");
@@ -314,7 +458,16 @@ function App() {
     body: Record<string, unknown>,
     heading: string,
   ) {
+    const scope = virtualScope.current;
+    body = {
+      ...body,
+      ...(!("virtual_collection" in body) && scope
+        ? { virtual_collection: scope.id, virtual_revision: scope.revision }
+        : {}),
+    };
     setRepeatSearch({ kind, body: { ...body }, heading });
+    setSelected(new Set());
+    setOrganizationNotice("");
     const version = ++requestVersion.current;
     foreground.current = "submitting";
     setImages([]);
@@ -342,6 +495,9 @@ function App() {
     }
   }
   async function upload(file: File, record = saveRun) {
+    setSelected(new Set());
+    setOrganizationNotice("");
+    const scope = virtualScope.current;
     setRepeatSearch({ kind: "upload", file });
     if (file.size > 64 * 1024 * 1024) {
       setError("Select an image no larger than 64 MiB.");
@@ -360,7 +516,7 @@ function App() {
     setTitle(`Similar to ${file.name}`);
     try {
       const task = await uploadImage(
-        `/tasks/upload?collection=${encodeURIComponent(collection)}&save_run=${record}`,
+        `/tasks/upload?collection=${encodeURIComponent(collection)}&save_run=${record}${scope ? `&virtual_collection=${scope.id}&virtual_revision=${scope.revision}` : ""}`,
         file,
         (loaded, total) => setUploadBytes({ loaded, total }),
       );
@@ -450,14 +606,14 @@ function App() {
         </a>
         <div className="workspace-label">YOUR WORKSPACE</div>
         <button
-          className="nav-item selected"
+          className={`nav-item ${!virtualId ? "selected" : ""}`}
           onClick={() => collection && void browse(collection)}
         >
           <Icon name="grid" />
           Image library
         </button>
         <div className="collection-heading">
-          <span>COLLECTIONS</span>
+          <span>FOLDERS</span>
           <button
             className="icon-button"
             aria-label="Add collection"
@@ -482,6 +638,16 @@ function App() {
             <p className="muted small">Your collections will appear here.</p>
           )}
         </div>
+        <VirtualCollections
+          collection={collection}
+          groups={virtuals}
+          activeId={virtualId}
+          creating={creatingVirtual}
+          setCreating={setCreatingVirtual}
+          onBrowse={(group) => void browse(collection, 0, group)}
+          onChanged={organizationChanged}
+          onCreated={setTargetVirtual}
+        />
         <div className="sidebar-bottom">
           <span className="local-badge">
             <span className="status-dot" />
@@ -603,6 +769,42 @@ function App() {
               </label>
             </div>
           </div>
+          {virtualId && (
+            <div className="scope-banner">
+              <span>
+                Searching within{" "}
+                <strong>
+                  {virtuals.find((group) => group.id === virtualId)?.name ||
+                    "virtual collection"}
+                </strong>
+              </span>
+              <button
+                className="text-button"
+                disabled={loading}
+                onClick={() => void refreshVirtual()}
+              >
+                Refresh collection
+              </button>
+              <button
+                className="text-button"
+                onClick={() => void browse(collection)}
+              >
+                Search all images
+              </button>
+            </div>
+          )}
+          {virtualId && (
+            <p className="scope-help">
+              Collection searches use hybrid ranking unless you choose another
+              search mode. Learned models apply to full-library searches.
+            </p>
+          )}
+          {virtualId && saveRun && (
+            <p className="scope-help">
+              Collection feedback is saved with its scope. Current training
+              preparation uses full-library searches.
+            </p>
+          )}
           <Training collection={collection} tasks={tasks} watch={watch} />
           {uploadBytes && (
             <section className="task-panel" aria-label="Upload progress">
@@ -758,6 +960,44 @@ function App() {
               )}
             </section>
           )}
+          {unavailable > 0 && virtualId && isBrowse && (
+            <p className="scope-help">
+              {unavailable} saved{" "}
+              {unavailable === 1 ? "image is" : "images are"} unavailable in the
+              current source index. Membership is retained.
+            </p>
+          )}
+          {organizationNotice && (
+            <p className="organization-notice" role="status">
+              {organizationNotice}
+            </p>
+          )}
+          {images.length > 0 && !loading && (
+            <div className="selection-controls">
+              <button
+                className="text-button"
+                disabled={images.length > 500 || selectionBusy}
+                onClick={() =>
+                  setSelected(new Set(images.map((image) => image.image_id)))
+                }
+              >
+                Select visible images
+              </button>
+              <span>Select up to 500 images per action</span>
+            </div>
+          )}
+          <SelectionToolbar
+            selected={selected.size}
+            groups={virtuals}
+            target={targetVirtual}
+            setTarget={setTargetVirtual}
+            activeId={virtualId}
+            busy={selectionBusy}
+            onAdd={() => void changeSelection()}
+            onRemove={() => void changeSelection(true)}
+            onClear={() => setSelected(new Set())}
+            onCreate={() => setCreatingVirtual(true)}
+          />
           {loading && (
             <div className="loading-label" role="status">
               <span className="spinner" />
@@ -771,23 +1011,56 @@ function App() {
               </div>
               <h2>
                 {collection
-                  ? "Nothing here yet"
+                  ? virtualId
+                    ? !isBrowse
+                      ? "No matching images"
+                      : unavailable
+                        ? "No saved images are available"
+                        : "This collection is empty"
+                    : "Nothing here yet"
                   : "Make room for a little discovery."}
               </h2>
               <p>
                 {collection
-                  ? "Try another search or index a folder to start exploring."
+                  ? virtualId
+                    ? !isBrowse
+                      ? "Try a different query or search all images in the source folder."
+                      : unavailable
+                        ? "Restore the source files and refresh their folder index to see them here again."
+                        : "Select images from the library or search results, then add them to this collection."
+                    : "Try another search or index a folder to start exploring."
                   : "Add a folder of photos, screenshots, documents or diagrams. Lens keeps your original files right where they are."}
               </p>
-              <button className="primary" onClick={() => setImporting(true)}>
-                <Icon name="plus" size={17} />
-                Add your first folder
-              </button>
+              {virtualId ? (
+                <button
+                  className="primary"
+                  onClick={() => void browse(collection)}
+                >
+                  Browse source images
+                </button>
+              ) : (
+                <button className="primary" onClick={() => setImporting(true)}>
+                  <Icon name="plus" size={17} />
+                  Add your first folder
+                </button>
+              )}
             </section>
           ) : (
             <div className={`gallery ${loading ? "working" : ""}`}>
               {images.map((image) => (
-                <article className="image-card" key={image.image_id}>
+                <article
+                  className={`image-card ${selected.has(image.image_id) ? "is-selected" : ""}`}
+                  key={image.image_id}
+                >
+                  <label className="image-select">
+                    <input
+                      type="checkbox"
+                      aria-label={`Select ${filename(image)}`}
+                      checked={selected.has(image.image_id)}
+                      disabled={selectionBusy || loading}
+                      onChange={() => toggleImage(image.image_id)}
+                    />
+                  </label>
                   <button
                     className="image-frame"
                     aria-label={`View ${filename(image)}`}
@@ -895,7 +1168,9 @@ function App() {
               <button
                 className="secondary"
                 disabled={loading}
-                onClick={() => void browse(collection, images.length)}
+                onClick={() =>
+                  void browse(collection, images.length, virtualScope.current)
+                }
               >
                 Load more images
               </button>
