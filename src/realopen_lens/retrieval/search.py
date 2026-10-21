@@ -40,6 +40,7 @@ class SearchResult:
     visual_similarity: float | None
     status: str = "ready"
     issues: tuple[dict, ...] = ()
+    duplicate_ids: tuple[str, ...] = ()
 
 
 def source_paths(root: Path, manifest: dict) -> dict[str, tuple[str, ...]]:
@@ -71,14 +72,21 @@ def search_results(
     paths_by_id: dict[str, tuple[str, ...]],
     ranking: list[str],
     scores: dict[str, float],
+    *,
+    deduplicate: bool = False,
 ) -> list[SearchResult]:
     """Build consistent metadata for text and image search results."""
+    from realopen_lens.organization.duplicates import exact_groups, collapse
+
+    groups = exact_groups(catalog.root, manifest, paths_by_id) if deduplicate else {}
+    ranking = collapse(ranking, groups)
     lookup = {row["image_id"]: row for row in manifest["images"]}
     texts = {row["image_id"]: row["text"] for row in manifest["ocr"]}
     results: list[SearchResult] = []
     for image_id in ranking:
         row = lookup[image_id]
-        result_paths = paths_by_id[image_id]
+        members = (image_id, *(key for key in groups.get(image_id, ()) if key != image_id))
+        result_paths = tuple(dict.fromkeys(p for key in members for p in paths_by_id[key]))
         thumbnail = local_path(catalog.root, row["thumbnail"])
         results.append(
             SearchResult(
@@ -96,6 +104,7 @@ def search_results(
                 scores.get(image_id),
                 row.get("status", "ready"),
                 tuple(row.get("issues", [])),
+                tuple(key for key in members if key != image_id),
             )
         )
     return results
@@ -317,9 +326,15 @@ def search_collection(
             else lexical_index(ocr_records)
         )
         lexical = rank_lexical(index, query, limit=channel_limit)
+        from realopen_lens.organization.duplicates import exact_groups, collapse
+
+        duplicate_groups = exact_groups(catalog.root, manifest, paths_by_id)
+        retrieval_limit = len(lookup) if duplicate_groups else limit
+        if duplicate_groups and mode == "lexical":
+            lexical = rank_lexical(index, query, limit=len(lookup))
         scores = {}
         if mode == "lexical":
-            ranking = lexical[:limit]
+            ranking = lexical[:retrieval_limit]
         else:
             visual, semantic = matrices(catalog, manifest)
             vision_ids, passage_ids = manifest["vision_ids"], manifest["passage_ids"]
@@ -332,11 +347,11 @@ def search_collection(
                 scores = vector_scores(visual, visual_query, vision_ids)
             if mode == "visual":
                 assert visual_query is not None
-                ranking = rank_vectors(visual, visual_query, vision_ids, limit)
+                ranking = rank_vectors(visual, visual_query, vision_ids, retrieval_limit)
             elif mode == "semantic":
                 assert semantic_query is not None
                 ranking = (
-                    rank_vectors(semantic, semantic_query, passage_ids, limit)
+                    rank_vectors(semantic, semantic_query, passage_ids, retrieval_limit)
                     if passage_ids
                     else []
                 )
@@ -351,7 +366,7 @@ def search_collection(
                     passage_ids,
                     query,
                     ocr_records,
-                    limit=50 if learned is not None else limit,
+                    limit=50 if learned is not None else retrieval_limit,
                     lexical_candidates=lexical,
                     lexical_statistics=lexical_frequencies(index, query),
                     trace=trace,
@@ -377,14 +392,15 @@ def search_collection(
             trace["searchable_images"] = len(lookup)
             if learned is not None:
                 reranked = learned.rank(trace["candidates"])
-                ranking = reranked[:limit]
+                ranking = reranked[:retrieval_limit]
                 trace["rankings"]["logistic"] = reranked[:50]
                 trace["reranker_sha256"] = learned.sha256
                 trace["reranker_scope"] = learned.scope
         stage("retrieval_seconds")
         if on_progress is not None:
             on_progress({"phase": "result_validation"})
-        results = search_results(catalog, manifest, paths_by_id, ranking, scores)
+        ranking = collapse(ranking, duplicate_groups)[:limit]
+        results = search_results(catalog, manifest, paths_by_id, ranking, scores, deduplicate=True)
         if scope is not None:
             ensure_scope(catalog.root, found["id"], scope)
         stage("result_validation_seconds")
