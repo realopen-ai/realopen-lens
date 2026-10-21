@@ -65,6 +65,11 @@ def _prepare(index_dir: Path, review: Path, output: Path, on_progress=None) -> d
             run = store.run(run_id)
             if run["query"]["kind"] != "text" or run["ranking"]["mode"] != "hybrid":
                 raise ValueError("Training supports text hybrid searches only")
+            if run.get("scope") is not None:
+                raise ValueError(
+                    "Scoped feedback requires a scope-aware evaluation review; "
+                    "use unscoped runs for training"
+                )
             ranking = run["ranking"]
             if (
                 ranking["siglip_precision"] != run["encoder_spec"].get("siglip_precision", "int8")

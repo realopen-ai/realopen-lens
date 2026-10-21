@@ -35,7 +35,20 @@ def _record(
     try:
         collection, generation = catalog.snapshot(collection_name)
         manifest = load_manifest(catalog, generation)
+        scope = None
+        if options.get("virtual_collection") is not None:
+            from realopen_lens.organization.collections import resolve_scope, ensure_scope
+
+            _, scope = resolve_scope(
+                root,
+                collection["id"],
+                options["virtual_collection"],
+                options.get("virtual_revision"),
+            )
+            options["virtual_revision"] = scope["revision"]
         results = operation()
+        if scope is not None:
+            ensure_scope(root, collection["id"], scope)
         _, current = catalog.snapshot(collection_name)
         if current["id"] != generation["id"] or (
             trace.get("generation", generation["id"]) != generation["id"]
@@ -89,6 +102,8 @@ def _record(
         "results": [asdict(r) for r in results],
         "candidates": candidates,
     }
+    if scope is not None:
+        payload["scope"] = scope
     with FeedbackStore(root) as store:
         run_id = store.add_run(payload)
     return RecordedSearch(run_id, results)
@@ -188,6 +203,9 @@ def export_feedback(output: Path, *, index_dir: Path | None = None, overwrite: b
             "catalog.sqlite3-shm",
             "feedback.sqlite3-wal",
             "feedback.sqlite3-shm",
+            "organization.sqlite3",
+            "organization.sqlite3-wal",
+            "organization.sqlite3-shm",
         )
     }:
         raise ValueError("Export cannot replace an index database")
@@ -239,6 +257,8 @@ def export_feedback(output: Path, *, index_dir: Path | None = None, overwrite: b
                         "candidate": candidate,
                         "candidate_schema": run.get("candidate_schema") if candidate else None,
                     }
+                    if "scope" in run:
+                        record["scope"] = run["scope"]
                     stream.write(json.dumps(record, ensure_ascii=False, allow_nan=False) + "\n")
                     count += 1
                 stream.flush()
