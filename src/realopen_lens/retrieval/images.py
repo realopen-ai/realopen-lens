@@ -125,8 +125,19 @@ def search_similar(
         else:
             verify_image_encoder(manifest["config"]["spec"], models, precision)
             query = image_vector(image, models, threads, precision)
-        if image is not None and signature(image) != query_signature:
-            raise ValueError("Query image changed during search; retry with a stable file")
+        if image is not None:
+            assert query_signature is not None
+            after = signature(image)
+            if after != query_signature:
+                # Reading a new file can trigger metadata-only ctime changes on
+                # some filesystems. Confirm its bytes rather than rejecting it.
+                stable = ("size", "mtime_ns", "device", "inode")
+                if (
+                    any(after[key] != query_signature[key] for key in stable)
+                    or digest(image) != image_id
+                    or any(signature(image)[key] != after[key] for key in stable)
+                ):
+                    raise ValueError("Query image changed during search; retry with a stable file")
         norm = np.linalg.norm(query)
         if query.shape != (768,) or not np.isfinite(norm) or norm == 0:
             raise ValueError("Invalid image query embedding")

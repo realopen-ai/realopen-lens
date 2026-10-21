@@ -77,7 +77,8 @@ decode, EXIF orientation, transparency compositing and 224-by-224 SigLIP2 input.
 Supported contents are JPEG/MPO, PNG, WebP, TIFF and BMP. The existing limits are
 64 MiB encoded size and 24 million decoded pixels; animated/multipage inputs use
 the first frame. A changed input file is rejected rather than returning a result
-for unstable bytes.
+for unstable bytes. Metadata-only ctime changes are confirmed by rehashing when
+size, modification time and file identity remain unchanged.
 
 External inference checks the pinned vision graph checksum, registry,
 preprocessing source and NumPy/Pillow/ONNX Runtime versions against the index.
