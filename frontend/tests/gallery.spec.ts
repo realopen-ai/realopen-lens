@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 
-async function setup(page: Page) {
+async function setup(page: Page, memory = false) {
   const first = {
     rank: 1,
     image_id: "a".repeat(64),
@@ -22,6 +22,8 @@ async function setup(page: Page) {
   const requests: { url: string; method: string; body: unknown }[] = [];
   let kind = "search";
   let saveRun = false;
+  let enabled = memory;
+  let eventId = 0;
   let latest: unknown = null;
   const judgments = new Map<string, string>();
   await page.route("**/api/**", async (route) => {
@@ -64,6 +66,8 @@ async function setup(page: Page) {
     if (path.startsWith("/api/tasks/") && request.method() === "POST") {
       kind = path.split("/").at(-1)!;
       saveRun = Boolean(JSON.parse(request.postData() || "{}").save_run);
+      enabled =
+        memory && JSON.parse(request.postData() || "{}").use_feedback !== false;
       return json(
         {
           id: "test",
@@ -101,7 +105,11 @@ async function setup(page: Page) {
         result:
           kind === "index"
             ? { images: 2, failed_files: 1, degraded_files: 1 }
-            : { results: [second], run_id: saveRun ? "saved" : null },
+            : {
+                results: [second],
+                run_id: saveRun ? "saved" : null,
+                feedback: { enabled, applied: false },
+              },
       };
       latest = done;
       return route.fulfill({
@@ -111,12 +119,40 @@ async function setup(page: Page) {
           .join(""),
       });
     }
+    if (path === "/api/feedback/hidden")
+      return json({
+        results:
+          judgments.get(second.image_id) === "irrelevant"
+            ? [
+                {
+                  ...second,
+                  feedback: {
+                    image_id: second.image_id,
+                    label: "irrelevant",
+                    run_id: "saved",
+                    event_id: eventId,
+                  },
+                },
+              ]
+            : [],
+        total: judgments.get(second.image_id) === "irrelevant" ? 1 : 0,
+        generation: "g",
+      });
     if (path.includes("/feedback/")) {
       const id = path.split("/").at(-1)!;
       if (request.method() === "PUT")
         judgments.set(id, JSON.parse(request.postData()!).label);
       if (request.method() === "DELETE") judgments.delete(id);
+      if (["PUT", "DELETE"].includes(request.method())) eventId++;
       return json({
+        memory: memory
+          ? {
+              image_id: id,
+              label: judgments.get(id) || null,
+              run_id: "saved",
+              event_id: eventId,
+            }
+          : null,
         judgments: Array.from(judgments, ([image_id, label]) => ({
           image_id,
           label,
@@ -912,4 +948,86 @@ test("selecting a collapsed result adds all exact byte identities to a collectio
     .selectOption(group.id);
   await page.getByRole("button", { name: "Add selected", exact: true }).click();
   await expect.poll(() => members).toEqual(["a".repeat(64), "c".repeat(64)]);
+});
+
+test("query feedback hides immediately, supports undo and browsable clearing", async ({
+  page,
+}, testInfo) => {
+  const requests = await setup(page, true);
+  await page.getByLabel("Save for feedback").check();
+  await page
+    .getByRole("textbox", { name: "Search images" })
+    .fill("green image");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Mark green.png irrelevant", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "View green.png", exact: true }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "Undo feedback", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "View green.png", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Mark green.png irrelevant", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Show hidden images", exact: true })
+    .click();
+  await expect(
+    page.getByText("1 hidden images", { exact: true }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: `../runs/query-memory-v1/gallery-${testInfo.project.name}-light.png`,
+    fullPage: true,
+    animations: "disabled",
+  });
+  await page.getByRole("button", { name: "Switch to dark mode" }).click();
+  await page.screenshot({
+    path: `../runs/query-memory-v1/gallery-${testInfo.project.name}-dark.png`,
+    fullPage: true,
+    animations: "disabled",
+  });
+  await page
+    .getByRole("button", { name: "Clear judgment", exact: true })
+    .click();
+  await expect(
+    page.getByText("0 hidden images", { exact: true }),
+  ).toBeVisible();
+  expect(
+    requests.filter(
+      (r) => r.method === "POST" && r.url === "/api/tasks/search",
+    ),
+  ).toHaveLength(1);
+  expect(requests.filter((r) => r.method === "DELETE")).toHaveLength(2);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBeTruthy();
+  await page
+    .getByRole("button", { name: "Browse source images", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Undo feedback", exact: true }),
+  ).toHaveCount(0);
+});
+
+test("baseline search can disable query memory", async ({ page }) => {
+  const requests = await setup(page, true);
+  await page.getByLabel("Remember query feedback").uncheck();
+  await page
+    .getByRole("textbox", { name: "Search images" })
+    .fill("green image");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await expect(
+    page.getByText("Baseline results · query feedback disabled"),
+  ).toBeVisible();
+  const request = requests.find(
+    (r) => r.method === "POST" && r.url === "/api/tasks/search",
+  )!;
+  expect(JSON.parse(request.body as string).use_feedback).toBe(false);
 });

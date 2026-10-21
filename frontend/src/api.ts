@@ -1,7 +1,14 @@
+export interface MemoryDecision {
+  image_id: string;
+  label: "relevant" | "irrelevant" | null;
+  event_id: number;
+  run_id: string;
+}
 export interface ImageResult {
   rank: number;
   image_id: string;
   duplicate_ids?: string[];
+  feedback?: MemoryDecision | null;
   paths: string[];
   thumbnail: string | null;
   width: number;
@@ -39,6 +46,12 @@ export interface Task {
     current_image?: string;
   };
   result: {
+    feedback?: {
+      enabled: boolean;
+      applied: boolean;
+      positive_groups?: number;
+      hidden_groups?: number;
+    };
     ranking?: { kind: string; sha256: string | null };
     results?: ImageResult[];
     run_id?: string | null;
