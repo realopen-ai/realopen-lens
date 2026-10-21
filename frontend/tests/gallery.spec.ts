@@ -763,3 +763,153 @@ test("virtual search requests preserve scope and stale membership is explicit", 
     ),
   ).toBe(false);
 });
+
+test("duplicate review preserves separate originals and provides scan controls", async ({
+  page,
+}) => {
+  await setup(page);
+  let scanned = false;
+  let state = "unreviewed";
+  const image = (key: string) => ({
+    rank: 1,
+    image_id: key.repeat(64),
+    paths: [`/photos/${key}.png`],
+    thumbnail: "thumb",
+    width: 640,
+    height: 480,
+    text: "",
+    visual_similarity: null,
+    status: "ready",
+    issues: [],
+  });
+  await page.route("**/api/duplicates**", async (route) => {
+    const request = route.request();
+    if (request.method() === "POST")
+      state = JSON.parse(request.postData()!).state;
+    await route.fulfill({
+      json:
+        request.method() === "POST"
+          ? { state }
+          : {
+              scanned,
+              generation: "g",
+              total: scanned ? 1 : 0,
+              summary: {
+                fingerprinted: 2,
+                images: 2,
+                errors: [],
+                unsupported: [],
+              },
+              groups: scanned
+                ? [
+                    {
+                      id: "pair",
+                      kind: "near",
+                      state,
+                      image_ids: ["a".repeat(64), "b".repeat(64)],
+                      results: [image("a"), image("b")],
+                      unavailable: 0,
+                    },
+                  ]
+                : [],
+            },
+    });
+  });
+  await page.route("**/api/tasks/duplicates", async (route) => {
+    scanned = true;
+    await route.fulfill({
+      json: {
+        id: "dups",
+        kind: "duplicates",
+        collection: "personal",
+        status: "completed",
+        phase: "finished",
+        revision: 1,
+        elapsed_seconds: 1,
+        error: null,
+        progress: {},
+        result: {},
+      },
+    });
+  });
+  await page.goto("/");
+  await page.getByText("Duplicate groups", { exact: true }).click();
+  await expect(
+    page.getByText("No scan for the current index snapshot.", { exact: false }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Scan duplicates", exact: true })
+    .click();
+  await expect(
+    page.getByText("Possible near-duplicates", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Open original a.png" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Confirm similarity" }).click();
+  await expect(page.locator(".duplicate-group .pill")).toHaveText("confirmed");
+  await page.getByRole("button", { name: "Dismiss suggestion" }).click();
+  await expect(page.locator(".duplicate-group .pill")).toHaveText("dismissed");
+  await page.getByRole("button", { name: "Reset review" }).click();
+  await expect(page.locator(".duplicate-group .pill")).toHaveText("unreviewed");
+  await expect(page.locator(".duplicate-images figure")).toHaveCount(2);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+});
+
+test("selecting a collapsed result adds all exact byte identities to a collection", async ({
+  page,
+}) => {
+  await setup(page);
+  const group = {
+    id: "d".repeat(32),
+    name: "Saved",
+    collection_id: "parent",
+    revision: 1,
+    member_count: 0,
+    available_count: 0,
+    unavailable_count: 0,
+  };
+  let members: string[] = [];
+  await page.route("**/api/virtual-collections**", async (route) => {
+    if (route.request().method() === "POST") {
+      members = JSON.parse(route.request().postData()!).image_ids;
+      await route.fulfill({ json: group });
+    } else await route.fulfill({ json: [group] });
+  });
+  await page.route("**/api/collections/personal/images?**", (route) =>
+    route.fulfill({
+      json: {
+        results: [
+          {
+            rank: 1,
+            image_id: "a".repeat(64),
+            duplicate_ids: ["c".repeat(64)],
+            paths: ["/photos/red.png", "/photos/red.bmp"],
+            width: 640,
+            height: 480,
+            thumbnail: "thumb",
+            text: "",
+            visual_similarity: null,
+            status: "ready",
+            issues: [],
+          },
+        ],
+        total: 1,
+        generation: "g",
+      },
+    }),
+  );
+  await page.goto("/");
+  await page
+    .getByRole("checkbox", { name: "Select red.png", exact: true })
+    .check();
+  await page
+    .getByLabel("Add to virtual collection", { exact: true })
+    .selectOption(group.id);
+  await page.getByRole("button", { name: "Add selected", exact: true }).click();
+  await expect.poll(() => members).toEqual(["a".repeat(64), "c".repeat(64)]);
+});

@@ -1,6 +1,7 @@
 export interface ImageResult {
   rank: number;
   image_id: string;
+  duplicate_ids?: string[];
   paths: string[];
   thumbnail: string | null;
   width: number;
@@ -42,6 +43,9 @@ export interface Task {
     results?: ImageResult[];
     run_id?: string | null;
     images?: number;
+    fingerprinted?: number;
+    errors?: unknown[];
+    unsupported?: unknown[];
     failed_files?: number;
     degraded_files?: number;
   } | null;
