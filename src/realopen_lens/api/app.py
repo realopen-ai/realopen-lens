@@ -63,6 +63,12 @@ class FolderRenameInput(FolderInput):
     name: str = Field(min_length=1, max_length=128)
 
 
+class SetupInput(Input):
+    siglip_precision: Literal["int8", "fp32"] = "int8"
+    languages: str = Field(default="", pattern=r"^(?:[A-Za-z0-9_]+(?:\+[A-Za-z0-9_]+)*)?$")
+    source: str | None = Field(default=None, min_length=1, max_length=4096)
+
+
 class VirtualNameInput(Input):
     name: str = Field(min_length=1, max_length=80)
 
@@ -125,6 +131,7 @@ def create_app(
     dev_origin: str | None = None,
     static_dir: Path | None = None,
     preferred_siglip_precision: Callable[[], str] | None = None,
+    preferred_ocr_languages: Callable[[], str] | None = None,
 ) -> FastAPI:
     if not 1 <= threads <= 8 or not 1 <= port <= 65535:
         raise ValueError("Use 1–8 threads and a valid port")
@@ -208,6 +215,9 @@ def create_app(
                     "default_siglip_precision": (
                         preferred_siglip_precision() if preferred_siglip_precision else "int8"
                     ),
+                    "default_ocr_languages": (
+                        preferred_ocr_languages() if preferred_ocr_languages else ""
+                    ),
                 }
             ),
             media_type="application/json",
@@ -218,6 +228,14 @@ def create_app(
     @app.get("/api/workspace")
     def workspace():
         return describe(root, models, running_build=running_build)
+
+    @app.post("/api/tasks/setup", status_code=202)
+    def setup(body: SetupInput):
+        source = Path(body.source).expanduser().resolve() if body.source else None
+        boundaries = (*roots, *(Path(c["root"]).resolve() for c in reading.collections(root)))
+        if source and not any(source.is_relative_to(p) for p in boundaries):
+            raise HTTPException(403, "Folder is outside the configured import roots")
+        return submit("setup", {**body.model_dump(), "source": str(source) if source else None})
 
     @app.post("/api/tasks/workspace-preview", status_code=202)
     def preview_workspace(body: WorkspacePreviewInput):

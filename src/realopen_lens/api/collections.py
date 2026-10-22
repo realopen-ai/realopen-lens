@@ -60,6 +60,7 @@ def collections(root: Path) -> list[dict]:
                     "root": row["root"],
                     "generation": row["active_generation"],
                     "siglip_precision": spec.get("siglip_precision", "int8"),
+                    "languages": spec.get("languages", "eng+fra+ara"),
                 }
             )
         return result
