@@ -182,7 +182,7 @@ def validate(archive: Path, report_path: Path):
                             str(port),
                         ],
                         cwd=base,
-                        env=environment,
+                        env={**environment, "PATH": str(base / "no-external-tools")},
                         stdout=log,
                         stderr=log,
                     )
@@ -221,6 +221,30 @@ def validate(archive: Path, report_path: Path):
                             assert json.load(response) == []
                         with opener.open(url + "/api/folders", timeout=5) as response:
                             assert json.load(response)["path"] == str(images.resolve())
+                        request = urllib.request.Request(
+                            url + "/api/tasks/setup",
+                            data=b"{}",
+                            headers={"Content-Type": "application/json"},
+                        )
+                        with opener.open(request, timeout=5) as response:
+                            task = json.load(response)
+                        deadline = time.monotonic() + 30
+                        while task["status"] in {"queued", "running"}:
+                            if time.monotonic() >= deadline:
+                                raise TimeoutError("Frozen setup check timed out")
+                            with opener.open(
+                                url + "/api/tasks/" + task["id"], timeout=5
+                            ) as response:
+                                task = json.load(response)
+                            time.sleep(0.1)
+                        assert task["status"] == "completed", task
+                        assert task["result"]["ready"] is False
+                        assert not next(c for c in task["result"]["checks"] if c["id"] == "models")[
+                            "ok"
+                        ]
+                        assert not next(c for c in task["result"]["checks"] if c["id"] == "ocr")[
+                            "ok"
+                        ]
                     finally:
                         process.terminate()
                         try:
