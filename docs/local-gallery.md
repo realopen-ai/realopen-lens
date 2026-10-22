@@ -29,10 +29,20 @@ changing frontend assets. Built assets are included in the wheel when present;
 the core package also builds without them or Node.js.
 
 `--allow-root` is repeatable. Imports must resolve inside one of these roots or an
-existing registered collection root. With no explicit option, an existing `data/`
-folder in the current directory is allowed. An empty allowed-root list permits
+existing registered collection root. With no explicit option, the current user's
+home directory is allowed, including its subfolders. Operating-system permissions
+still apply; Lens does not scan anything until a folder is added for indexing.
+An explicitly empty API allowed-root list permits
 refreshing existing collections but does not authorize new arbitrary folders.
-The browser form accepts a local folder path; it is not a native folder picker.
+The form's **Choose folder** button browses local directories and fills the folder
+path without uploading files. Navigate into a directory and press **Select this
+folder**, then **Start indexing**. Choosing/cancelling alone does not index anything.
+The form suggests an unused name from the selected folder and reuses the existing
+name/precision when refreshing that exact folder. Custom names remain editable.
+Names already bound to another folder are rejected before a job is queued; the
+form stays open so the name can be corrected.
+Hidden directories are omitted from browsing; the optional text path remains usable.
+Directory browsing uses the same import-root boundary, including resolved symlinks.
 
 The web dependencies are optional. The CLI, engine and benchmark tooling remain
 usable without the `web` extra. If the compiled gallery is missing, `/` explains
@@ -132,6 +142,7 @@ Do not expose the factory through an external listener or multiple API workers.
 | Operation | Endpoint |
 | --- | --- |
 | Session/bootstrap and allowed import roots | `GET /api/session` |
+| Browse local image folders (200 per page) | `GET /api/folders` |
 | Saved collections | `GET /api/collections` |
 | Browse a collection | `GET /api/collections/{collection}/images?offset=0&limit=60` |
 | Index status and detailed issues | `GET /api/collections/{collection}/status` |
