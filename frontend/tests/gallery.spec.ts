@@ -1,5 +1,141 @@
 import { test, expect, type Page } from "@playwright/test";
 
+test("choose folder navigates local directories without starting an index", async ({
+  page,
+}, info) => {
+  const requests = await setup(page);
+  await page.route("**/api/folders?**", (route) => {
+    const path =
+      new URL(route.request().url()).searchParams.get("path") || "/photos";
+    return route.fulfill({
+      json: {
+        path,
+        parent: path === "/photos" ? null : "/photos",
+        roots: ["/photos"],
+        folders:
+          path === "/photos"
+            ? [{ name: "Family photos", path: "/photos/Family photos" }]
+            : [],
+        next_offset: null,
+      },
+    });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Add folder", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Choose folder", exact: true })
+    .click();
+  const chooser = page.getByRole("region", { name: "Choose an image folder" });
+  await expect(chooser).toBeVisible();
+  await expect(
+    chooser.getByRole("button", { name: "Family photos" }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: `../runs/folder-picker-${info.project.name}.png`,
+    fullPage: true,
+  });
+  await chooser.getByRole("button", { name: "Family photos" }).click();
+  await expect(chooser).toContainText("/photos/Family photos");
+  await chooser
+    .getByRole("button", { name: "Select this folder", exact: true })
+    .click();
+  await expect(chooser).not.toBeVisible();
+  await expect(page.getByLabel("Folder path", { exact: true })).toHaveValue(
+    "/photos/Family photos",
+  );
+  await expect(page.getByLabel("Collection name", { exact: true })).toHaveValue(
+    "Family photos",
+  );
+  expect(
+    requests.filter((request) => request.url === "/api/tasks/index"),
+  ).toHaveLength(0);
+});
+
+test("new folders suggest unused names and custom conflicts stay in the indexing form", async ({
+  page,
+}) => {
+  await setup(page);
+  await page.route("**/api/tasks/index", async (route) => {
+    const body = route.request().postDataJSON();
+    if (body.collection === "personal")
+      return route.fulfill({
+        status: 409,
+        json: {
+          detail:
+            "Collection 'personal' already indexes '/photos'. Use another collection name for this folder.",
+        },
+      });
+    return route.fulfill({
+      status: 202,
+      json: {
+        id: "test",
+        kind: "index",
+        collection: body.collection,
+        status: "queued",
+        phase: "queued",
+        revision: 0,
+        progress: {},
+        elapsed_seconds: 0,
+        error: null,
+        result: null,
+      },
+    });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Add folder", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Add a folder to Lens" });
+  await page.getByLabel("Folder path", { exact: true }).fill("/other/personal");
+  await expect(page.getByLabel("Collection name", { exact: true })).toHaveValue(
+    "personal-2",
+  );
+  await page.getByLabel("Collection name", { exact: true }).fill("personal");
+  await page
+    .getByRole("button", { name: "Start indexing", exact: true })
+    .click();
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("alert")).toContainText(
+    "Use another collection name",
+  );
+  await expect(page.getByLabel("Folder path", { exact: true })).toHaveValue(
+    "/other/personal",
+  );
+  await page.getByLabel("Collection name", { exact: true }).fill("photos");
+  await page
+    .getByRole("button", { name: "Start indexing", exact: true })
+    .click();
+  await expect(dialog).not.toBeVisible();
+});
+
+test("launcher precision defaults new folders while refresh and user overrides stay intact", async ({
+  page,
+}) => {
+  await setup(page);
+  let preferred = "fp32";
+  await page.route("**/api/session", (route) =>
+    route.fulfill({
+      json: {
+        allowed_roots: ["/photos"],
+        default_siglip_precision: preferred,
+      },
+    }),
+  );
+  await page.goto("/");
+  await page.getByRole("button", { name: "Add folder", exact: true }).click();
+  await page.getByText("Indexing options", { exact: true }).click();
+  const select = page.getByLabel("Vision precision");
+  await expect(select).toHaveValue("int8"); // Existing collection refresh.
+  await page.getByLabel("Folder path", { exact: true }).fill("/photos/new");
+  await expect(select).toHaveValue("fp32");
+  await select.selectOption("int8");
+  await page.getByLabel("Folder path", { exact: true }).fill("/photos/another");
+  await expect(select).toHaveValue("int8"); // Explicit override.
+  await page.keyboard.press("Escape");
+  preferred = "int8";
+  await page.getByRole("button", { name: "Add folder", exact: true }).click();
+  await page.getByText("Indexing options", { exact: true }).click();
+  await expect(select).toHaveValue("int8"); // New preference without server restart.
+});
+
 async function setup(page: Page, memory = false) {
   const first = {
     rank: 1,

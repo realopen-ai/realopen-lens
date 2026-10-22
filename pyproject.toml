@@ -40,6 +40,9 @@ dev = [
 ocr-eval = [
     "rapidocr[rtl]==3.10.0",
 ]
+packaging = [
+    "pyinstaller>=6.16,<7",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/realopen_lens"]

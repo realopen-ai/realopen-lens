@@ -16,6 +16,7 @@ import "./style.css";
 import { ThemeSwitch } from "./ThemeSwitch";
 import { Duplicates } from "./Duplicates";
 import { Workspace } from "./Workspace";
+import { FolderPicker } from "./FolderPicker";
 import { QueryMemory } from "./QueryMemory";
 import { Training } from "./Training";
 import {
@@ -141,8 +142,67 @@ function App() {
   const [importing, setImporting] = useState(false);
   const [roots, setRoots] = useState<string[]>([]);
   const [folder, setFolder] = useState("");
+  const [choosingFolder, setChoosingFolder] = useState(false);
+  useEffect(() => {
+    if (!importing) setChoosingFolder(false);
+  }, [importing]);
   const [name, setName] = useState("personal");
+  const [nameEdited, setNameEdited] = useState(false);
+  const [importError, setImportError] = useState("");
+  const [indexSubmitting, setIndexSubmitting] = useState(false);
   const [precision, setPrecision] = useState("int8");
+  const [defaultPrecision, setDefaultPrecision] = useState("int8");
+  const [precisionEdited, setPrecisionEdited] = useState(false);
+  useEffect(() => {
+    if (!importing) return;
+    let active = true;
+    void api<{ default_siglip_precision?: string }>("/session")
+      .then((session) => {
+        if (active)
+          setDefaultPrecision(
+            session.default_siglip_precision === "fp32" ? "fp32" : "int8",
+          );
+      })
+      .catch((error) => {
+        if (active) setImportError(String(error));
+      });
+    return () => {
+      active = false;
+    };
+  }, [importing]);
+  useEffect(() => {
+    if (!importing || precisionEdited) return;
+    const existing = collections.find((value) => value.root === folder);
+    setPrecision(existing?.siglip_precision || defaultPrecision);
+  }, [folder, collections, importing, defaultPrecision, precisionEdited]);
+  useEffect(() => {
+    if (!importing || nameEdited || !folder.trim()) return;
+    const existing = collections.find((value) => value.root === folder);
+    if (existing) {
+      setName(existing.name);
+      return;
+    }
+    const base =
+      folder
+        .replace(/\\/g, "/")
+        .replace(/\/+$/, "")
+        .split("/")
+        .pop()
+        ?.trim()
+        .slice(0, 120) || "images";
+    let candidate = base;
+    let suffix = 2;
+    while (collections.some((value) => value.name === candidate))
+      candidate = `${base}-${suffix++}`;
+    setName(candidate);
+  }, [folder, collections, importing, nameEdited]);
+  useEffect(() => {
+    if (!importing) {
+      setNameEdited(false);
+      setPrecisionEdited(false);
+      setImportError("");
+    }
+  }, [importing]);
   const [languages, setLanguages] = useState("eng+fra+ara");
   const streams = useRef(new Map<string, EventSource>());
   const foreground = useRef<string | null>(null);
@@ -692,17 +752,21 @@ function App() {
   async function importFolder(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setImportError("");
+    setIndexSubmitting(true);
     try {
       const task = await post<Task>("/tasks/index", {
         root: folder,
-        collection: name,
+        collection: name.trim(),
         siglip_precision: precision,
         languages,
       });
       watch(task);
       setImporting(false);
     } catch (e) {
-      setError(String(e));
+      setImportError(String(e));
+    } finally {
+      setIndexSubmitting(false);
     }
   }
   const active = tasks.filter((t) => !terminal(t));
@@ -714,7 +778,7 @@ function App() {
       <aside className="sidebar">
         <a className="brand" href="/" aria-label="RealOpen Lens home">
           <span className="brand-mark">
-            <Icon name="search" size={24} />
+            <img src="/assets/lens.svg" alt="" aria-hidden="true" />
           </span>
           <span>
             Lens<span className="brand-small">by RealOpen</span>
@@ -1521,7 +1585,10 @@ function App() {
                   required
                   maxLength={128}
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setNameEdited(true);
+                    setName(e.target.value);
+                  }}
                 />
               </label>
               <label>
@@ -1533,6 +1600,23 @@ function App() {
                   placeholder="/path/to/images"
                 />
               </label>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => setChoosingFolder(!choosingFolder)}
+              >
+                Choose folder
+              </button>
+              {choosingFolder && (
+                <FolderPicker
+                  initial={folder}
+                  onClose={() => setChoosingFolder(false)}
+                  onSelect={(path) => {
+                    setFolder(path);
+                    setChoosingFolder(false);
+                  }}
+                />
+              )}
               <p className="field-help">
                 Allowed import roots:{" "}
                 {roots.length
@@ -1546,7 +1630,10 @@ function App() {
                   Vision precision
                   <select
                     value={precision}
-                    onChange={(e) => setPrecision(e.target.value)}
+                    onChange={(e) => {
+                      setPrecisionEdited(true);
+                      setPrecision(e.target.value);
+                    }}
                   >
                     <option value="int8">INT8 · lower memory</option>
                     <option value="fp32">FP32 · higher memory</option>
@@ -1565,8 +1652,13 @@ function App() {
                   Models and language packs must already be installed.
                 </p>
               </details>
-              <button className="primary full-width" type="submit">
-                Start indexing
+              {importError && <p role="alert">{importError}</p>}
+              <button
+                className="primary full-width"
+                type="submit"
+                disabled={indexSubmitting || !name.trim()}
+              >
+                {indexSubmitting ? "Starting indexing…" : "Start indexing"}
                 <Icon name="arrow" size={18} />
               </button>
             </form>

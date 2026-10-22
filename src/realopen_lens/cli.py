@@ -606,7 +606,7 @@ def serve_gallery(
         from realopen_lens.workspace.identity import models_directory
 
         workspace_root = index_dir or default_directory()
-        roots = tuple(allow_root or ([Path("data")] if Path("data").is_dir() else []))
+        roots = tuple(allow_root) if allow_root is not None else None
         api = create_app(
             index_dir=workspace_root,
             models=models or models_directory(workspace_root),

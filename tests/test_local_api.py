@@ -54,6 +54,106 @@ def completed(client, task_id):
     pytest.fail("Task did not finish")
 
 
+def test_home_imports_are_default_and_explicit_roots_still_restrict(tmp_path, monkeypatch):
+    home = tmp_path / "home"
+    photos = home / "Pictures" / "photos"
+    photos.mkdir(parents=True)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: home))
+    submitted = []
+
+    def capture(self, kind, request):
+        submitted.append((kind, request))
+        return {"id": "captured"}
+
+    monkeypatch.setattr(jobs.TaskManager, "submit", capture)
+    for overrides, allowed in (
+        ({}, True),
+        ({"allowed_roots": ()}, False),
+        ({"allowed_roots": (outside,)}, False),
+    ):
+        app = create_app(index_dir=tmp_path / "index", **overrides)
+        with TestClient(app, base_url="http://127.0.0.1:8765") as client:
+            session = client.get("/api/session").json()
+            if allowed:
+                assert session["allowed_roots"] == [str(home.resolve())]
+            response = client.post(
+                "/api/tasks/index", json={"root": str(photos), "collection": "photos"}
+            )
+            assert response.status_code == (202 if allowed else 403)
+            if allowed:
+                assert submitted[-1][1]["root"] == str(photos.resolve())
+                response = client.post("/api/tasks/index", json={"root": str(outside)})
+                assert response.status_code == 403
+    assert len(submitted) == 1
+
+
+def test_folder_browser_lists_only_directories_with_paging_and_bounds(web, tmp_path):
+    client, root, store, run = web
+    for number in range(205):
+        (root / f"album-{number:03d}").mkdir()
+    (root / ".hidden").mkdir()
+    first = client.get("/api/folders").json()
+    assert first["path"] == str(root.resolve())
+    assert first["parent"] is None
+    assert len(first["folders"]) == 200
+    assert first["folders"][0]["name"] == "album-000"
+    assert first["next_offset"] == 200
+    second = client.get("/api/folders", params={"path": str(root), "offset": 200}).json()
+    assert len(second["folders"]) == 5 and second["next_offset"] is None
+    nested = client.get("/api/folders", params={"path": first["folders"][0]["path"]}).json()
+    assert nested["parent"] == str(root.resolve()) and nested["folders"] == []
+    assert client.get("/api/folders", params={"path": str(tmp_path)}).status_code == 403
+    assert client.get("/api/folders", params={"offset": -1}).status_code == 422
+    client.cookies.clear()
+    assert client.get("/api/folders").status_code == 401
+
+
+def test_index_name_conflict_is_rejected_before_queuing_and_refresh_is_allowed(web, monkeypatch):
+    client, root, store, run = web
+    other = root / "photos"
+    other.mkdir()
+    submitted = []
+    monkeypatch.setattr(
+        jobs.TaskManager, "submit", lambda self, *args: submitted.append(args) or {"id": "test"}
+    )
+    response = client.post("/api/tasks/index", json={"root": str(other), "collection": "personal"})
+    assert response.status_code == 409
+    assert "Use another collection name" in response.json()["detail"]
+    assert submitted == []
+    response = client.post("/api/tasks/index", json={"root": str(other), "collection": "photos"})
+    assert response.status_code == 202
+    response = client.post("/api/tasks/index", json={"root": str(root), "collection": "personal"})
+    assert response.status_code == 202
+    assert len(submitted) == 2
+
+
+def test_launcher_precision_preference_is_live_and_does_not_change_collections(tmp_path):
+    preferred = {"value": "fp32"}
+    app = create_app(
+        index_dir=tmp_path / "store", preferred_siglip_precision=lambda: preferred["value"]
+    )
+    with TestClient(app, base_url="http://127.0.0.1:8765") as client:
+        assert client.get("/api/session").json()["default_siglip_precision"] == "fp32"
+        preferred["value"] = "int8"
+        assert client.get("/api/session").json()["default_siglip_precision"] == "int8"
+        assert client.get("/api/collections").json() == []
+
+
+def test_folder_browser_does_not_follow_links_outside_import_roots(web, tmp_path):
+    client, root, store, run = web
+    outside = tmp_path / "outside-folder"
+    outside.mkdir()
+    link = root / "escape"
+    try:
+        link.symlink_to(outside, target_is_directory=True)
+    except OSError:
+        pytest.skip("Directory symlinks unavailable on this host")
+    assert not client.get("/api/folders").json()["folders"]
+    assert client.get("/api/folders", params={"path": str(link)}).status_code == 403
+
+
 def test_local_session_rejects_foreign_browser_and_host(web):
     client, root, store, run = web
     client.cookies.clear()

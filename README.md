@@ -1,5 +1,7 @@
 # RealOpen Lens
 
+Experimental native launcher/build instructions: [Desktop packaging](docs/desktop.md).
+
 Private, offline image search for your own collection.
 
 RealOpen Lens is being built to help you find photos, screenshots, diagrams, and
