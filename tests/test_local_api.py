@@ -89,6 +89,40 @@ def test_home_imports_are_default_and_explicit_roots_still_restrict(tmp_path, mo
     assert len(submitted) == 1
 
 
+def test_folder_browser_lists_only_directories_with_paging_and_bounds(web, tmp_path):
+    client, root, store, run = web
+    for number in range(205):
+        (root / f"album-{number:03d}").mkdir()
+    (root / ".hidden").mkdir()
+    first = client.get("/api/folders").json()
+    assert first["path"] == str(root.resolve())
+    assert first["parent"] is None
+    assert len(first["folders"]) == 200
+    assert first["folders"][0]["name"] == "album-000"
+    assert first["next_offset"] == 200
+    second = client.get("/api/folders", params={"path": str(root), "offset": 200}).json()
+    assert len(second["folders"]) == 5 and second["next_offset"] is None
+    nested = client.get("/api/folders", params={"path": first["folders"][0]["path"]}).json()
+    assert nested["parent"] == str(root.resolve()) and nested["folders"] == []
+    assert client.get("/api/folders", params={"path": str(tmp_path)}).status_code == 403
+    assert client.get("/api/folders", params={"offset": -1}).status_code == 422
+    client.cookies.clear()
+    assert client.get("/api/folders").status_code == 401
+
+
+def test_folder_browser_does_not_follow_links_outside_import_roots(web, tmp_path):
+    client, root, store, run = web
+    outside = tmp_path / "outside-folder"
+    outside.mkdir()
+    link = root / "escape"
+    try:
+        link.symlink_to(outside, target_is_directory=True)
+    except OSError:
+        pytest.skip("Directory symlinks unavailable on this host")
+    assert not client.get("/api/folders").json()["folders"]
+    assert client.get("/api/folders", params={"path": str(link)}).status_code == 403
+
+
 def test_local_session_rejects_foreign_browser_and_host(web):
     client, root, store, run = web
     client.cookies.clear()

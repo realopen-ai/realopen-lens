@@ -1,5 +1,53 @@
 import { test, expect, type Page } from "@playwright/test";
 
+test("choose folder navigates local directories without starting an index", async ({
+  page,
+}, info) => {
+  const requests = await setup(page);
+  await page.route("**/api/folders?**", (route) => {
+    const path =
+      new URL(route.request().url()).searchParams.get("path") || "/photos";
+    return route.fulfill({
+      json: {
+        path,
+        parent: path === "/photos" ? null : "/photos",
+        roots: ["/photos"],
+        folders:
+          path === "/photos"
+            ? [{ name: "Family photos", path: "/photos/Family photos" }]
+            : [],
+        next_offset: null,
+      },
+    });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Add folder", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Choose folder", exact: true })
+    .click();
+  const chooser = page.getByRole("region", { name: "Choose an image folder" });
+  await expect(chooser).toBeVisible();
+  await expect(
+    chooser.getByRole("button", { name: "Family photos" }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: `../runs/folder-picker-${info.project.name}.png`,
+    fullPage: true,
+  });
+  await chooser.getByRole("button", { name: "Family photos" }).click();
+  await expect(chooser).toContainText("/photos/Family photos");
+  await chooser
+    .getByRole("button", { name: "Select this folder", exact: true })
+    .click();
+  await expect(chooser).not.toBeVisible();
+  await expect(page.getByLabel("Folder path", { exact: true })).toHaveValue(
+    "/photos/Family photos",
+  );
+  expect(
+    requests.filter((request) => request.url === "/api/tasks/index"),
+  ).toHaveLength(0);
+});
+
 async function setup(page: Page, memory = false) {
   const first = {
     rank: 1,

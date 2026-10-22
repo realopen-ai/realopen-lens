@@ -16,6 +16,7 @@ import "./style.css";
 import { ThemeSwitch } from "./ThemeSwitch";
 import { Duplicates } from "./Duplicates";
 import { Workspace } from "./Workspace";
+import { FolderPicker } from "./FolderPicker";
 import { QueryMemory } from "./QueryMemory";
 import { Training } from "./Training";
 import {
@@ -141,6 +142,10 @@ function App() {
   const [importing, setImporting] = useState(false);
   const [roots, setRoots] = useState<string[]>([]);
   const [folder, setFolder] = useState("");
+  const [choosingFolder, setChoosingFolder] = useState(false);
+  useEffect(() => {
+    if (!importing) setChoosingFolder(false);
+  }, [importing]);
   const [name, setName] = useState("personal");
   const [precision, setPrecision] = useState("int8");
   const [languages, setLanguages] = useState("eng+fra+ara");
@@ -1533,6 +1538,23 @@ function App() {
                   placeholder="/path/to/images"
                 />
               </label>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => setChoosingFolder(!choosingFolder)}
+              >
+                Choose folder
+              </button>
+              {choosingFolder && (
+                <FolderPicker
+                  initial={folder}
+                  onClose={() => setChoosingFolder(false)}
+                  onSelect={(path) => {
+                    setFolder(path);
+                    setChoosingFolder(false);
+                  }}
+                />
+              )}
               <p className="field-help">
                 Allowed import roots:{" "}
                 {roots.length

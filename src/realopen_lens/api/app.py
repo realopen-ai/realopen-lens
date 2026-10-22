@@ -9,7 +9,7 @@ import secrets
 import sqlite3
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Query
 from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
@@ -330,6 +330,37 @@ def create_app(
         if not path.is_dir() or not any(path.is_relative_to(p) for p in (*roots, *registered)):
             raise HTTPException(403, "Folder is outside the configured import roots")
         return submit("index", {**body.model_dump(), "root": str(path)})
+
+    @app.get("/api/folders")
+    def folders(path: str | None = None, offset: int = Query(default=0, ge=0)):
+        boundaries = (*roots, *(Path(c["root"]).resolve() for c in reading.collections(root)))
+        if not boundaries:
+            raise HTTPException(403, "No import folders configured")
+        current = Path(path).expanduser().resolve(strict=True) if path else boundaries[0]
+
+        def permitted(value: Path) -> bool:
+            return any(value.is_relative_to(boundary) for boundary in boundaries)
+
+        if not current.is_dir() or not permitted(current):
+            raise HTTPException(403, "Folder is outside the configured import roots")
+        children = []
+        for child in current.iterdir():
+            if child.name.startswith("."):
+                continue
+            try:
+                resolved = child.resolve(strict=True)
+                if child.is_dir() and permitted(resolved):
+                    children.append({"name": child.name, "path": str(resolved)})
+            except OSError:
+                continue
+        children.sort(key=lambda item: (item["name"].casefold(), item["name"]))
+        return {
+            "path": str(current),
+            "parent": str(current.parent) if permitted(current.parent) else None,
+            "roots": [str(p) for p in dict.fromkeys(boundaries)],
+            "folders": children[offset : offset + 200],
+            "next_offset": offset + 200 if offset + 200 < len(children) else None,
+        }
 
     @app.post("/api/tasks/upload", status_code=202)
     async def upload(
