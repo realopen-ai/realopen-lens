@@ -24,6 +24,22 @@ export interface Collection {
   root: string;
   generation: string | null;
   siglip_precision: string;
+  languages?: string;
+}
+export interface SetupReport {
+  ready: boolean;
+  siglip_precision: string;
+  languages: string;
+  source: string | null;
+  ocr: { installed_languages?: string[] };
+  checks: {
+    id: string;
+    title: string;
+    ok: boolean;
+    detail: string;
+    action?: string;
+  }[];
+  ocr_guide: string;
 }
 export interface Task {
   id: string;
@@ -47,6 +63,13 @@ export interface Task {
     current_image?: string;
   };
   result: {
+    ready?: boolean;
+    checks?: SetupReport["checks"];
+    languages?: string;
+    siglip_precision?: string;
+    source?: string | null;
+    ocr?: SetupReport["ocr"];
+    ocr_guide?: string;
     feedback?: {
       enabled: boolean;
       applied: boolean;

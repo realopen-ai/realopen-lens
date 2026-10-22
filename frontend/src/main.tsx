@@ -18,6 +18,7 @@ import { Duplicates } from "./Duplicates";
 import { Workspace } from "./Workspace";
 import { FolderPicker } from "./FolderPicker";
 import { FolderActions } from "./FolderActions";
+import { Setup } from "./Setup";
 import { QueryMemory } from "./QueryMemory";
 import { Training } from "./Training";
 import {
@@ -154,15 +155,22 @@ function App() {
   const [precision, setPrecision] = useState("int8");
   const [defaultPrecision, setDefaultPrecision] = useState("int8");
   const [precisionEdited, setPrecisionEdited] = useState(false);
+  const [languagesEdited, setLanguagesEdited] = useState(false);
+  const [defaultLanguages, setDefaultLanguages] = useState("");
   useEffect(() => {
     if (!importing) return;
     let active = true;
-    void api<{ default_siglip_precision?: string }>("/session")
+    void api<{
+      default_siglip_precision?: string;
+      default_ocr_languages?: string;
+    }>("/session")
       .then((session) => {
-        if (active)
+        if (active) {
           setDefaultPrecision(
             session.default_siglip_precision === "fp32" ? "fp32" : "int8",
           );
+          setDefaultLanguages(session.default_ocr_languages || "");
+        }
       })
       .catch((error) => {
         if (active) setImportError(String(error));
@@ -176,6 +184,12 @@ function App() {
     const existing = collections.find((value) => value.root === folder);
     setPrecision(existing?.siglip_precision || defaultPrecision);
   }, [folder, collections, importing, defaultPrecision, precisionEdited]);
+  useEffect(() => {
+    if (!importing || languagesEdited) return;
+    const existing = collections.find((value) => value.root === folder);
+    if (existing?.languages || defaultLanguages)
+      setLanguages(existing?.languages || defaultLanguages);
+  }, [folder, collections, importing, defaultLanguages, languagesEdited]);
   useEffect(() => {
     if (!importing || nameEdited || !folder.trim()) return;
     const existing = collections.find((value) => value.root === folder);
@@ -201,6 +215,7 @@ function App() {
     if (!importing) {
       setNameEdited(false);
       setPrecisionEdited(false);
+      setLanguagesEdited(false);
       setImportError("");
     }
   }, [importing]);
@@ -495,9 +510,21 @@ function App() {
   useEffect(() => {
     let disposed = false;
     void (async () => {
-      const session = await api<{ allowed_roots: string[] }>("/session");
+      const session = await api<{
+        allowed_roots: string[];
+        default_siglip_precision?: string;
+        default_ocr_languages?: string;
+      }>("/session");
       if (disposed) return;
       setRoots(session.allowed_roots);
+      if (session.default_siglip_precision) {
+        setDefaultPrecision(session.default_siglip_precision);
+        setPrecision(session.default_siglip_precision);
+      }
+      if (session.default_ocr_languages) {
+        setDefaultLanguages(session.default_ocr_languages);
+        setLanguages(session.default_ocr_languages);
+      }
       setFolder(session.allowed_roots[0] || "");
       const values = await loadCollections();
       if (disposed) return;
@@ -979,6 +1006,16 @@ function App() {
             />
           </div>
           <div hidden={view !== "workspace"}>
+            <Setup
+              tasks={tasks}
+              watch={watch}
+              precision={precision}
+              languages={languages}
+              onLanguages={(value) => {
+                setLanguages(value);
+                setLanguagesEdited(true);
+              }}
+            />
             <Workspace
               active={view === "workspace"}
               onReady={() => {
@@ -1252,19 +1289,21 @@ function App() {
                 <strong>
                   {latest.kind === "index"
                     ? "Indexing"
-                    : latest.kind === "search"
-                      ? "Searching"
-                      : latest.kind === "train"
-                        ? "Training and evaluating"
-                        : latest.kind === "prepare_training"
-                          ? "Preparing reviewed data"
-                          : latest.kind === "duplicates"
-                            ? "Scanning duplicates"
-                            : latest.kind === "workspace_preview"
-                              ? "Checking workspace sources"
-                              : latest.kind === "workspace_import"
-                                ? "Importing workspace"
-                                : "Finding similar images"}{" "}
+                    : latest.kind === "setup"
+                      ? "Checking device setup"
+                      : latest.kind === "search"
+                        ? "Searching"
+                        : latest.kind === "train"
+                          ? "Training and evaluating"
+                          : latest.kind === "prepare_training"
+                            ? "Preparing reviewed data"
+                            : latest.kind === "duplicates"
+                              ? "Scanning duplicates"
+                              : latest.kind === "workspace_preview"
+                                ? "Checking workspace sources"
+                                : latest.kind === "workspace_import"
+                                  ? "Importing workspace"
+                                  : "Finding similar images"}{" "}
                   · {latest.collection}
                 </strong>
                 <span>
@@ -1453,6 +1492,14 @@ function App() {
                   >
                     <Icon name="plus" size={17} />
                     Add your first folder
+                  </button>
+                )}
+                {!collection && (
+                  <button
+                    className="secondary"
+                    onClick={() => setView("workspace")}
+                  >
+                    Check device setup
                   </button>
                 )}
               </section>
@@ -1689,7 +1736,10 @@ function App() {
                   <input
                     required
                     value={languages}
-                    onChange={(e) => setLanguages(e.target.value)}
+                    onChange={(e) => {
+                      setLanguagesEdited(true);
+                      setLanguages(e.target.value);
+                    }}
                   />
                 </label>
                 <p className="field-help">
@@ -1697,6 +1747,19 @@ function App() {
                   Models and language packs must already be installed.
                 </p>
               </details>
+              <div className="import-setup">
+                <Setup
+                  tasks={tasks}
+                  watch={watch}
+                  precision={precision}
+                  languages={languages}
+                  source={folder}
+                  onLanguages={(value) => {
+                    setLanguages(value);
+                    setLanguagesEdited(true);
+                  }}
+                />
+              </div>
               {importError && <p role="alert">{importError}</p>}
               <button
                 className="primary full-width"

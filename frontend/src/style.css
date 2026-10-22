@@ -224,6 +224,66 @@ select {
   flex-wrap: wrap;
   margin-top: 24px;
 }
+.setup-card {
+  padding: 20px;
+  margin: 0 0 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  overflow-wrap: anywhere;
+}
+.setup-summary {
+  position: relative;
+  display: block;
+  cursor: pointer;
+  padding-right: 24px;
+  list-style: none;
+}
+.setup-summary::-webkit-details-marker {
+  display: none;
+}
+.setup-summary::after {
+  content: "▸";
+  position: absolute;
+  right: 0;
+  top: 0;
+  color: var(--muted);
+}
+.setup-card details[open] > .setup-summary::after {
+  content: "▾";
+}
+.setup-title {
+  display: block;
+  font-weight: 700;
+}
+.setup-description {
+  display: block;
+  margin-top: 8px;
+}
+.setup-content {
+  padding-top: 18px;
+}
+.setup-checks {
+  padding: 0;
+  list-style: none;
+}
+.setup-checks li {
+  border-top: 1px solid var(--line);
+  padding: 12px 0;
+}
+.setup-checks p {
+  margin: 6px 0 0;
+}
+.setup-card a {
+  color: var(--green);
+}
+.import-setup .setup-card {
+  padding: 14px;
+  margin-top: 12px;
+}
+.empty > button + button {
+  margin-left: 12px;
+}
 .collection-item {
   border: 0;
   background: none;
