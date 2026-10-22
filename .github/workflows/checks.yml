@@ -107,16 +107,49 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
+      - name: Install gallery dependencies
+        run: npm ci --prefer-offline --no-audit --no-fund
         working-directory: frontend
+      - name: Identify Playwright browser cache
+        id: playwright
+        working-directory: frontend
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const version = require('@playwright/test/package.json').version;
+          const image = process.env.ImageOS || process.platform;
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\nimage=${image}\n`);
+          NODE
+      - name: Cache Chromium headless shell
+        id: browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.image }}-playwright-shell-v1-${{ steps.playwright.outputs.version }}
       - run: npm run format:check
         working-directory: frontend
       - run: npm run build
         working-directory: frontend
-      - run: npx playwright install --with-deps chromium
+      - name: Install Chromium system dependencies
+        run: npx playwright install-deps chromium
         working-directory: frontend
-      - run: npm test
+      - name: Download Chromium headless shell on cache miss
+        if: steps.browsers.outputs.cache-hit != 'true'
+        run: npx playwright install --only-shell chromium
         working-directory: frontend
+      - name: Run browser tests
+        run: npm test -- --reporter=line,json
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_FILE: ${{ github.workspace }}/frontend/test-results/results.json
+        working-directory: frontend
+      - name: Retain browser timings and failure traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gallery-results-${{ github.run_id }}-${{ github.run_attempt }}
+          path: frontend/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
 
   desktop-macos:
     name: Desktop package (macOS arm64)

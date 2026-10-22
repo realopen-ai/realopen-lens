@@ -220,7 +220,16 @@ use controlled API responses; Python integration tests exercise the real adapter
 and collection/feedback storage with bounded model doubles. Separate local smoke
 checks exercised real Tesseract/ONNX indexing, SSE, FP32 retrieval and image uploads.
 
-Physical 8 GB validation and native Windows/Linux model inference remain release
+The gallery CI job reuses npm's download cache and prefers cached npm packages.
+It caches Playwright browser files by exact Playwright version, runner OS/image
+and architecture, and downloads only Chromium's headless shell. Cache hits skip
+browser downloading. Linux system dependencies are installed on every fresh runner;
+their installation has its own step so its cost is visible separately from browser
+downloads. Desktop and mobile coverage is unchanged. Each run retains JSON test
+timings and failure traces as `gallery-results-*` artifacts for seven days.
+The first run or a Playwright version/runner image change needs a new browser cache.
+
+Native Windows/Linux model inference remains release
 work. Pixel-identical files in different encodings can still appear separately;
 decoded-pixel deduplication is tracked as deferred work. Virtual collections,
 automatic learning, a native folder picker and an OS application bundle are not
