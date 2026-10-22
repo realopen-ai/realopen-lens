@@ -57,6 +57,7 @@ def fetch(
     progress: Callable[[str], None] = print,
     *,
     siglip_precision: str | None = None,
+    download_progress: Callable[[str, int, int], None] | None = None,
 ) -> None:
     """Download only explicit pinned artifacts, checking SHA-256 before publication."""
     for name, key, spec in artifacts(precision, siglip_precision):
@@ -76,8 +77,12 @@ def fetch(
                 urllib.request.urlopen(request, timeout=60) as response,
                 temporary.open("wb") as out,
             ):
+                received = 0
                 while block := response.read(1024 * 1024):
                     out.write(block)
+                    received += len(block)
+                    if download_progress:
+                        download_progress(f"{name}/{spec['path']}", received, spec["size"])
             if temporary.stat().st_size != spec["size"] or digest(temporary) != spec["sha256"]:
                 raise ValueError(f"Downloaded artifact failed integrity check: {name}/{key}")
             os.replace(temporary, path)
