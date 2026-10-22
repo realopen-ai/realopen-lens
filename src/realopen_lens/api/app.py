@@ -55,6 +55,10 @@ class IndexInput(Input):
     rehash: bool = False
 
 
+class FolderInput(Input):
+    collection_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+
+
 class VirtualNameInput(Input):
     name: str = Field(min_length=1, max_length=80)
 
@@ -226,6 +230,10 @@ def create_app(
     @app.get("/api/collections")
     def collection_list():
         return reading.collections(root)
+
+    @app.post("/api/collections/refresh", status_code=202)
+    def refresh_folder(body: FolderInput):
+        return app.state.manager.refresh_folder(body.collection, body.collection_id)
 
     @app.get("/api/collections/{collection:path}/images")
     def browse(collection: str, offset: int = 0, limit: int = 60):

@@ -55,6 +55,7 @@ def collections(root: Path) -> list[dict]:
                 spec = json.loads(catalog.job(generation["job_id"])["config"])["spec"]
             result.append(
                 {
+                    "id": row["id"],
                     "name": row["name"],
                     "root": row["root"],
                     "generation": row["active_generation"],
