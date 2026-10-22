@@ -110,7 +110,7 @@ def create_app(
     *,
     index_dir: Path,
     models: Path = Path("models"),
-    allowed_roots: tuple[Path, ...] = (),
+    allowed_roots: tuple[Path, ...] | None = None,
     threads: int = 2,
     port: int = 8765,
     dev_origin: str | None = None,
@@ -122,7 +122,10 @@ def create_app(
     from realopen_lens.workspace.identity import build, describe
 
     running_build = build()
-    roots = tuple(p.expanduser().resolve() for p in allowed_roots)
+    roots = tuple(
+        p.expanduser().resolve()
+        for p in ((Path.home(),) if allowed_roots is None else allowed_roots)
+    )
     origins = {f"http://127.0.0.1:{port}", f"http://localhost:{port}"}
     if dev_origin is not None:
         from urllib.parse import urlparse

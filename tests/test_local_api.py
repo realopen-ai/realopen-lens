@@ -54,6 +54,41 @@ def completed(client, task_id):
     pytest.fail("Task did not finish")
 
 
+def test_home_imports_are_default_and_explicit_roots_still_restrict(tmp_path, monkeypatch):
+    home = tmp_path / "home"
+    photos = home / "Pictures" / "photos"
+    photos.mkdir(parents=True)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: home))
+    submitted = []
+
+    def capture(self, kind, request):
+        submitted.append((kind, request))
+        return {"id": "captured"}
+
+    monkeypatch.setattr(jobs.TaskManager, "submit", capture)
+    for overrides, allowed in (
+        ({}, True),
+        ({"allowed_roots": ()}, False),
+        ({"allowed_roots": (outside,)}, False),
+    ):
+        app = create_app(index_dir=tmp_path / "index", **overrides)
+        with TestClient(app, base_url="http://127.0.0.1:8765") as client:
+            session = client.get("/api/session").json()
+            if allowed:
+                assert session["allowed_roots"] == [str(home.resolve())]
+            response = client.post(
+                "/api/tasks/index", json={"root": str(photos), "collection": "photos"}
+            )
+            assert response.status_code == (202 if allowed else 403)
+            if allowed:
+                assert submitted[-1][1]["root"] == str(photos.resolve())
+                response = client.post("/api/tasks/index", json={"root": str(outside)})
+                assert response.status_code == 403
+    assert len(submitted) == 1
+
+
 def test_local_session_rejects_foreign_browser_and_host(web):
     client, root, store, run = web
     client.cookies.clear()
