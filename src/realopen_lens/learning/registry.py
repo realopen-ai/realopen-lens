@@ -54,6 +54,47 @@ def state(root: Path) -> dict:
     )
 
 
+def collection_key(root: Path, collection: str) -> str:
+    catalog = Catalog(root, readonly=True)
+    try:
+        return catalog.collection(collection)["id"]
+    finally:
+        catalog.close()
+
+
+def named_state(root: Path) -> dict:
+    """Keep the gallery contract readable while persisted activations use stable IDs."""
+    current = state(root)
+    if not (root / "catalog.sqlite3").exists():
+        return current
+    catalog = Catalog(root, readonly=True)
+    try:
+        ids = current.get("active_ids", {})
+        current["active"] = {
+            row["name"]: ids.get(row["id"], current["active"].get(row["name"]))
+            for row in catalog.db.execute("SELECT id,name FROM collections")
+            if row["id"] in ids or row["name"] in current["active"]
+        }
+        return current
+    finally:
+        catalog.close()
+
+
+def pin_collection(root: Path, name: str, collection_id: str):
+    """Migrate legacy name references without rewriting immutable model artifacts."""
+    path = root / "rerankers" / "state.json"
+    if not path.exists():
+        return
+    with writer_lock(root / "rerankers" / "activation-lock"):
+        current = state(root)
+        if name in current["active"]:
+            current.setdefault("active_ids", {})[collection_id] = current["active"].pop(name)
+        for entry in current["history"]:
+            if entry["collection"] == name and "collection_id" not in entry:
+                entry["collection_id"] = collection_id
+        atomic_bytes(path, canonical(current))
+
+
 def compatible(root: Path, collection: str, version: str) -> Path:
     directory = _directory(root, version)
     info = json.loads((directory / "run.json").read_text(encoding="utf-8"))
@@ -98,7 +139,9 @@ def change(
     """All changes require an explicit request. No report triggers automatic promotion."""
     with writer_lock(root / "rerankers" / "activation-lock"):
         current = state(root)
-        previous = current["active"].get(collection)
+        key = collection_key(root, collection)
+        ids = current.setdefault("active_ids", {})
+        previous = ids.get(key, current["active"].get(collection))
         if version is not None:
             compatible(root, collection, version)
             info = json.loads((_directory(root, version) / "run.json").read_text(encoding="utf-8"))
@@ -111,18 +154,22 @@ def change(
                     "explicit experimental acknowledgment required"
                 )
             if rollback and not any(
-                h["collection"] == collection and h["to"] == version for h in current["history"]
+                (h.get("collection_id", h["collection"]) in {key, collection})
+                and h["to"] == version
+                for h in current["history"]
             ):
                 raise ValueError("Rollback target was never activated for this collection")
         if previous == version:
             return current
+        current["active"].pop(collection, None)
         if version is None:
-            current["active"].pop(collection, None)
+            ids.pop(key, None)
         else:
-            current["active"][collection] = version
+            ids[key] = version
         current["history"].append(
             {
                 "collection": collection,
+                "collection_id": key,
                 "from": previous,
                 "to": version,
                 "operation": "rollback" if rollback else "activate" if version else "disable",
@@ -135,5 +182,8 @@ def change(
 
 
 def active(root: Path, collection: str) -> Path | None:
-    version = state(root)["active"].get(collection)
+    current = state(root)
+    version = current.get("active_ids", {}).get(
+        collection_key(root, collection), current["active"].get(collection)
+    )
     return compatible(root, collection, version) if version else None

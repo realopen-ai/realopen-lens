@@ -17,6 +17,7 @@ import { ThemeSwitch } from "./ThemeSwitch";
 import { Duplicates } from "./Duplicates";
 import { Workspace } from "./Workspace";
 import { FolderPicker } from "./FolderPicker";
+import { FolderActions } from "./FolderActions";
 import { QueryMemory } from "./QueryMemory";
 import { Training } from "./Training";
 import {
@@ -213,6 +214,40 @@ function App() {
     const values = await api<Collection[]>("/collections");
     setCollections(values);
     return values;
+  }
+  async function folderChanged(changed: Collection, name: string | null) {
+    sessionStorage.removeItem("lens-task");
+    const values = await loadCollections();
+    if (selectedCollection.current !== changed.name) return;
+    if (name !== null) {
+      await browse(name, 0, virtualScope.current);
+    } else if (values.length) {
+      await browse(values[0].name);
+    } else {
+      ++requestVersion.current;
+      foreground.current = null;
+      selectedCollection.current = "";
+      virtualScope.current = null;
+      setCollection("");
+      setVirtualId(null);
+      setVirtuals([]);
+      setTargetVirtual("");
+      setImages([]);
+      setTotal(0);
+      setSelected(new Set());
+      setDetail(null);
+      setRunId(null);
+      setLabels({});
+      setRepeatSearch(null);
+      setUndo(null);
+      setMemoryEnabled(false);
+      setGeneration(null);
+      setLoading(false);
+      setTitle("All images");
+      setIsBrowse(true);
+      setError("");
+      setView("library");
+    }
   }
   async function loadVirtuals(source: string) {
     const values = await api<VirtualCollection[]>(
@@ -470,7 +505,10 @@ function App() {
       const pending = await api<Task[]>("/tasks");
       if (disposed) return;
       const previous = pending.find(
-        (t) => t.id === remembered && t.kind !== "index",
+        (t) =>
+          t.id === remembered &&
+          t.kind !== "index" &&
+          values.some((value) => value.name === t.collection),
       );
       let restore = true;
       if (values.length) {
@@ -804,15 +842,22 @@ function App() {
         </div>
         <div className="collection-list">
           {collections.map((c) => (
-            <button
-              key={c.name}
-              className={`collection-item ${collection === c.name ? "current" : ""}`}
-              onClick={() => void browse(c.name)}
-            >
-              <Icon name="folder" size={17} />
-              <span>{c.name}</span>
-              <span className="collection-dot" />
-            </button>
+            <div className="folder-row" key={c.id || c.name}>
+              <button
+                className={`collection-item ${collection === c.name ? "current" : ""}`}
+                onClick={() => void browse(c.name)}
+              >
+                <Icon name="folder" size={17} />
+                <span>{c.name}</span>
+                <span className="collection-dot" />
+              </button>
+              <FolderActions
+                folder={c}
+                busy={tasks.some((task) => !terminal(task))}
+                watch={watch}
+                onChanged={folderChanged}
+              />
+            </div>
           ))}
           {!collections.length && (
             <p className="muted small">Your collections will appear here.</p>

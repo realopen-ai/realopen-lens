@@ -125,6 +125,29 @@ class TaskManager:
                 self.cancelled.add(task_id)
                 self.update(task_id, phase="cancellation_requested")
 
+    def manage_folder(self, name: str, collection_id: str, new_name: str | None) -> dict:
+        from realopen_lens.organization.folders import change
+        from realopen_lens.storage.organization import CollectionConflict
+
+        with self.lock:
+            if self.closed or any(s["status"] not in TERMINAL for s in self.tasks.values()):
+                raise CollectionConflict("Wait for active tasks to finish before changing folders")
+            self._release_session()
+            return change(self.root, name, collection_id, new_name)
+
+    def refresh_folder(self, name: str, collection_id: str) -> dict:
+        from realopen_lens.organization.folders import refresh_options
+        from realopen_lens.storage.organization import CollectionConflict
+
+        with self.lock:
+            if any(
+                s["status"] not in TERMINAL and s["collection"] == name for s in self.tasks.values()
+            ):
+                raise CollectionConflict(
+                    "This folder already has an active task; wait for it to finish"
+                )
+            return self.submit("index", refresh_options(self.root, name, collection_id))
+
     def _release_session(self):
         if self.session is not None:
             self.session.close()

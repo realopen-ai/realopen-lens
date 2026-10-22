@@ -140,6 +140,31 @@ def test_cancellation_preserves_interrupted_run_and_never_activates(reviewed, tm
     assert registry.state(store)["active"] == {}
 
 
+def test_rename_preserves_frozen_and_new_training_and_active_model_rollback(reviewed, tmp_path):
+    from realopen_lens.organization.folders import change
+    from realopen_lens.storage.catalog import Catalog
+
+    store, review, plan = reviewed
+    directory = tmp_path / "before"
+    dataset.prepare(store, review, directory)
+    first = workflow.train(directory / "dataset.json", store)
+    registry.change(store, "personal", first["id"], acknowledge_experimental=True)
+    catalog = Catalog(store, readonly=True)
+    collection_id = catalog.collection("personal")["id"]
+    catalog.close()
+    change(store, "personal", collection_id, "Renamed")
+    assert registry.active(store, "Renamed") == store / "rerankers" / first["id"] / "model.json"
+    # A dataset frozen before rename still resolves its source by ID.
+    again = workflow.train(directory / "dataset.json", store)
+    assert again["status"] == "completed", again
+    # Unchanged historical feedback remains eligible for a newly prepared dataset.
+    after = tmp_path / "after"
+    assert dataset.prepare(store, review, after)["pairs"] == 6
+    registry.change(store, "Renamed", None)
+    registry.change(store, "Renamed", first["id"], acknowledge_experimental=True, rollback=True)
+    assert registry.active(store, "Renamed") == store / "rerankers" / first["id"] / "model.json"
+
+
 def test_production_errors_are_retained_and_block_activation(reviewed, tmp_path, monkeypatch):
     store, review, plan = reviewed
     dataset.prepare(store, review, tmp_path / "frozen")

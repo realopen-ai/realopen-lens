@@ -116,8 +116,17 @@ def production(
             started = perf_counter()
             try:
                 trace: dict = {}
+                collection = session["collection"]
+                if session.get("collection_id"):
+                    from realopen_lens.storage.catalog import Catalog
+
+                    catalog = Catalog(index_dir, readonly=True)
+                    try:
+                        collection = catalog.collection_name(session["collection_id"])
+                    finally:
+                        catalog.close()
                 with SearchSession(
-                    collection=session["collection"], index_dir=index_dir, models=models
+                    collection=collection, index_dir=index_dir, models=models
                 ) as search:
                     latencies = {}
                     for variant in (

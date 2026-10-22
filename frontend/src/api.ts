@@ -19,6 +19,7 @@ export interface ImageResult {
   issues: { stage: string; error: string }[];
 }
 export interface Collection {
+  id: string;
   name: string;
   root: string;
   generation: string | null;

@@ -55,6 +55,14 @@ class IndexInput(Input):
     rehash: bool = False
 
 
+class FolderInput(Input):
+    collection_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+
+
+class FolderRenameInput(FolderInput):
+    name: str = Field(min_length=1, max_length=128)
+
+
 class VirtualNameInput(Input):
     name: str = Field(min_length=1, max_length=80)
 
@@ -226,6 +234,18 @@ def create_app(
     @app.get("/api/collections")
     def collection_list():
         return reading.collections(root)
+
+    @app.post("/api/collections/refresh", status_code=202)
+    def refresh_folder(body: FolderInput):
+        return app.state.manager.refresh_folder(body.collection, body.collection_id)
+
+    @app.post("/api/collections/rename")
+    def rename_folder(body: FolderRenameInput):
+        return app.state.manager.manage_folder(body.collection, body.collection_id, body.name)
+
+    @app.post("/api/collections/remove")
+    def remove_folder(body: FolderInput):
+        return app.state.manager.manage_folder(body.collection, body.collection_id, None)
 
     @app.get("/api/collections/{collection:path}/images")
     def browse(collection: str, offset: int = 0, limit: int = 60):
@@ -493,25 +513,26 @@ def create_app(
 
     @app.get("/api/training/models")
     def trained_models():
-        from realopen_lens.learning.registry import state, versions
+        from realopen_lens.learning.registry import named_state, versions
 
         datasets = []
         for path in sorted((root / "training-datasets").glob("*/dataset.json")):
             data = json.loads(path.read_text(encoding="utf-8"))
             datasets.append({"id": path.parent.name, "queries": len(data["sessions"])})
-        return {"versions": versions(root), "datasets": datasets, **state(root)}
+        return {"versions": versions(root), "datasets": datasets, **named_state(root)}
 
     @app.post("/api/training/activation")
     def activate_model(body: ActivationInput):
-        from realopen_lens.learning.registry import change
+        from realopen_lens.learning.registry import change, named_state
 
-        return change(
+        change(
             root,
             body.collection,
             body.model_version,
             acknowledge_experimental=body.acknowledge_experimental,
             rollback=body.rollback,
         )
+        return named_state(root)
 
     @app.get("/api/tasks")
     def tasks():

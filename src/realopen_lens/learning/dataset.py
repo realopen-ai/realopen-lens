@@ -8,6 +8,7 @@ from realopen_lens.learning.features import matrix
 from realopen_lens.learning.feedback import export_feedback, superseded_judgments
 from realopen_lens.models.manager import digest
 from realopen_lens.storage.artifacts import atomic_bytes
+from realopen_lens.storage.catalog import Catalog
 from realopen_lens.storage.feedback import FeedbackStore, normalize_query
 
 SPLITS = {"train", "validation", "test"}
@@ -65,6 +66,12 @@ def _prepare(index_dir: Path, review: Path, output: Path, on_progress=None) -> d
                 raise ValueError("Query family leaks across splits")
             families[family] = split
             run = store.run(run_id)
+
+            catalog = Catalog(index_dir, readonly=True)
+            try:
+                run["collection"] = catalog.collection_name(run["collection_id"])
+            finally:
+                catalog.close()
             if superseded_judgments(store, index_dir, run):
                 raise ValueError(
                     "Selected feedback has superseded judgments; review current labels"
@@ -164,6 +171,7 @@ def _prepare(index_dir: Path, review: Path, output: Path, on_progress=None) -> d
                     "labels": labels,
                     "generation": run["generation"],
                     "collection": run["collection"],
+                    "collection_id": run["collection_id"],
                 }
             )
     if {s["split"] for s in sessions} != SPLITS:

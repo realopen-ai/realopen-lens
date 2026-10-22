@@ -182,6 +182,7 @@ async function setup(page: Page, memory = false) {
     if (path === "/api/collections")
       return json([
         {
+          id: "c".repeat(32),
           name: "personal",
           root: "/photos",
           generation: "g",
