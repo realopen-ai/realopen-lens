@@ -18,6 +18,10 @@ def options(argv=None):
     parser.add_argument("--release", action="store_true", help="Require signing and notarization")
     parser.add_argument("--identity", help="Installed Developer ID Application identity")
     parser.add_argument("--notary-profile", help="Existing notarytool Keychain credential profile")
+    parser.add_argument("--tesseract", type=Path, help="Build-time Tesseract 5 executable")
+    parser.add_argument(
+        "--tessdata-dir", type=Path, help="Existing language data to reuse if checksums match"
+    )
     args = parser.parse_args(argv)
     if args.release and (
         not args.identity
@@ -72,6 +76,12 @@ def main():
             "packaging/desktop.spec",
         )
         bundle = Path(output) / "RealOpen Lens.app"
+        from bundle_ocr import bundle_ocr
+
+        source_ocr = args.tesseract or shutil.which("tesseract")
+        if not source_ocr:
+            raise SystemExit("Install Tesseract 5 on the build machine or provide --tesseract")
+        bundle_ocr(bundle, Path(source_ocr), args.tessdata_dir, args.identity)
         run("/usr/bin/codesign", "--verify", "--deep", "--strict", str(bundle))
         version = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"][
             "version"

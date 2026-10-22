@@ -71,9 +71,12 @@ jobs:
       - run: npm ci
         working-directory: frontend
       - name: Build development archive
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
         shell: bash
         run: |
           mkdir -p build
+          brew list tesseract >/dev/null 2>&1 || brew install tesseract
           uv run --no-sync python packaging/build_macos.py 2>&1 | tee build/desktop-ci-build.log
       - name: Smoke test extracted package without model downloads
         run: uv run --no-sync python packaging/ci_smoke.py dist/RealOpenLens-macos-arm64.zip
