@@ -8,7 +8,73 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Detect changed components
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      python: ${{ steps.filter.outputs.python }}
+      desktop: ${{ steps.filter.outputs.desktop }}
+      gallery: ${{ steps.filter.outputs.gallery }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          # Pushes compare with the pre-push revision of this branch. PR events
+          # use the complete PR diff through the action's paginated API lookup.
+          base: ${{ github.ref }}
+          filters: |
+            python:
+              - '**/*.py'
+              - 'src/**'
+              - 'tests/**'
+              - 'benchmarks/**'
+              - 'packaging/**'
+              - 'configs/**'
+              - 'scripts/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
+              - 'uv.toml'
+              - '.python-version'
+              - 'tox.ini'
+              - 'setup.cfg'
+              - 'pytest.ini'
+              - '.flake8'
+              - 'ruff.toml'
+              - '.ruff.toml'
+              - 'mypy.ini'
+              - '.mypy.ini'
+              - 'LICENSE'
+              - 'THIRD_PARTY_NOTICES.md'
+              - '.gitignore'
+              - '.gitattributes'
+              - '.github/workflows/checks.yml'
+            desktop:
+              - 'src/**'
+              - 'frontend/**'
+              - 'packaging/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
+              - 'uv.toml'
+              - '.python-version'
+              - 'LICENSE'
+              - 'THIRD_PARTY_NOTICES.md'
+              - '.gitignore'
+              - '.gitattributes'
+              - '.github/workflows/checks.yml'
+              - '.github/workflows/desktop-candidate.yml'
+            gallery:
+              - 'frontend/**'
+              - 'src/realopen_lens/api/**'
+              - '.gitattributes'
+              - '.github/workflows/checks.yml'
+
   checks:
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -31,6 +97,8 @@ jobs:
       - run: uv run --no-sync python -m benchmarks --help
 
   gallery:
+    needs: changes
+    if: needs.changes.outputs.gallery == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,6 +120,8 @@ jobs:
 
   desktop-macos:
     name: Desktop package (macOS arm64)
+    needs: changes
+    if: needs.changes.outputs.desktop == 'true'
     runs-on: macos-15
     timeout-minutes: 30
     steps:

@@ -152,7 +152,7 @@ in the gallery shows build identity, paths and installation information.
 
 ### CI packaging gate
 
-The `Desktop package (macOS arm64)` job runs on pushes and pull requests using
+The `Desktop package (macOS arm64)` job runs on relevant pushes and pull requests using
 [`macos-15`](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
 It installs the locked web/packaging environment, checks Tcl availability, builds
 the gallery and application, and tests the extracted archive rather than source
@@ -161,6 +161,19 @@ imports. Locally, the same model-free checks run with:
 ```sh
 uv run --no-sync python packaging/ci_smoke.py dist/RealOpenLens-macos-arm64.zip
 ```
+
+A lightweight change-detection job gates desktop builds on application source,
+frontend, packaging, dependency manifests/lockfile, licenses/notices, `.gitignore`
+and desktop workflow changes. README-, documentation- and benchmark-only changes
+skip the desktop job. Gallery build/browser checks run for frontend, API or checks
+workflow changes. Python lint/type/test jobs run for Python files, source/tests,
+benchmarks, packaging, scripts/configs, dependency/license inputs or Python check
+configuration changes. A PR changing only root `README.md` or documentation text
+under `docs/` skips all three workloads; only change detection runs. The manually dispatched candidate
+workflow remains unconditional.
+Push filtering uses the pre-push branch revision; PR filtering uses the full PR
+diff, so a PR that includes application changes still runs the desktop job even
+when its newest commit only updates documentation.
 
 The eleven checks cover archive extraction, ad-hoc signing, icon metadata/padding,
 frozen dependency imports/version metadata, Tcl/Tk scripts, pinned model registry,
