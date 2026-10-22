@@ -20,6 +20,45 @@ branding, styled actions and separate activity/workspace cards. Its light/dark
 switch persists in `desktop.json`; this is a launcher preference, independent of
 the browser gallery's theme. Native folder dialogs remain provided by the OS.
 
+## First-run setup
+
+The launcher checks setup in the background on startup. Its scrollable **Device
+setup** card reports workspace access, pinned SigLIP2/E5 model integrity, Tesseract
+5 availability and installed OCR languages. Model verification streams progress
+without loading inference sessions. Changing model folders/precision or completing
+a download schedules a fresh check. Closing the launcher cancels verification;
+OCR subprocess checks have ten-second timeouts.
+The card starts collapsed, showing only its title and description. A missing or
+unusable prerequisite expands it automatically. Click the title to expand/collapse
+it manually; successful checks do not force it open.
+
+Missing prerequisites do not block opening the gallery or browsing existing images.
+For a new library:
+
+1. Choose the model precision and an existing model folder, or explicitly confirm
+   **Download models / cancel**. Downloads retain byte progress and cancellation.
+2. Review **Text recognition**. Use **Install OCR / languages** for the official
+   [Tesseract installation guide](https://tesseract-ocr.github.io/tessdoc/Installation.html),
+   install the engine and desired language data, then check again. Lens does not
+   install system software or download OCR data automatically.
+3. Leave OCR languages blank to detect a usable installed selection, or specify
+   codes such as `eng+fra`. An explicit missing language is reported and never
+   silently dropped. Detected/saved language preferences become the gallery's
+   default for new folders. Existing folders keep their indexed languages.
+4. Open the library, select **Add folder**, choose its source directory and start
+   indexing. Progress remains visible while indexing runs.
+
+The gallery exposes the same offline check in **Workspace settings** and inside
+**Add folder → Device setup**. The empty-library page links
+to setup directly. Checks run as background tasks with SSE progress and cancellation;
+their result distinguishes a finished check from readiness to index. Changing
+settings marks an earlier result stale. The source check only tests access to the
+selected directory; indexing still reports inaccessible descendants individually.
+
+Workspace creation/logging failures display an actionable native message rather
+than a startup traceback. OS privacy restrictions still apply. Readiness is a
+point-in-time check, and normal indexing integrity/error checks remain authoritative.
+
 The launcher uses the normal persistent application-data workspace. Original images
 are referenced in place. Desktop settings live in `desktop.json`, separately from
 import metadata. Existing imported workspaces retain their remembered model path;
@@ -117,6 +156,8 @@ frozen dependency imports/version metadata, Tcl/Tk scripts, pinned model registr
 stage/resident worker dispatch/protocol handling, CLI workspace info, loopback API
 startup, gallery assets/favicon, authenticated empty-workspace reads and graceful
 shutdown. Host Python path/environment overrides are removed for frozen subprocesses.
+The smoke server also hides external command-line tools from PATH and verifies
+that setup reports missing models/OCR while the gallery remains usable.
 No model weights, Tesseract installation or GUI window are required. Uvicorn's
 post-cleanup SIGTERM exit is accepted only with an application-shutdown completion
 log; startup timeouts and forced kills fail the check.
@@ -132,7 +173,7 @@ frozen indexing completed all four stages without failed/degraded files, OCR
 returned the fixture text, text search returned the indexed image, the HTTP gallery
 served HTML, and an isolated resident process encoded both SigLIP2 (768 dimensions)
 and E5 (384). The native control window started and shut down an isolated server.
-The Python suite passed 555 tests with one optional OCR skip; formatting, lint,
+The Python suite passed 587 tests with one optional OCR skip; formatting, lint,
 native/Windows type checks and the frontend build passed. These checks used a host
 with existing models and Tesseract; they do not establish clean-machine setup or
 retrieval quality. Download progress/checksum/cancellation were tested with controlled
