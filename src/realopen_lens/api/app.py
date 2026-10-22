@@ -59,6 +59,10 @@ class FolderInput(Input):
     collection_id: str = Field(pattern=r"^[a-f0-9]{32}$")
 
 
+class FolderRenameInput(FolderInput):
+    name: str = Field(min_length=1, max_length=128)
+
+
 class VirtualNameInput(Input):
     name: str = Field(min_length=1, max_length=80)
 
@@ -234,6 +238,14 @@ def create_app(
     @app.post("/api/collections/refresh", status_code=202)
     def refresh_folder(body: FolderInput):
         return app.state.manager.refresh_folder(body.collection, body.collection_id)
+
+    @app.post("/api/collections/rename")
+    def rename_folder(body: FolderRenameInput):
+        return app.state.manager.manage_folder(body.collection, body.collection_id, body.name)
+
+    @app.post("/api/collections/remove")
+    def remove_folder(body: FolderInput):
+        return app.state.manager.manage_folder(body.collection, body.collection_id, None)
 
     @app.get("/api/collections/{collection:path}/images")
     def browse(collection: str, offset: int = 0, limit: int = 60):

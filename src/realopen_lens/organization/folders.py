@@ -2,7 +2,9 @@
 
 import json
 from pathlib import Path
+import unicodedata
 
+from realopen_lens.runtime.jobs import writer_lock
 from realopen_lens.storage.catalog import Catalog
 from realopen_lens.storage.organization import CollectionConflict
 
@@ -42,3 +44,48 @@ def refresh_options(root: Path, name: str, collection_id: str) -> dict:
         }
     finally:
         catalog.close()
+
+
+def change(root: Path, name: str, collection_id: str, new_name: str | None) -> dict:
+    """Rename in place or unregister a folder under the same lock as indexing."""
+    if new_name is not None:
+        new_name = unicodedata.normalize("NFKC", new_name).strip()
+        if not 1 <= len(new_name) <= 128 or any(
+            unicodedata.category(c).startswith("C") for c in new_name
+        ):
+            raise ValueError("Use a folder name of 1–128 characters without control characters")
+    with writer_lock(root):
+        catalog = Catalog(root)
+        try:
+            with catalog.transaction():
+                found = checked(catalog, name, collection_id)
+                if new_name is not None:
+                    taken = catalog.db.execute(
+                        "SELECT id FROM collections WHERE name=? AND id!=?",
+                        (new_name, collection_id),
+                    ).fetchone()
+                    if taken:
+                        raise CollectionConflict("That folder name is already in use")
+                # Pin legacy name-based model settings to the stable ID before rename/removal.
+                # This remains valid even if the catalog transaction subsequently fails.
+                from realopen_lens.learning.registry import pin_collection
+
+                pin_collection(root, name, collection_id)
+                if new_name is None:
+                    catalog.db.execute(
+                        "DELETE FROM files WHERE job_id IN "
+                        "(SELECT id FROM jobs WHERE collection_id=?)",
+                        (collection_id,),
+                    )
+                    catalog.db.execute(
+                        "DELETE FROM generations WHERE collection_id=?", (collection_id,)
+                    )
+                    catalog.db.execute("DELETE FROM jobs WHERE collection_id=?", (collection_id,))
+                    catalog.db.execute("DELETE FROM collections WHERE id=?", (collection_id,))
+                else:
+                    catalog.db.execute(
+                        "UPDATE collections SET name=? WHERE id=?", (new_name, collection_id)
+                    )
+            return {"id": found["id"], "name": new_name, "removed": new_name is None}
+        finally:
+            catalog.close()

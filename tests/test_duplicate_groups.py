@@ -92,6 +92,29 @@ def test_scan_resumes_and_reviews_without_modifying_sources_or_model_stages(libr
     assert before == {p.name: digest(p) for p in root.iterdir()} and calls == original_calls
 
 
+def test_renamed_folder_keeps_reviewed_near_duplicate_groups(library):
+    from realopen_lens.organization.folders import change
+    from realopen_lens.storage.catalog import Catalog
+
+    root, store, calls, run = library
+    scanned = duplicates.scan(store)
+    pair = scanned["near"][0]["id"]
+    duplicates.review(store, "personal", pair, "confirmed")
+    catalog = Catalog(store, readonly=True)
+    collection_id = catalog.collection("personal")["id"]
+    catalog.close()
+    change(store, "personal", collection_id, "Renamed")
+    groups = duplicates.browse(store, "Renamed")["groups"]
+    assert next(group for group in groups if group["id"] == pair)["state"] == "confirmed"
+    duplicates.review(store, "Renamed", pair, "dismissed")
+    assert (
+        next(
+            group for group in duplicates.browse(store, "Renamed")["groups"] if group["id"] == pair
+        )["state"]
+        == "dismissed"
+    )
+
+
 @pytest.mark.parametrize("mode", ["hybrid", "visual", "lexical", "semantic"])
 def test_exact_results_backfill_and_preserve_feedback_and_scope(library, mode):
     root, store, calls, run = library
