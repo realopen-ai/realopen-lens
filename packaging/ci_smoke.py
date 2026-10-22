@@ -74,7 +74,7 @@ def validate(archive: Path, report_path: Path):
             bundle = base / "RealOpen Lens.app"
             executable = bundle / "Contents/MacOS/RealOpenLens"
             check(
-                "ad-hoc signature",
+                "bundle signature",
                 lambda: run(
                     ["/usr/bin/codesign", "--verify", "--deep", "--strict", str(bundle)], cwd=base
                 ),
@@ -84,6 +84,7 @@ def validate(archive: Path, report_path: Path):
                 contents = bundle / "Contents"
                 info = plistlib.loads((contents / "Info.plist").read_bytes())
                 assert info["CFBundleIdentifier"] == "org.realopen.lens"
+                assert info["CFBundleVersion"] == info["CFBundleShortVersionString"]
                 license_text = (contents / "Resources/licenses/realopen-lens/LICENSE").read_text(
                     encoding="utf-8"
                 )
