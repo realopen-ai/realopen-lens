@@ -17,6 +17,22 @@ def test_worker_dispatch_preserves_arguments(monkeypatch):
     assert sys.argv == ["realopen_lens.runtime.worker", "--query"]
 
 
+def test_bundle_diagnostics_dispatch(monkeypatch, capsys):
+    from realopen_lens.desktop import diagnostics
+
+    monkeypatch.setattr(sys, "argv", ["Lens", "--check-bundle"])
+    monkeypatch.setattr(diagnostics, "inspect_bundle", lambda: {"frozen": True})
+    entry.main()
+    assert capsys.readouterr().out.strip() == '{"frozen": true}'
+
+
+def test_bundle_diagnostics_refuse_source_environment():
+    from realopen_lens.desktop.diagnostics import inspect_bundle
+
+    with pytest.raises(ValueError, match="frozen executable"):
+        inspect_bundle()
+
+
 @pytest.mark.parametrize("arguments", [["-m"], ["-m", "http.server"]])
 def test_worker_dispatch_rejects_other_modules(monkeypatch, arguments):
     monkeypatch.setattr(sys, "argv", ["Lens", *arguments])

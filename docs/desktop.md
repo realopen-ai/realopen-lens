@@ -100,12 +100,39 @@ in the gallery shows build identity, paths and installation information.
 
 ## Portability and remaining release work
 
+### CI packaging gate
+
+The `Desktop package (macOS arm64)` job runs on pushes and pull requests using
+[`macos-15`](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
+It installs the locked web/packaging environment, checks Tcl availability, builds
+the gallery and application, and tests the extracted archive rather than source
+imports. Locally, the same model-free checks run with:
+
+```sh
+uv run --no-sync python packaging/ci_smoke.py dist/RealOpenLens-macos-arm64.zip
+```
+
+The ten checks cover archive extraction, ad-hoc signing, icon metadata/padding,
+frozen dependency imports/version metadata, Tcl/Tk scripts, pinned model registry,
+stage/resident worker dispatch/protocol handling, CLI workspace info, loopback API
+startup, gallery assets/favicon, authenticated empty-workspace reads and graceful
+shutdown. Host Python path/environment overrides are removed for frozen subprocesses.
+No model weights, Tesseract installation or GUI window are required. Uvicorn's
+post-cleanup SIGTERM exit is accepted only with an application-shutdown completion
+log; startup timeouts and forced kills fail the check.
+
+Successful development ZIPs and always-uploaded diagnostics have seven-day artifact
+retention. The JSON report records individual check outcomes/timing and is written
+even on failure; build/server logs are retained alongside it. These artifacts are
+not notarized releases. GUI usability, real inference, model downloading and
+Windows/Linux native packaging remain separate validation work.
+
 The macOS arm64 development build was exercised with real local INT8 models:
 frozen indexing completed all four stages without failed/degraded files, OCR
 returned the fixture text, text search returned the indexed image, the HTTP gallery
 served HTML, and an isolated resident process encoded both SigLIP2 (768 dimensions)
 and E5 (384). The native control window started and shut down an isolated server.
-The Python suite passed 552 tests with one optional OCR skip; formatting, lint,
+The Python suite passed 555 tests with one optional OCR skip; formatting, lint,
 native/Windows type checks and the frontend build passed. These checks used a host
 with existing models and Tesseract; they do not establish clean-machine setup or
 retrieval quality. Download progress/checksum/cancellation were tested with controlled

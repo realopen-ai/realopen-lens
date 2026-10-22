@@ -10,6 +10,12 @@ WORKERS = {
 
 
 def main():
+    if sys.argv[1:] == ["--check-bundle"]:
+        import json
+        from realopen_lens.desktop.diagnostics import inspect_bundle
+
+        print(json.dumps(inspect_bundle()))
+        return
     if len(sys.argv) > 1 and sys.argv[1] == "--cli":
         from realopen_lens.cli import app
 
