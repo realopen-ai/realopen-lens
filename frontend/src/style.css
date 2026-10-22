@@ -108,13 +108,15 @@ select {
   margin-bottom: 49px;
 }
 .brand-mark {
-  background: var(--green);
-  color: var(--on-accent);
-  border-radius: 11px;
   width: 41px;
   height: 41px;
   display: grid;
   place-items: center;
+}
+.brand-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .brand-small {
   display: block;

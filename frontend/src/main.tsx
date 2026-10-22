@@ -714,7 +714,7 @@ function App() {
       <aside className="sidebar">
         <a className="brand" href="/" aria-label="RealOpen Lens home">
           <span className="brand-mark">
-            <Icon name="search" size={24} />
+            <img src="/assets/lens.svg" alt="" aria-hidden="true" />
           </span>
           <span>
             Lens<span className="brand-small">by RealOpen</span>
