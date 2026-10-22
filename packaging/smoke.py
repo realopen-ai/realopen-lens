@@ -4,8 +4,11 @@ Run with an existing verified model directory; all generated data stays temporar
 """
 
 import argparse
+import hashlib
 from http.cookiejar import CookieJar
 import json
+import math
+import os
 from pathlib import Path
 import socket
 import subprocess
@@ -16,12 +19,28 @@ import urllib.request
 from PIL import Image, ImageDraw
 
 
+def verify_search(results, source):
+    if len(results) != 1 or source.resolve() not in {
+        Path(path).resolve() for path in results[0]["paths"]
+    }:
+        raise ValueError("Search did not return exactly the fixture image")
+    result = results[0]
+    if result["status"] != "ready" or result["issues"]:
+        raise ValueError("Search returned degraded data")
+    if not all(word in result["text"].lower() for word in ("invoice", "abc-123", "pizza")):
+        raise ValueError("OCR did not recognize the fixture reference text")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("executable", type=Path)
     parser.add_argument("--models", type=Path, required=True)
+    parser.add_argument("--siglip-precision", choices=("int8", "fp32"), default="int8")
     args = parser.parse_args()
     executable, models = args.executable.resolve(), args.models.resolve()
+    environment = {
+        k: v for k, v in os.environ.items() if k not in {"PYTHONPATH", "PYTHONHOME", "VIRTUAL_ENV"}
+    }
     with tempfile.TemporaryDirectory(prefix="lens-frozen-") as directory:
         base = Path(directory)
         images, index = base / "images", base / "index"
@@ -29,11 +48,13 @@ def main():
         image = Image.new("RGB", (640, 320), "white")
         ImageDraw.Draw(image).text((30, 60), "Invoice ABC-123 pizza", fill="black", font_size=32)
         image.save(images / "invoice.png")
+        original = hashlib.sha256((images / "invoice.png").read_bytes()).hexdigest()
 
         def cli(*arguments):
             result = subprocess.run(
                 [str(executable), "--cli", *map(str, arguments)],
                 cwd=base,
+                env=environment,
                 capture_output=True,
                 text=True,
                 timeout=180,
@@ -43,14 +64,43 @@ def main():
             return json.loads(result.stdout)
 
         indexed = cli(
-            "index", images, "--index-dir", index, "--models", models, "--languages", "eng"
+            "index",
+            images,
+            "--index-dir",
+            index,
+            "--models",
+            models,
+            "--languages",
+            "eng",
+            "--siglip-precision",
+            args.siglip_precision,
         )
-        assert indexed["images"] == 1 and indexed["failed_files"] == 0, indexed
-        searched = cli("search", "invoice", "--index-dir", index, "--models", models)
-        assert searched, searched
+        assert indexed["status"] == "completed" and indexed["images"] == 1, indexed
+        assert indexed["failed_files"] == indexed["degraded_files"] == 0, indexed
+        searches = {}
+        for mode in ("lexical", "hybrid"):
+            searched = cli(
+                "search", "invoice", "--mode", mode, "--index-dir", index, "--models", models
+            )
+            verify_search(searched, images / "invoice.png")
+            searches[mode] = searched
+        refreshed = cli(
+            "index",
+            images,
+            "--index-dir",
+            index,
+            "--models",
+            models,
+            "--languages",
+            "eng",
+            "--siglip-precision",
+            args.siglip_precision,
+        )
+        assert refreshed["status"] == "completed" and refreshed["reused_images"] == 1, refreshed
         resident = subprocess.run(
             [str(executable), "-m", "realopen_lens.runtime.query_server"],
             cwd=base,
+            env=environment,
             capture_output=True,
             text=True,
             timeout=120,
@@ -60,7 +110,7 @@ def main():
                         "models": str(models),
                         "kind": kind,
                         "threads": 2,
-                        "siglip_precision": "int8",
+                        "siglip_precision": args.siglip_precision,
                         "query": "invoice",
                     }
                 )
@@ -71,6 +121,7 @@ def main():
         assert resident.returncode == 0, resident.stderr
         vectors = [json.loads(line)["vector"] for line in resident.stdout.splitlines()]
         assert [len(vector) for vector in vectors] == [768, 384]
+        assert all(any(v) and all(math.isfinite(x) for x in v) for v in vectors)
         with socket.socket() as reserved:
             reserved.bind(("127.0.0.1", 0))
             port = reserved.getsockname()[1]
@@ -89,6 +140,7 @@ def main():
                     str(port),
                 ],
                 cwd=base,
+                env=environment,
                 stdout=log,
                 stderr=log,
             )
@@ -130,7 +182,13 @@ def main():
                     json.dumps(
                         {
                             "index": indexed,
-                            "search": searched,
+                            "search": searches,
+                            "refresh": refreshed,
+                            "siglip_precision": args.siglip_precision,
+                            "source_unchanged": hashlib.sha256(
+                                (images / "invoice.png").read_bytes()
+                            ).hexdigest()
+                            == original,
                             "gallery": "passed",
                             "resident_dimensions": [len(v) for v in vectors],
                         }
@@ -143,6 +201,13 @@ def main():
                 except subprocess.TimeoutExpired:
                     process.kill()
                     process.wait()
+                    raise TimeoutError("Frozen gallery required forced shutdown")
+                assert process.returncode == 0 or (
+                    process.returncode == -15
+                    and "Application shutdown complete"
+                    in (base / "server.log").read_text(encoding="utf-8")
+                ), "Frozen gallery did not shut down cleanly"
+        assert hashlib.sha256((images / "invoice.png").read_bytes()).hexdigest() == original
 
 
 if __name__ == "__main__":

@@ -69,3 +69,24 @@ def test_missing_signing_identity_fails_before_build_or_upload(monkeypatch):
     with pytest.raises(SystemExit, match="identity is not installed"):
         build.main()
     assert len(commands) == 1 and commands[0][0] == "/usr/bin/security"
+
+
+@pytest.mark.parametrize("change", ["empty", "wrong_image", "missing_ocr", "degraded"])
+def test_inference_check_requires_correct_image_and_ocr(change, tmp_path):
+    smoke = script("smoke")
+    source = tmp_path / "invoice.png"
+    result = {
+        "paths": [str(source)],
+        "text": "Invoice ABC-123 pizza",
+        "status": "ready",
+        "issues": [],
+    }
+    smoke.verify_search([result], source)
+    if change == "wrong_image":
+        result["paths"] = ["another.png"]
+    elif change == "missing_ocr":
+        result["text"] = ""
+    elif change == "degraded":
+        result["status"] = "degraded"
+    with pytest.raises(ValueError):
+        smoke.verify_search([] if change == "empty" else [result], source)
