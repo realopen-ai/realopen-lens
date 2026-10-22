@@ -139,14 +139,18 @@ inventory, copyright notices and license texts.
 
 ## Roadmap
 
-- [ ] Expand independent multilingual OCR/relevance review.
 - [x] Build the Python package, CLI, and resumable ingestion pipeline.
 - [x] Implement visual, lexical, and semantic OCR retrieval with hybrid fusion.
 - [x] Publish reproducible baseline evaluations by language and image category.
 - [x] Train and evaluate an experimental logistic reranker against hybrid fusion.
-- [ ] Expand independent relevance review and compare a small neural reranker.
-- [ ] Add explicit feedback, validated model updates, and collection management.
-- [ ] Build the local image gallery and verify installation on all three platforms.
+- [x] Add explicit relevance feedback, exact-query memory, and local model training/evaluation.
+- [x] Add model activation/rollback controls; retain hybrid ranking as the default.
+- [x] Add folder management, virtual collections, and reviewable duplicate groups.
+- [x] Build the local image gallery with live task progress.
+- [x] Package an experimental macOS desktop launcher with device setup guidance.
+- [ ] Expand independent multilingual OCR/relevance review before promoting learned ranking.
+- [ ] Compare a small neural reranker against hybrid and logistic baselines.
+- [ ] Build and validate native desktop packages on Windows and Linux.
 
 See [the collection guide](docs/collections.md) for installation and CLI usage, and
 [the benchmark guide](docs/benchmark.md) for offline setup, query judgments, and
