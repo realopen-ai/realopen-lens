@@ -6,6 +6,8 @@ from PyInstaller.utils.hooks import collect_all, copy_metadata
 
 root = Path(SPECPATH).parent
 datas, binaries, hiddenimports = collect_all("realopen_lens", include_py_files=True)
+datas += [(str(root / "LICENSE"), "licenses/realopen-lens")]
+datas += [(str(root / "THIRD_PARTY_NOTICES.md"), "licenses/realopen-lens")]
 icons = root / "build/desktop-icons"
 if not (icons / "Lens.icns").is_file():
     raise RuntimeError("Run packaging/icons.py before freezing the desktop app")

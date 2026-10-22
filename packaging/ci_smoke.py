@@ -84,6 +84,17 @@ def validate(archive: Path, report_path: Path):
                 contents = bundle / "Contents"
                 info = plistlib.loads((contents / "Info.plist").read_bytes())
                 assert info["CFBundleIdentifier"] == "org.realopen.lens"
+                license_text = (contents / "Resources/licenses/realopen-lens/LICENSE").read_text(
+                    encoding="utf-8"
+                )
+                assert "Apache License" in license_text and "Version 2.0" in license_text
+                notices = (
+                    contents / "Resources/licenses/realopen-lens/THIRD_PARTY_NOTICES.md"
+                ).read_text(encoding="utf-8")
+                assert notices.startswith("# Third-party notices")
+                assert all(
+                    name in notices for name in ("CPython", "onnxruntime", "Tcl", "Tk", "react")
+                )
                 with Image.open(contents / "Resources" / info["CFBundleIconFile"]) as image:
                     image = image.convert("RGBA")
                     assert image.size == (1024, 1024)
@@ -91,7 +102,7 @@ def validate(archive: Path, report_path: Path):
                     assert bounds and 90 <= bounds[0] <= 110 and bounds[2] <= 934
                     assert image.getpixel((0, 0))[3] == 0
 
-            check("icon and bundle metadata", icon)
+            check("icon, license and bundle metadata", icon)
             diagnostics = check(
                 "frozen dependencies and Tcl/Tk resources",
                 lambda: json.loads(run([str(executable), "--check-bundle"], cwd=base).stdout),

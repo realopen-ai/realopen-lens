@@ -135,6 +135,9 @@ current pipeline evaluation uses Tesseract only.
 Project source is licensed under [Apache-2.0](LICENSE). Third-party dependencies,
 downloaded model weights and OCR language data retain their own licenses.
 
+See [third-party notices](THIRD_PARTY_NOTICES.md) for the desktop dependency
+inventory, copyright notices and license texts.
+
 ## Roadmap
 
 - [ ] Validate multilingual inference, OCR quality, and memory use on 8 GB hardware.
