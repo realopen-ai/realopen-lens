@@ -7,11 +7,12 @@ from logging.handlers import RotatingFileHandler
 import os
 from pathlib import Path
 import queue
-import shutil
+import re
 import socket
 import sys
 import threading
 import webbrowser
+from typing import Any
 
 import psutil
 
@@ -29,6 +30,15 @@ def settings(root: Path) -> dict:
                 "models" in value
                 and (
                     not isinstance(value["models"], str) or not Path(value["models"]).is_absolute()
+                )
+            )
+            or (
+                "ocr_languages" in value
+                and (
+                    not isinstance(value["ocr_languages"], str)
+                    or not re.fullmatch(
+                        r"(?:[A-Za-z0-9_]+(?:\+[A-Za-z0-9_]+)*)?", value["ocr_languages"]
+                    )
                 )
             )
             or (
@@ -86,6 +96,7 @@ def main():
     import uvicorn
     from realopen_lens.api.app import create_app
     from realopen_lens.desktop.view import LauncherView
+    from realopen_lens.runtime.readiness import inspect, CheckCancelled, OCR_GUIDE
 
     # Finder's PATH omits common local Tesseract installations.
     if sys.platform == "darwin":
@@ -101,15 +112,24 @@ def main():
         parser.error("Use a valid port")
     url = f"http://127.0.0.1:{args.port}"
     root = args.workspace.expanduser().resolve()
-    root.mkdir(parents=True, exist_ok=True)
-    logs = root / "logs"
-    logs.mkdir(exist_ok=True)
-    handler = RotatingFileHandler(logs / "desktop.log", maxBytes=2_000_000, backupCount=3)
+    window = tk.Tk()
+    window.title("RealOpen Lens")
+    try:
+        root.mkdir(parents=True, exist_ok=True)
+        logs = root / "logs"
+        logs.mkdir(exist_ok=True)
+        handler = RotatingFileHandler(logs / "desktop.log", maxBytes=2_000_000, backupCount=3)
+    except OSError as error:
+        messagebox.showerror(
+            "Workspace unavailable",
+            f"Lens cannot write to {root}.\n\n"
+            f"Restore folder permissions or choose a writable workspace.\n\n{error}",
+        )
+        window.destroy()
+        return
     handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s"))
     logging.getLogger().addHandler(handler)
     logging.getLogger().setLevel(logging.INFO)
-    window = tk.Tk()
-    window.title("RealOpen Lens")
     icon_path = Path(__file__).parent / "assets/Lens.png"
     if icon_path.is_file():
         window.iconphoto(True, tk.PhotoImage(file=str(icon_path)))
@@ -124,6 +144,16 @@ def main():
     total_memory = memory_bytes()
     initial_precision = selected_precision(config, total_memory)
     precision = tk.StringVar(value=initial_precision)
+    languages = tk.StringVar(value=config.get("ocr_languages", ""))
+    setup_status = tk.StringVar(value="Checking this device…")
+    setup_details = tk.StringVar(
+        value="Models, text recognition and workspace access are checked offline."
+    )
+    setup_progress = tk.DoubleVar(value=0)
+    checker = None
+    check_cancelled = threading.Event()
+    check_pending = False
+    check_revision = 0
     server = None
     worker = None
     reserved = None
@@ -131,23 +161,82 @@ def main():
     opened = False
     downloader = None
     cancel_download = threading.Event()
-    events: queue.Queue[str] = queue.Queue()
+    events: queue.Queue[Any] = queue.Queue()
 
     def save():
         from realopen_lens.storage.artifacts import atomic_bytes
 
-        config["siglip_precision"] = precision.get()
-        atomic_bytes(
-            root / "desktop.json",
-            json.dumps(
-                {
-                    "models": str(models),
-                    "theme": config.get("theme", "light"),
-                    "siglip_precision": precision.get(),
-                },
-                ensure_ascii=False,
-            ).encode(),
+        if not re.fullmatch(r"(?:[A-Za-z0-9_]+(?:\+[A-Za-z0-9_]+)*)?", languages.get()):
+            setup_status.set("Use OCR codes separated by +, for example eng+fra.")
+            return False
+        try:
+            config["siglip_precision"] = precision.get()
+            config["ocr_languages"] = languages.get()
+            atomic_bytes(
+                root / "desktop.json",
+                json.dumps(
+                    {
+                        "models": str(models),
+                        "theme": config.get("theme", "light"),
+                        "siglip_precision": precision.get(),
+                        "ocr_languages": languages.get(),
+                    },
+                    ensure_ascii=False,
+                ).encode(),
+            )
+            return True
+        except OSError as error:
+            setup_status.set(f"Cannot save preferences: {error}")
+            return False
+
+    def request_check():
+        nonlocal check_pending, check_revision
+        if not re.fullmatch(r"(?:[A-Za-z0-9_]+(?:\+[A-Za-z0-9_]+)*)?", languages.get()):
+            setup_status.set("Use OCR codes separated by +, for example eng+fra.")
+            return
+        if not save():
+            return
+        check_revision += 1
+        check_pending = True
+        check_cancelled.set()
+
+    def launch_check():
+        nonlocal checker, check_pending
+        check_pending = False
+        check_cancelled.clear()
+        selected, requested, target, revision = (
+            precision.get(),
+            languages.get(),
+            models,
+            check_revision,
         )
+        view.check_setup.configure(state="disabled")
+        setup_status.set("Checking this device…")
+        setup_progress.set(0)
+
+        def progress(value):
+            if check_cancelled.is_set():
+                raise CheckCancelled()
+            events.put({"kind": "setup_progress", "revision": revision, "value": value})
+
+        def check():
+            try:
+                report = inspect(
+                    root,
+                    target,
+                    siglip_precision=selected,
+                    languages=requested,
+                    on_progress=progress,
+                )
+                events.put({"kind": "setup_result", "revision": revision, "value": report})
+            except CheckCancelled:
+                pass
+            except Exception as error:
+                logging.exception("Device setup check failed")
+                events.put({"kind": "setup_error", "revision": revision, "value": str(error)})
+
+        checker = threading.Thread(target=check, daemon=True)
+        checker.start()
 
     def choose_models():
         nonlocal models
@@ -156,6 +245,7 @@ def main():
             models = Path(value).resolve()
             save()
             view.model_label.configure(text=str(models))
+            request_check()
 
     def download_models():
         nonlocal downloader
@@ -172,6 +262,7 @@ def main():
         ):
             return
         cancel_download.clear()
+        check_cancelled.set()
         target = models
 
         def progress(name, received, total):
@@ -192,6 +283,8 @@ def main():
             except Exception as error:
                 logging.exception("Model setup stopped")
                 events.put(f"Model setup: {error}")
+            finally:
+                events.put({"kind": "recheck"})
 
         downloader = threading.Thread(target=download, daemon=True)
         downloader.start()
@@ -211,6 +304,7 @@ def main():
                 preferred_siglip_precision=lambda: config.get(
                     "siglip_precision", initial_precision
                 ),
+                preferred_ocr_languages=lambda: config.get("ocr_languages", ""),
             )
             server = uvicorn.Server(
                 uvicorn.Config(
@@ -230,15 +324,16 @@ def main():
             status.set(f"Cannot start: {error}. Check whether Lens is already running.")
             return
         opened = False
+        active_server, active_socket = server, reserved
 
         def serve():
             try:
-                server.run(sockets=[reserved])
+                active_server.run(sockets=[active_socket])
             except BaseException:
                 logging.exception("Desktop server failed")
                 events.put("Server failed. See desktop.log for details.")
             finally:
-                reserved.close()
+                active_socket.close()
 
         worker = threading.Thread(target=serve, daemon=True)
         worker.start()
@@ -249,17 +344,79 @@ def main():
         nonlocal closing
         closing = True
         cancel_download.set()
+        check_cancelled.set()
         status.set("Stopping local tasks and releasing models…")
         if server:
             server.should_exit = True
 
     def tick():
-        nonlocal opened
+        nonlocal opened, worker, server
         while not events.empty():
-            status.set(events.get_nowait())
+            event = events.get_nowait()
+            if isinstance(event, str):
+                status.set(event)
+            elif event["kind"] == "recheck":
+                if not closing:
+                    request_check()
+            elif event.get("revision") == check_revision:
+                value = event["value"]
+                if event["kind"] == "setup_progress":
+                    setup_status.set(value["phase"])
+                    partial = min(
+                        1, value.get("bytes_completed", 0) / max(1, value.get("total_bytes", 1))
+                    )
+                    setup_progress.set(100 * (value["step"] + partial) / value["max_steps"])
+                elif event["kind"] == "setup_error":
+                    view.set_setup_expanded(True)
+                    setup_status.set(
+                        f"Setup check stopped: {value}. Check again after resolving this issue."
+                    )
+                else:
+                    setup_progress.set(100)
+                    stale = value["siglip_precision"] != precision.get() or (
+                        bool(languages.get()) and value["languages"] != languages.get()
+                    )
+                    if not stale and not value["ready"]:
+                        view.set_setup_expanded(True)
+                    setup_status.set(
+                        "Settings changed. Check setup again."
+                        if stale
+                        else (
+                            "Ready to add images. Open the library → Add folder."
+                            if value["ready"]
+                            else "Setup needs attention. You can still browse indexed images."
+                        )
+                    )
+                    installed = value["ocr"].get("installed_languages", [])
+                    preferred = [code for code in ("eng", "fra", "ara") if code in installed]
+                    preview = preferred + [code for code in installed if code not in preferred]
+                    setup_details.set(
+                        "\n\n".join(
+                            f"{'✓' if check['ok'] else '!'} {check['title']}: {check['detail']}"
+                            + ("\n" + check.get("action", "") if not check["ok"] else "")
+                            for check in value["checks"]
+                        )
+                        + f"\n\nInstalled OCR languages ({len(installed)}): "
+                        + (", ".join(preview[:10]) or "None detected")
+                        + (" …" if len(installed) > 10 else "")
+                    )
+                    if not languages.get() and value["languages"]:
+                        languages.set(value["languages"])
+                        save()
+        if checker and not checker.is_alive():
+            view.check_setup.configure(state="normal")
+        if (
+            not closing
+            and check_pending
+            and (not checker or not checker.is_alive())
+            and (not downloader or not downloader.is_alive())
+        ):
+            launch_check()
         if closing:
-            if (not worker or not worker.is_alive()) and (
-                not downloader or not downloader.is_alive()
+            if (
+                (not worker or not worker.is_alive())
+                and (not downloader or not downloader.is_alive())
+                and (not checker or not checker.is_alive())
             ):
                 window.destroy()
                 return
@@ -272,6 +429,7 @@ def main():
             elif not worker.is_alive():
                 status.set("Gallery stopped. See desktop.log if startup failed.")
                 view.choose_models.configure(state="normal")
+                worker, server = None, None
         window.after(200, tick)
 
     def theme_changed(theme):
@@ -280,24 +438,30 @@ def main():
 
     def precision_changed():
         save()
+        request_check()
 
     view = LauncherView(
         window,
         workspace=root,
         models=models,
         status=status,
-        ocr=shutil.which("tesseract"),
         theme=config.get("theme", "light"),
         on_theme=theme_changed,
         precision=precision,
         total_memory=total_memory,
         recommendation=recommended_precision(total_memory),
         on_precision=precision_changed,
+        languages=languages,
+        setup_status=setup_status,
+        setup_details=setup_details,
+        setup_progress=setup_progress,
         actions={
             "open": start,
             "stop": lambda: setattr(server, "should_exit", True) if server else None,
             "models": choose_models,
             "download": download_models,
+            "check": request_check,
+            "ocr_help": lambda: webbrowser.open(OCR_GUIDE),
             "logs": lambda: webbrowser.open(logs.as_uri()),
             "quit": quit_app,
         },
@@ -305,6 +469,7 @@ def main():
     window.protocol("WM_DELETE_WINDOW", quit_app)
     window.after(200, tick)
     window.after(400, start)
+    window.after(500, request_check)
     window.mainloop()
 
 
