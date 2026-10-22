@@ -105,6 +105,16 @@ completion, failure or cancellation; leftover uploads are removed on startup.
 
 ## Real-time progress
 
+**Workspace settings → Device setup** checks workspace access, model integrity and
+Tesseract/languages without downloading anything. A source-access check is also
+available inside **Add folder**. The section starts collapsed with its title and
+description. Failed checks expand it automatically, and it can still be collapsed
+manually. Reports list each prerequisite separately and identify missing language
+packs. Use the installed-language suggestion explicitly
+to change the indexing form; requested languages are never silently removed.
+Settings changes invalidate the displayed report until checked again. Existing
+images stay browsable while setup needs attention.
+
 Indexing and searches return HTTP 202 with a task ID. The browser subscribes to
 `GET /api/tasks/{id}/events` using Server-Sent Events. The stream sends a `progress`
 event approximately every 500 ms while a task is active, then its terminal state.
@@ -172,6 +182,7 @@ Do not expose the factory through an external listener or multiple API workers.
 | Index status and detailed issues | `GET /api/collections/{collection}/status` |
 | Verified media | `GET /api/collections/{collection}/images/{image_id}/thumbnail` or `/original` |
 | Start text/image/indexing task | `POST /api/tasks/search`, `/similar`, `/index` |
+| Check local setup with progress | `POST /api/tasks/setup` (`siglip_precision`, `languages`, optional `source`) |
 | Start uploaded-image task | `POST /api/tasks/upload?collection=personal&save_run=false` (raw image body) |
 | Task snapshots | `GET /api/tasks` or `GET /api/tasks/{id}` |
 | Live progress | `GET /api/tasks/{id}/events` |

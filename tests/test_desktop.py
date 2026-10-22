@@ -104,3 +104,12 @@ def test_invalid_saved_precision_is_a_clean_settings_error(tmp_path, value):
     )
     with pytest.raises(ValueError, match="Invalid desktop settings"):
         launcher.settings(tmp_path)
+
+
+@pytest.mark.parametrize("value", ["eng+--help", [], None])
+def test_invalid_saved_ocr_languages_are_a_clean_settings_error(tmp_path, value):
+    import json
+
+    (tmp_path / "desktop.json").write_text(json.dumps({"ocr_languages": value}), encoding="utf-8")
+    with pytest.raises(ValueError, match="Invalid desktop settings"):
+        launcher.settings(tmp_path)

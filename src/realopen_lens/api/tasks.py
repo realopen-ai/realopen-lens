@@ -188,7 +188,19 @@ class TaskManager:
                 )
                 request = {**request, "virtual_revision": scope["revision"]}
                 self.update(task_id, virtual_revision=scope["revision"])
-            if kind in {"workspace_preview", "workspace_import"}:
+            if kind == "setup":
+                from realopen_lens.runtime.readiness import inspect
+
+                payload = inspect(
+                    self.root,
+                    self.models,
+                    siglip_precision=request["siglip_precision"],
+                    languages=request["languages"],
+                    source=Path(request["source"]) if request.get("source") else None,
+                    on_progress=progress,
+                )
+                status = "completed"  # Readiness is reported explicitly; execution isn't readiness.
+            elif kind in {"workspace_preview", "workspace_import"}:
                 from realopen_lens.workspace.service import preview, initialize
 
                 self._release_session()

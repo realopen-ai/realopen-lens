@@ -25,6 +25,70 @@ except ModuleNotFoundError as error:
 collection_fixture = _collection_fixture
 
 
+def test_setup_check_returns_actionable_results_with_live_task_progress(web, monkeypatch):
+    from realopen_lens.runtime import readiness
+
+    client, root, store, run = web
+    monkeypatch.setattr(
+        readiness,
+        "artifact_path",
+        lambda directory, name, key: store / "missing-models" / name / key,
+    )
+    monkeypatch.setattr(
+        readiness,
+        "installed_ocr",
+        lambda: {
+            "executable": "tesseract",
+            "version": "tesseract 5",
+            "installed_languages": ["eng"],
+        },
+    )
+    response = client.post("/api/tasks/setup", json={"source": str(root), "languages": "eng+ara"})
+    assert response.status_code == 202
+    task = completed(client, response.json()["id"])
+    assert task["status"] == "completed" and task["result"]["ready"] is False
+    checks = {check["id"]: check for check in task["result"]["checks"]}
+    assert checks["workspace"]["ok"] and checks["source"]["ok"]
+    assert not checks["models"]["ok"] and "ara" in checks["ocr"]["detail"]
+    assert "event: progress" in client.get(f"/api/tasks/{task['id']}/events").text
+    assert client.get("/api/collections/personal/images").json()["total"] == 2
+    assert client.post("/api/tasks/setup", json={"source": str(root.parent)}).status_code == 403
+    assert client.post("/api/tasks/setup", json={"languages": "eng+--help"}).status_code == 422
+
+
+def test_launcher_language_preference_is_live_and_not_tk_bound(tmp_path):
+    preference = {"languages": "eng"}
+    app = create_app(
+        index_dir=tmp_path / "index", preferred_ocr_languages=lambda: preference["languages"]
+    )
+    with TestClient(app, base_url="http://127.0.0.1:8765") as client:
+        assert client.get("/api/session").json()["default_ocr_languages"] == "eng"
+        preference["languages"] = "eng+fra"
+        assert client.get("/api/session").json()["default_ocr_languages"] == "eng+fra"
+
+
+def test_setup_verification_can_be_cancelled(web, monkeypatch):
+    from realopen_lens.runtime import readiness
+
+    client, root, store, run = web
+    started, release = threading.Event(), threading.Event()
+
+    def check(*args, on_progress, **kwargs):
+        started.set()
+        assert release.wait(5)
+        on_progress({"phase": "Verifying local model files"})
+        pytest.fail("Cancelled verification should not produce a ready report")
+
+    monkeypatch.setattr(readiness, "inspect", check)
+    task = client.post("/api/tasks/setup", json={}).json()
+    assert started.wait(5)
+    try:
+        assert client.post(f"/api/tasks/{task['id']}/cancel").status_code == 200
+    finally:
+        release.set()
+    assert completed(client, task["id"])["status"] == "cancelled"
+
+
 @pytest.fixture
 def web(collection_fixture, monkeypatch):
     root, store, calls, run = collection_fixture
