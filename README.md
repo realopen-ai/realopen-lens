@@ -130,6 +130,11 @@ explicit selection; the retrieval study did not establish an overall search bene
 The earlier [OCR engine experiments](docs/ocr-comparison.md) remain documented;
 current pipeline evaluation uses Tesseract only.
 
+## License
+
+Project source is licensed under [Apache-2.0](LICENSE). Third-party dependencies,
+downloaded model weights and OCR language data retain their own licenses.
+
 ## Roadmap
 
 - [ ] Validate multilingual inference, OCR quality, and memory use on 8 GB hardware.
