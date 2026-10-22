@@ -182,6 +182,10 @@ responses; a fresh network model download was not executed.
 The launcher uses portable Tk/Python APIs and the spec emits a directory executable
 on Windows/Linux. These outputs require native builds and runtime validation; a
 macOS build cannot establish support on those platforms. Native folder permissions,
-Tesseract distribution/licensing, clean-machine inference, OS signing/installers
-and physical 8 GB validation remain release gates. This is an experimental macOS
+Tesseract provisioning, clean-machine inference and native installers remain
+release work. Developer ID signing/notarization is optional for the experimental
+ad-hoc signed prerelease. This is a macOS
 packaging milestone, not a three-platform release.
+
+See [desktop release readiness](desktop-release.md) for archive acceptance,
+checksums, release candidates, signing/notarization and clean-machine acceptance.

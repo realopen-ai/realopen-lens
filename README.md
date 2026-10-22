@@ -134,13 +134,12 @@ current pipeline evaluation uses Tesseract only.
 
 Project source is licensed under [Apache-2.0](LICENSE). Third-party dependencies,
 downloaded model weights and OCR language data retain their own licenses.
-
 See [third-party notices](THIRD_PARTY_NOTICES.md) for the desktop dependency
 inventory, copyright notices and license texts.
 
 ## Roadmap
 
-- [ ] Validate multilingual inference, OCR quality, and memory use on 8 GB hardware.
+- [ ] Expand independent multilingual OCR/relevance review.
 - [x] Build the Python package, CLI, and resumable ingestion pipeline.
 - [x] Implement visual, lexical, and semantic OCR retrieval with hybrid fusion.
 - [x] Publish reproducible baseline evaluations by language and image category.
