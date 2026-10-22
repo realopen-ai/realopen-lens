@@ -75,11 +75,15 @@ class LauncherView:
         # reachable at small window heights instead of clipping controls.
         viewport = ttk.Frame(outer, style="Lens.TFrame")
         viewport.pack(fill="both", expand=True, pady=(12, 0))
+        viewport.columnconfigure(0, weight=1)
+        viewport.rowconfigure(0, weight=1)
         self.canvas = tk.Canvas(viewport, highlightthickness=0)
-        scroll = ttk.Scrollbar(viewport, orient="vertical", command=self.canvas.yview)
-        scroll.pack(side="right", fill="y")
-        self.canvas.pack(side="left", fill="both", expand=True)
-        self.canvas.configure(yscrollcommand=scroll.set)
+        self.scrollbar = ttk.Scrollbar(
+            viewport, orient="vertical", command=self.canvas.yview, style="Lens.Vertical.TScrollbar"
+        )
+        self.scrollbar.grid(row=0, column=1, sticky="ns", padx=(8, 0))
+        self.canvas.grid(row=0, column=0, sticky="nsew")
+        self.canvas.configure(yscrollcommand=self.update_scrollbar)
         outer = ttk.Frame(self.canvas, style="Lens.TFrame")
         content = self.canvas.create_window((0, 0), window=outer, anchor="nw")
         outer.bind(
@@ -261,6 +265,13 @@ class LauncherView:
         ).pack(side="right")
         self.apply_theme()
 
+    def update_scrollbar(self, first, last):
+        self.scrollbar.set(first, last)
+        if float(last) - float(first) >= 1:
+            self.scrollbar.grid_remove()
+        else:
+            self.scrollbar.grid()
+
     def set_setup_expanded(self, expanded):
         self.setup_expanded = expanded
         self.setup_toggle.configure(text=("▾" if expanded else "▸") + "  Device setup")
@@ -281,11 +292,38 @@ class LauncherView:
         p = PALETTES[self.theme]
         self.window.configure(background=p["page"])
         self.canvas.configure(background=p["page"])
+        self.style.layout(
+            "Lens.Vertical.TScrollbar",
+            [
+                (
+                    "Vertical.Scrollbar.trough",
+                    {
+                        "sticky": "ns",
+                        "children": [
+                            ("Vertical.Scrollbar.thumb", {"sticky": "nswe"}),
+                        ],
+                    },
+                ),
+            ],
+        )
         self.style.configure(
-            "Vertical.TScrollbar",
-            background=p["soft"],
+            "Lens.Vertical.TScrollbar",
+            background=p["muted"],
             troughcolor=p["page"],
-            bordercolor=p["line"],
+            bordercolor=p["page"],
+            lightcolor=p["muted"],
+            darkcolor=p["muted"],
+            borderwidth=0,
+            arrowsize=8,
+            width=8,
+            relief="flat",
+            troughrelief="flat",
+        )
+        self.style.map(
+            "Lens.Vertical.TScrollbar",
+            background=[("active", p["accent"]), ("pressed", p["accent"])],
+            lightcolor=[("active", p["accent"]), ("pressed", p["accent"])],
+            darkcolor=[("active", p["accent"]), ("pressed", p["accent"])],
         )
         self.style.configure(
             "Lens.Horizontal.TProgressbar",
