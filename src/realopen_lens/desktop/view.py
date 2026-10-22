@@ -30,14 +30,29 @@ PALETTES = {
 
 
 class LauncherView:
-    def __init__(self, window, *, workspace, models, status, ocr, theme, on_theme, actions):
+    def __init__(
+        self,
+        window,
+        *,
+        workspace,
+        models,
+        status,
+        ocr,
+        theme,
+        on_theme,
+        actions,
+        precision,
+        total_memory,
+        recommendation,
+        on_precision,
+    ):
         self.window = window
         self.theme = theme if theme in PALETTES else "light"
         self.on_theme = on_theme
         self.style = ttk.Style(window)
         self.style.theme_use("clam")
-        window.geometry("780x720")
-        window.minsize(720, 700)
+        window.geometry("780x780")
+        window.minsize(720, 760)
         outer = ttk.Frame(window, style="Lens.TFrame", padding=(32, 26))
         outer.pack(fill="both", expand=True)
         header = ttk.Frame(outer, style="Lens.TFrame")
@@ -95,6 +110,30 @@ class LauncherView:
             card, text=str(models), style="Muted.Card.Lens.TLabel", wraplength=660, justify="left"
         )
         self.model_label.pack(anchor="w", pady=(5, 12))
+        choices = ttk.Frame(card, style="Inset.Lens.TFrame")
+        choices.pack(fill="x", pady=(0, 8))
+        ttk.Label(choices, text="SigLIP2", style="Heading.Card.Lens.TLabel").pack(
+            side="left", padx=(0, 14)
+        )
+        for value, label in (("int8", "INT8 · lower memory"), ("fp32", "FP32 · higher quality")):
+            ttk.Radiobutton(
+                choices,
+                text=label,
+                value=value,
+                variable=precision,
+                command=on_precision,
+                style="Lens.TRadiobutton",
+            ).pack(side="left", padx=(0, 16))
+        ram = (
+            f"{total_memory / 1024**3:.1f} GiB RAM"
+            if total_memory is not None
+            else "RAM unavailable"
+        )
+        ttk.Label(
+            card,
+            text=f"{ram} · Suggested: {recommendation.upper()}. E5 stays INT8.",
+            style="Small.Card.Lens.TLabel",
+        ).pack(anchor="w", pady=(0, 12))
         controls = ttk.Frame(card, style="Inset.Lens.TFrame")
         controls.pack(fill="x")
         self.choose_models = ttk.Button(
@@ -142,6 +181,20 @@ class LauncherView:
         self.window.configure(background=p["page"])
         self.style.configure("Lens.TFrame", background=p["page"])
         self.style.configure("Inset.Lens.TFrame", background=p["surface"])
+        self.style.configure(
+            "Lens.TRadiobutton",
+            background=p["surface"],
+            foreground=p["text"],
+            font=("Helvetica", 11),
+            indicatorbackground=p["surface"],
+            indicatorforeground=p["accent"],
+            focuscolor=p["accent"],
+        )
+        self.style.map(
+            "Lens.TRadiobutton",
+            background=[("active", p["surface"])],
+            indicatorbackground=[("selected", p["accent"])],
+        )
         self.style.configure(
             "Card.Lens.TFrame",
             background=p["surface"],

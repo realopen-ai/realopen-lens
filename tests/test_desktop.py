@@ -52,3 +52,39 @@ def test_settings_are_explicit_utf8_and_fail_cleanly(tmp_path):
     (tmp_path / "desktop.json").write_text("[]", encoding="utf-8")
     with pytest.raises(ValueError):
         launcher.settings(tmp_path)
+
+
+@pytest.mark.parametrize(
+    "memory,expected",
+    [
+        (None, "int8"),
+        (8 * 1024**3, "int8"),
+        (16_000_000_000 - 1, "int8"),
+        (16_000_000_000, "fp32"),
+        (int(15.8 * 1024**3), "fp32"),
+        (32 * 1024**3, "fp32"),
+    ],
+)
+def test_precision_recommendation_uses_physical_ram_threshold(memory, expected):
+    assert launcher.recommended_precision(memory) == expected
+    assert launcher.selected_precision({}, memory) == expected
+    assert launcher.selected_precision({"siglip_precision": "int8"}, memory) == "int8"
+    assert launcher.selected_precision({"siglip_precision": "fp32"}, memory) == "fp32"
+
+
+def test_ram_detection_failure_is_conservative(monkeypatch):
+    monkeypatch.setattr(
+        launcher.psutil, "virtual_memory", lambda: (_ for _ in ()).throw(OSError("missing"))
+    )
+    assert launcher.memory_bytes() is None
+
+
+@pytest.mark.parametrize("value", ["fp16", [], None])
+def test_invalid_saved_precision_is_a_clean_settings_error(tmp_path, value):
+    import json
+
+    (tmp_path / "desktop.json").write_text(
+        json.dumps({"siglip_precision": value}), encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="Invalid desktop settings"):
+        launcher.settings(tmp_path)

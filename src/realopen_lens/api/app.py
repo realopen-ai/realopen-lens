@@ -8,6 +8,7 @@ from pathlib import Path
 import secrets
 import sqlite3
 from typing import Literal
+from collections.abc import Callable
 
 from fastapi import FastAPI, HTTPException, Request, Query
 from fastapi.responses import FileResponse, Response, StreamingResponse
@@ -115,6 +116,7 @@ def create_app(
     port: int = 8765,
     dev_origin: str | None = None,
     static_dir: Path | None = None,
+    preferred_siglip_precision: Callable[[], str] | None = None,
 ) -> FastAPI:
     if not 1 <= threads <= 8 or not 1 <= port <= 65535:
         raise ValueError("Use 1–8 threads and a valid port")
@@ -192,7 +194,15 @@ def create_app(
     @app.get("/api/session")
     def session():
         response = Response(
-            json.dumps({"allowed_roots": [str(p) for p in roots]}), media_type="application/json"
+            json.dumps(
+                {
+                    "allowed_roots": [str(p) for p in roots],
+                    "default_siglip_precision": (
+                        preferred_siglip_precision() if preferred_siglip_precision else "int8"
+                    ),
+                }
+            ),
+            media_type="application/json",
         )
         response.set_cookie(cookie_name, token, httponly=True, samesite="strict")
         return response

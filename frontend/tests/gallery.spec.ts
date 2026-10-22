@@ -106,6 +106,36 @@ test("new folders suggest unused names and custom conflicts stay in the indexing
   await expect(dialog).not.toBeVisible();
 });
 
+test("launcher precision defaults new folders while refresh and user overrides stay intact", async ({
+  page,
+}) => {
+  await setup(page);
+  let preferred = "fp32";
+  await page.route("**/api/session", (route) =>
+    route.fulfill({
+      json: {
+        allowed_roots: ["/photos"],
+        default_siglip_precision: preferred,
+      },
+    }),
+  );
+  await page.goto("/");
+  await page.getByRole("button", { name: "Add folder", exact: true }).click();
+  await page.getByText("Indexing options", { exact: true }).click();
+  const select = page.getByLabel("Vision precision");
+  await expect(select).toHaveValue("int8"); // Existing collection refresh.
+  await page.getByLabel("Folder path", { exact: true }).fill("/photos/new");
+  await expect(select).toHaveValue("fp32");
+  await select.selectOption("int8");
+  await page.getByLabel("Folder path", { exact: true }).fill("/photos/another");
+  await expect(select).toHaveValue("int8"); // Explicit override.
+  await page.keyboard.press("Escape");
+  preferred = "int8";
+  await page.getByRole("button", { name: "Add folder", exact: true }).click();
+  await page.getByText("Indexing options", { exact: true }).click();
+  await expect(select).toHaveValue("int8"); // New preference without server restart.
+});
+
 async function setup(page: Page, memory = false) {
   const first = {
     rank: 1,

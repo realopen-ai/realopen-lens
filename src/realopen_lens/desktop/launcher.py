@@ -13,6 +13,8 @@ import sys
 import threading
 import webbrowser
 
+import psutil
+
 from realopen_lens.storage.catalog import default_directory
 from realopen_lens.workspace.identity import metadata, models_directory
 
@@ -21,13 +23,43 @@ def settings(root: Path) -> dict:
     path = root / "desktop.json"
     if path.exists():
         value = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(value, dict) or (
-            "models" in value
-            and (not isinstance(value["models"], str) or not Path(value["models"]).is_absolute())
+        if (
+            not isinstance(value, dict)
+            or (
+                "models" in value
+                and (
+                    not isinstance(value["models"], str) or not Path(value["models"]).is_absolute()
+                )
+            )
+            or (
+                "siglip_precision" in value
+                and (
+                    not isinstance(value["siglip_precision"], str)
+                    or value["siglip_precision"] not in {"int8", "fp32"}
+                )
+            )
         ):
             raise ValueError("Invalid desktop settings")
         return value
     return {}
+
+
+def memory_bytes() -> int | None:
+    try:
+        return psutil.virtual_memory().total
+    except (OSError, NotImplementedError, psutil.Error):
+        return None
+
+
+def recommended_precision(total: int | None) -> str:
+    """Use installed physical RAM, not momentary free memory; fall back conservatively."""
+    # Decimal GB keeps the 16 GB class eligible even when the OS reserves a little
+    # of a nominal 16 GiB installation for hardware.
+    return "fp32" if total is not None and total >= 16_000_000_000 else "int8"
+
+
+def selected_precision(config: dict, total: int | None) -> str:
+    return config.get("siglip_precision", recommended_precision(total))
 
 
 def model_root(root: Path, config: dict) -> Path:
@@ -89,6 +121,9 @@ def main():
         messagebox.showerror("Workspace settings", str(error))
         window.destroy()
         return
+    total_memory = memory_bytes()
+    initial_precision = selected_precision(config, total_memory)
+    precision = tk.StringVar(value=initial_precision)
     server = None
     worker = None
     reserved = None
@@ -101,10 +136,16 @@ def main():
     def save():
         from realopen_lens.storage.artifacts import atomic_bytes
 
+        config["siglip_precision"] = precision.get()
         atomic_bytes(
             root / "desktop.json",
             json.dumps(
-                {"models": str(models), "theme": config.get("theme", "light")}, ensure_ascii=False
+                {
+                    "models": str(models),
+                    "theme": config.get("theme", "light"),
+                    "siglip_precision": precision.get(),
+                },
+                ensure_ascii=False,
             ).encode(),
         )
 
@@ -123,10 +164,11 @@ def main():
         if downloader and downloader.is_alive():
             cancel_download.set()
             return
+        selected = precision.get()
         if not messagebox.askyesno(
             "Download models",
-            "Download the pinned INT8 models from Hugging Face? "
-            "This requires internet access. Existing FP32 files are preserved.",
+            f"Download SigLIP2 {selected.upper()} and E5 INT8 from Hugging Face? "
+            "This requires internet access. Other installed model precisions are preserved.",
         ):
             return
         cancel_download.clear()
@@ -139,8 +181,14 @@ def main():
 
         def download():
             try:
-                fetch(target, "int8", events.put, download_progress=progress)
-                events.put("INT8 models verified and ready.")
+                fetch(
+                    target,
+                    "int8",
+                    events.put,
+                    siglip_precision=selected,
+                    download_progress=progress,
+                )
+                events.put(f"SigLIP2 {selected.upper()} and E5 INT8 verified and ready.")
             except Exception as error:
                 logging.exception("Model setup stopped")
                 events.put(f"Model setup: {error}")
@@ -160,6 +208,9 @@ def main():
                 index_dir=root,
                 models=models,
                 port=args.port,
+                preferred_siglip_precision=lambda: config.get(
+                    "siglip_precision", initial_precision
+                ),
             )
             server = uvicorn.Server(
                 uvicorn.Config(
@@ -227,6 +278,9 @@ def main():
         config["theme"] = theme
         save()
 
+    def precision_changed():
+        save()
+
     view = LauncherView(
         window,
         workspace=root,
@@ -235,6 +289,10 @@ def main():
         ocr=shutil.which("tesseract"),
         theme=config.get("theme", "light"),
         on_theme=theme_changed,
+        precision=precision,
+        total_memory=total_memory,
+        recommendation=recommended_precision(total_memory),
+        on_precision=precision_changed,
         actions={
             "open": start,
             "stop": lambda: setattr(server, "should_exit", True) if server else None,

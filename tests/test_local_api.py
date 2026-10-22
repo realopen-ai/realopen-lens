@@ -129,6 +129,18 @@ def test_index_name_conflict_is_rejected_before_queuing_and_refresh_is_allowed(w
     assert len(submitted) == 2
 
 
+def test_launcher_precision_preference_is_live_and_does_not_change_collections(tmp_path):
+    preferred = {"value": "fp32"}
+    app = create_app(
+        index_dir=tmp_path / "store", preferred_siglip_precision=lambda: preferred["value"]
+    )
+    with TestClient(app, base_url="http://127.0.0.1:8765") as client:
+        assert client.get("/api/session").json()["default_siglip_precision"] == "fp32"
+        preferred["value"] = "int8"
+        assert client.get("/api/session").json()["default_siglip_precision"] == "int8"
+        assert client.get("/api/collections").json() == []
+
+
 def test_folder_browser_does_not_follow_links_outside_import_roots(web, tmp_path):
     client, root, store, run = web
     outside = tmp_path / "outside-folder"

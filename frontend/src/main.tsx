@@ -151,12 +151,35 @@ function App() {
   const [importError, setImportError] = useState("");
   const [indexSubmitting, setIndexSubmitting] = useState(false);
   const [precision, setPrecision] = useState("int8");
+  const [defaultPrecision, setDefaultPrecision] = useState("int8");
+  const [precisionEdited, setPrecisionEdited] = useState(false);
+  useEffect(() => {
+    if (!importing) return;
+    let active = true;
+    void api<{ default_siglip_precision?: string }>("/session")
+      .then((session) => {
+        if (active)
+          setDefaultPrecision(
+            session.default_siglip_precision === "fp32" ? "fp32" : "int8",
+          );
+      })
+      .catch((error) => {
+        if (active) setImportError(String(error));
+      });
+    return () => {
+      active = false;
+    };
+  }, [importing]);
+  useEffect(() => {
+    if (!importing || precisionEdited) return;
+    const existing = collections.find((value) => value.root === folder);
+    setPrecision(existing?.siglip_precision || defaultPrecision);
+  }, [folder, collections, importing, defaultPrecision, precisionEdited]);
   useEffect(() => {
     if (!importing || nameEdited || !folder.trim()) return;
     const existing = collections.find((value) => value.root === folder);
     if (existing) {
       setName(existing.name);
-      setPrecision(existing.siglip_precision);
       return;
     }
     const base =
@@ -172,11 +195,11 @@ function App() {
     while (collections.some((value) => value.name === candidate))
       candidate = `${base}-${suffix++}`;
     setName(candidate);
-    setPrecision("int8");
   }, [folder, collections, importing, nameEdited]);
   useEffect(() => {
     if (!importing) {
       setNameEdited(false);
+      setPrecisionEdited(false);
       setImportError("");
     }
   }, [importing]);
@@ -1607,7 +1630,10 @@ function App() {
                   Vision precision
                   <select
                     value={precision}
-                    onChange={(e) => setPrecision(e.target.value)}
+                    onChange={(e) => {
+                      setPrecisionEdited(true);
+                      setPrecision(e.target.value);
+                    }}
                   >
                     <option value="int8">INT8 · lower memory</option>
                     <option value="fp32">FP32 · higher memory</option>

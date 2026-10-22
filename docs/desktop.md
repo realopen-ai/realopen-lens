@@ -9,7 +9,7 @@ the Dock. The web logo/favicon retain the original square SVG.
 
 The desktop launcher starts the existing FastAPI adapter on loopback and opens the
 gallery in the default browser. A small native control window stays open to
-select existing model weights, download pinned INT8 models,
+select existing model weights, choose/download pinned INT8 or FP32 SigLIP2 models,
 open logs and quit the server. Closing the browser does not stop Lens; use **Quit
 Lens** or close the control window. Shutdown waits for the API task manager to
 release owned workers. The normal port remains 8765; an occupied port produces a
@@ -37,9 +37,16 @@ the default boundary or explicitly permit an external drive.
 Model downloads require explicit confirmation and show received/total megabytes.
 Press the download button again to cancel. Partial artifacts are removed and only
 verified weights are published. Downloads use the existing locked model registry;
-inference remains offline. The download action installs INT8 weights only; existing
-FP32 weights are preserved. Opening a pre-existing FP32 collection still requires its
-FP32 weights to be available in the selected directory.
+inference remains offline. The SigLIP2 selector initially recommends INT8 below
+16 GB of physical RAM and FP32 at 16 GB or more. Detection failure defaults to
+INT8. A saved manual choice overrides that recommendation on later launches.
+E5 always stays INT8; the download prompt states both choices explicitly, and other
+installed precision files are preserved. The selected precision also becomes the
+gallery's default when adding a new folder, without restarting the server. Refreshing
+an existing collection retains its indexed precision, and the form still allows a
+manual override. Switching the launcher selection does not convert existing indexes
+or download weights automatically. Opening a pre-existing FP32 collection still
+requires its FP32 weights in the selected model directory.
 
 ## Build on macOS
 
@@ -98,7 +105,7 @@ frozen indexing completed all four stages without failed/degraded files, OCR
 returned the fixture text, text search returned the indexed image, the HTTP gallery
 served HTML, and an isolated resident process encoded both SigLIP2 (768 dimensions)
 and E5 (384). The native control window started and shut down an isolated server.
-The Python suite passed 541 tests with one optional OCR skip; formatting, lint,
+The Python suite passed 552 tests with one optional OCR skip; formatting, lint,
 native/Windows type checks and the frontend build passed. These checks used a host
 with existing models and Tesseract; they do not establish clean-machine setup or
 retrieval quality. Download progress/checksum/cancellation were tested with controlled
