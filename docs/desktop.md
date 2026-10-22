@@ -152,7 +152,9 @@ in the gallery shows build identity, paths and installation information.
 
 ### CI packaging gate
 
-The `Desktop package (macOS arm64)` job runs on relevant pushes and pull requests using
+The checks workflow runs on pull requests and pushes to `main`; feature-branch
+pushes do not create duplicate runs. Its `Desktop package (macOS arm64)` job runs
+when relevant files change, using
 [`macos-15`](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
 It installs the locked web/packaging environment, checks Tcl availability, builds
 the gallery and application, and tests the extracted archive rather than source
