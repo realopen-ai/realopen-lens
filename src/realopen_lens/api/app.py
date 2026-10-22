@@ -326,9 +326,17 @@ def create_app(
     @app.post("/api/tasks/index", status_code=202)
     def index(body: IndexInput):
         path = Path(body.root).expanduser().resolve(strict=True)
-        registered = [Path(c["root"]).resolve() for c in reading.collections(root)]
+        collections = reading.collections(root)
+        registered = [Path(c["root"]).resolve() for c in collections]
         if not path.is_dir() or not any(path.is_relative_to(p) for p in (*roots, *registered)):
             raise HTTPException(403, "Folder is outside the configured import roots")
+        for collection in collections:
+            if collection["name"] == body.collection and Path(collection["root"]).resolve() != path:
+                raise HTTPException(
+                    409,
+                    f"Collection '{body.collection}' already indexes '{collection['root']}'. "
+                    "Use another collection name for this folder.",
+                )
         return submit("index", {**body.model_dump(), "root": str(path)})
 
     @app.get("/api/folders")

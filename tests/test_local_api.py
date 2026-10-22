@@ -110,6 +110,25 @@ def test_folder_browser_lists_only_directories_with_paging_and_bounds(web, tmp_p
     assert client.get("/api/folders").status_code == 401
 
 
+def test_index_name_conflict_is_rejected_before_queuing_and_refresh_is_allowed(web, monkeypatch):
+    client, root, store, run = web
+    other = root / "photos"
+    other.mkdir()
+    submitted = []
+    monkeypatch.setattr(
+        jobs.TaskManager, "submit", lambda self, *args: submitted.append(args) or {"id": "test"}
+    )
+    response = client.post("/api/tasks/index", json={"root": str(other), "collection": "personal"})
+    assert response.status_code == 409
+    assert "Use another collection name" in response.json()["detail"]
+    assert submitted == []
+    response = client.post("/api/tasks/index", json={"root": str(other), "collection": "photos"})
+    assert response.status_code == 202
+    response = client.post("/api/tasks/index", json={"root": str(root), "collection": "personal"})
+    assert response.status_code == 202
+    assert len(submitted) == 2
+
+
 def test_folder_browser_does_not_follow_links_outside_import_roots(web, tmp_path):
     client, root, store, run = web
     outside = tmp_path / "outside-folder"

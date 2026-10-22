@@ -147,7 +147,39 @@ function App() {
     if (!importing) setChoosingFolder(false);
   }, [importing]);
   const [name, setName] = useState("personal");
+  const [nameEdited, setNameEdited] = useState(false);
+  const [importError, setImportError] = useState("");
+  const [indexSubmitting, setIndexSubmitting] = useState(false);
   const [precision, setPrecision] = useState("int8");
+  useEffect(() => {
+    if (!importing || nameEdited || !folder.trim()) return;
+    const existing = collections.find((value) => value.root === folder);
+    if (existing) {
+      setName(existing.name);
+      setPrecision(existing.siglip_precision);
+      return;
+    }
+    const base =
+      folder
+        .replace(/\\/g, "/")
+        .replace(/\/+$/, "")
+        .split("/")
+        .pop()
+        ?.trim()
+        .slice(0, 120) || "images";
+    let candidate = base;
+    let suffix = 2;
+    while (collections.some((value) => value.name === candidate))
+      candidate = `${base}-${suffix++}`;
+    setName(candidate);
+    setPrecision("int8");
+  }, [folder, collections, importing, nameEdited]);
+  useEffect(() => {
+    if (!importing) {
+      setNameEdited(false);
+      setImportError("");
+    }
+  }, [importing]);
   const [languages, setLanguages] = useState("eng+fra+ara");
   const streams = useRef(new Map<string, EventSource>());
   const foreground = useRef<string | null>(null);
@@ -697,17 +729,21 @@ function App() {
   async function importFolder(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setImportError("");
+    setIndexSubmitting(true);
     try {
       const task = await post<Task>("/tasks/index", {
         root: folder,
-        collection: name,
+        collection: name.trim(),
         siglip_precision: precision,
         languages,
       });
       watch(task);
       setImporting(false);
     } catch (e) {
-      setError(String(e));
+      setImportError(String(e));
+    } finally {
+      setIndexSubmitting(false);
     }
   }
   const active = tasks.filter((t) => !terminal(t));
@@ -1526,7 +1562,10 @@ function App() {
                   required
                   maxLength={128}
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setNameEdited(true);
+                    setName(e.target.value);
+                  }}
                 />
               </label>
               <label>
@@ -1587,8 +1626,13 @@ function App() {
                   Models and language packs must already be installed.
                 </p>
               </details>
-              <button className="primary full-width" type="submit">
-                Start indexing
+              {importError && <p role="alert">{importError}</p>}
+              <button
+                className="primary full-width"
+                type="submit"
+                disabled={indexSubmitting || !name.trim()}
+              >
+                {indexSubmitting ? "Starting indexing…" : "Start indexing"}
                 <Icon name="arrow" size={18} />
               </button>
             </form>

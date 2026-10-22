@@ -43,9 +43,67 @@ test("choose folder navigates local directories without starting an index", asyn
   await expect(page.getByLabel("Folder path", { exact: true })).toHaveValue(
     "/photos/Family photos",
   );
+  await expect(page.getByLabel("Collection name", { exact: true })).toHaveValue(
+    "Family photos",
+  );
   expect(
     requests.filter((request) => request.url === "/api/tasks/index"),
   ).toHaveLength(0);
+});
+
+test("new folders suggest unused names and custom conflicts stay in the indexing form", async ({
+  page,
+}) => {
+  await setup(page);
+  await page.route("**/api/tasks/index", async (route) => {
+    const body = route.request().postDataJSON();
+    if (body.collection === "personal")
+      return route.fulfill({
+        status: 409,
+        json: {
+          detail:
+            "Collection 'personal' already indexes '/photos'. Use another collection name for this folder.",
+        },
+      });
+    return route.fulfill({
+      status: 202,
+      json: {
+        id: "test",
+        kind: "index",
+        collection: body.collection,
+        status: "queued",
+        phase: "queued",
+        revision: 0,
+        progress: {},
+        elapsed_seconds: 0,
+        error: null,
+        result: null,
+      },
+    });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Add folder", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Add a folder to Lens" });
+  await page.getByLabel("Folder path", { exact: true }).fill("/other/personal");
+  await expect(page.getByLabel("Collection name", { exact: true })).toHaveValue(
+    "personal-2",
+  );
+  await page.getByLabel("Collection name", { exact: true }).fill("personal");
+  await page
+    .getByRole("button", { name: "Start indexing", exact: true })
+    .click();
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("alert")).toContainText(
+    "Use another collection name",
+  );
+  await expect(page.getByLabel("Folder path", { exact: true })).toHaveValue(
+    "/other/personal",
+  );
+  await page.getByLabel("Collection name", { exact: true }).fill("photos");
+  await page
+    .getByRole("button", { name: "Start indexing", exact: true })
+    .click();
+  await expect(dialog).not.toBeVisible();
 });
 
 async function setup(page: Page, memory = false) {
