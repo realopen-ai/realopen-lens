@@ -12,6 +12,7 @@ import tempfile
 
 from realopen_lens.models.manager import artifacts, artifact_path
 from realopen_lens.storage.catalog import Catalog
+from realopen_lens.ocr import runtime as ocr_runtime
 
 OCR_GUIDE = "https://tesseract-ocr.github.io/tessdoc/Installation.html"
 
@@ -21,9 +22,10 @@ class CheckCancelled(KeyboardInterrupt):
 
 
 def installed_ocr() -> dict:
-    executable = shutil.which("tesseract")
+    executable = ocr_runtime.resolve(shutil.which("tesseract"))
     if not executable:
         raise ValueError("Tesseract 5 is not installed or cannot be found")
+    ocr_runtime.verify(executable)
 
     def run(argument: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
@@ -34,6 +36,7 @@ def installed_ocr() -> dict:
             encoding="utf-8",
             errors="replace",
             timeout=10,
+            env=ocr_runtime.environment(executable),
         )
 
     version = run("--version")
@@ -162,8 +165,12 @@ def inspect(
     record(
         "ocr",
         "Text recognition",
-        "Install Tesseract 5 and the requested language packs, "
-        "or select installed languages; then check again.",
+        (
+            "Select the bundled eng/fra/ara languages. If bundled OCR is damaged, reinstall Lens."
+            if ocr_runtime.bundle_paths()
+            else "Install Tesseract 5 and the requested language packs, "
+            "or select installed languages; then check again."
+        ),
         check_ocr,
     )
     if source is not None:

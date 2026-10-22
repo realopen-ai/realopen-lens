@@ -47,6 +47,9 @@ def inspect_bundle() -> dict:
             raise ValueError(f"Missing bundled resource: {resource}")
     if set(registry()["models"]) != {"siglip2", "e5"}:
         raise ValueError("Missing pinned model registry")
+    from realopen_lens.runtime.readiness import installed_ocr
+
+    ocr = installed_ocr()
     return {
         "frozen": True,
         "python": sys.version.split()[0],
@@ -55,4 +58,5 @@ def inspect_bundle() -> dict:
         "tk_resources": True,
         "build": build(),
         "models_downloaded": False,
+        "ocr": ocr,
     }

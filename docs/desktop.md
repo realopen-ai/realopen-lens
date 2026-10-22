@@ -37,10 +37,10 @@ For a new library:
 
 1. Choose the model precision and an existing model folder, or explicitly confirm
    **Download models / cancel**. Downloads retain byte progress and cancellation.
-2. Review **Text recognition**. Use **Install OCR / languages** for the official
-   [Tesseract installation guide](https://tesseract-ocr.github.io/tessdoc/Installation.html),
-   install the engine and desired language data, then check again. Lens does not
-   install system software or download OCR data automatically.
+2. Review **Text recognition**. The macOS app includes Tesseract 5, English,
+   French, Arabic and orientation data. Setup verifies these private resources;
+   Homebrew or a separate OCR installation is not needed on the target Mac.
+   Source installations still use their installed Tesseract/languages.
 3. Leave OCR languages blank to detect a usable installed selection, or specify
    codes such as `eng+fra`. An explicit missing language is reported and never
    silently dropped. Detected/saved language preferences become the gallery's
@@ -90,11 +90,12 @@ requires its FP32 weights in the selected model directory.
 ## Build on macOS
 
 Use Python 3.12 with working Tk support (`python -c 'import tkinter'`), Node/npm,
-and the project checkout:
+Tesseract 5 and the project checkout on the build machine:
 
 ```sh
 uv sync --locked --extra web --group packaging --no-editable
 npm --prefix frontend ci
+brew install tesseract
 uv run --no-sync python packaging/build_macos.py
 ```
 
@@ -102,11 +103,21 @@ Output: `dist/RealOpenLens-macos-ARCH.zip`. Extract the archive and open
 `RealOpen Lens.app` in Finder. The helper builds in temporary storage, verifies
 ad-hoc signing and archives without incidental file-provider attributes. The bundle contains Python,
 the inference libraries, engine workers and gallery assets; it does not require
-Python/uv/Node on the target machine. It does not contain model weights, source
-images or Tesseract. Tesseract and the desired language data must be installed
-separately; the launcher displays whether it is discoverable. macOS Homebrew paths
-are included when Finder supplies a minimal PATH. Missing OCR is not treated as
-successful OCR; ordinary pipeline error reporting still applies.
+Python/uv/Node or Homebrew on the target machine. It contains a private Tesseract 5
+engine, its non-system dylibs, and pinned `eng`, `fra`, `ara`, `osd` data. It does not
+contain model weights or source images. The build copies/relocates the engine's
+dependency closure and signs the copied binaries before resealing the app. Homebrew
+installations are not modified. Missing/corrupt bundled OCR is reported instead of
+silently falling back to the developer's installation.
+
+Use `--tesseract /path/to/tesseract` and `--tessdata-dir /path/to/tessdata` to select
+build inputs. Matching local data are reused; missing/mismatched packs are fetched
+from the pinned upstream URLs at build time and checked for size/SHA256. No OCR
+download occurs on the end user's first launch. Actual engine/library hashes and
+architectures are recorded in `Contents/Resources/lens-ocr/runtime.json`.
+Bundled language selection currently covers English/French/Arabic; additional
+packs are not managed by the desktop setup yet. CLI/source installations retain
+their existing system OCR behavior.
 
 The current artifact is a development build. PyInstaller applies an ad-hoc macOS
 signature; there is no Developer ID signature or notarization. Check build logs for
@@ -116,7 +127,7 @@ and architecture, then validate on a clean machine.
 
 ## Validate the frozen engine
 
-With existing INT8 models and English Tesseract data:
+With existing INT8 models (OCR is included in the frozen app):
 
 ```sh
 uv run --no-sync python packaging/smoke.py \
@@ -141,7 +152,9 @@ in the gallery shows build identity, paths and installation information.
 
 ### CI packaging gate
 
-The `Desktop package (macOS arm64)` job runs on pushes and pull requests using
+The checks workflow runs on pull requests and pushes to `main`; feature-branch
+pushes do not create duplicate runs. Its `Desktop package (macOS arm64)` job runs
+when relevant files change, using
 [`macos-15`](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
 It installs the locked web/packaging environment, checks Tcl availability, builds
 the gallery and application, and tests the extracted archive rather than source
@@ -151,14 +164,28 @@ imports. Locally, the same model-free checks run with:
 uv run --no-sync python packaging/ci_smoke.py dist/RealOpenLens-macos-arm64.zip
 ```
 
-The ten checks cover archive extraction, ad-hoc signing, icon metadata/padding,
+A lightweight change-detection job gates desktop builds on application source,
+frontend, packaging, dependency manifests/lockfile, licenses/notices, `.gitignore`
+and desktop workflow changes. README-, documentation- and benchmark-only changes
+skip the desktop job. Gallery build/browser checks run for frontend, API or checks
+workflow changes. Python lint/type/test jobs run for Python files, source/tests,
+benchmarks, packaging, scripts/configs, dependency/license inputs or Python check
+configuration changes. A PR changing only root `README.md` or documentation text
+under `docs/` skips all three workloads; only change detection runs. The manually dispatched candidate
+workflow remains unconditional.
+Push filtering uses the pre-push branch revision; PR filtering uses the full PR
+diff, so a PR that includes application changes still runs the desktop job even
+when its newest commit only updates documentation.
+
+The eleven checks cover archive extraction, ad-hoc signing, icon metadata/padding,
 frozen dependency imports/version metadata, Tcl/Tk scripts, pinned model registry,
 stage/resident worker dispatch/protocol handling, CLI workspace info, loopback API
 startup, gallery assets/favicon, authenticated empty-workspace reads and graceful
 shutdown. Host Python path/environment overrides are removed for frozen subprocesses.
 The smoke server also hides external command-line tools from PATH and verifies
-that setup reports missing models/OCR while the gallery remains usable.
-No model weights, Tesseract installation or GUI window are required. Uvicorn's
+that setup reports missing models while bundled OCR remains ready. A dense-text
+fixture exercises OCR with `eng+fra+ara` and loads `osd` for orientation detection.
+No model weights, host Tesseract installation or GUI window are required. Uvicorn's
 post-cleanup SIGTERM exit is accepted only with an application-shutdown completion
 log; startup timeouts and forced kills fail the check.
 
@@ -182,6 +209,9 @@ responses; a fresh network model download was not executed.
 The launcher uses portable Tk/Python APIs and the spec emits a directory executable
 on Windows/Linux. These outputs require native builds and runtime validation; a
 macOS build cannot establish support on those platforms. Native folder permissions,
-Tesseract distribution/licensing, clean-machine inference, OS signing/installers
-and physical 8 GB validation remain release gates. This is an experimental macOS
+Native installer packaging remains release work. Developer ID signing/notarization is optional for the experimental
+ad-hoc signed prerelease. This is a macOS
 packaging milestone, not a three-platform release.
+
+See [desktop release readiness](desktop-release.md) for archive acceptance,
+checksums, release candidates, signing/notarization and clean-machine acceptance.

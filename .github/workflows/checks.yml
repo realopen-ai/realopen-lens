@@ -2,13 +2,80 @@ name: Checks
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Detect changed components
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      python: ${{ steps.filter.outputs.python }}
+      desktop: ${{ steps.filter.outputs.desktop }}
+      gallery: ${{ steps.filter.outputs.gallery }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          # Pushes compare with the pre-push revision of this branch. PR events
+          # use the complete PR diff through the action's paginated API lookup.
+          base: ${{ github.ref }}
+          filters: |
+            python:
+              - '**/*.py'
+              - 'src/**'
+              - 'tests/**'
+              - 'benchmarks/**'
+              - 'packaging/**'
+              - 'configs/**'
+              - 'scripts/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
+              - 'uv.toml'
+              - '.python-version'
+              - 'tox.ini'
+              - 'setup.cfg'
+              - 'pytest.ini'
+              - '.flake8'
+              - 'ruff.toml'
+              - '.ruff.toml'
+              - 'mypy.ini'
+              - '.mypy.ini'
+              - 'LICENSE'
+              - 'THIRD_PARTY_NOTICES.md'
+              - '.gitignore'
+              - '.gitattributes'
+              - '.github/workflows/checks.yml'
+            desktop:
+              - 'src/**'
+              - 'frontend/**'
+              - 'packaging/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
+              - 'uv.toml'
+              - '.python-version'
+              - 'LICENSE'
+              - 'THIRD_PARTY_NOTICES.md'
+              - '.gitignore'
+              - '.gitattributes'
+              - '.github/workflows/checks.yml'
+              - '.github/workflows/desktop-candidate.yml'
+            gallery:
+              - 'frontend/**'
+              - 'src/realopen_lens/api/**'
+              - '.gitattributes'
+              - '.github/workflows/checks.yml'
+
   checks:
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -31,6 +98,8 @@ jobs:
       - run: uv run --no-sync python -m benchmarks --help
 
   gallery:
+    needs: changes
+    if: needs.changes.outputs.gallery == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,19 +108,54 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
+      - name: Install gallery dependencies
+        run: npm ci --prefer-offline --no-audit --no-fund
         working-directory: frontend
+      - name: Identify Playwright browser cache
+        id: playwright
+        working-directory: frontend
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const version = require('@playwright/test/package.json').version;
+          const image = process.env.ImageOS || process.platform;
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\nimage=${image}\n`);
+          NODE
+      - name: Cache Chromium headless shell
+        id: browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.image }}-playwright-shell-v1-${{ steps.playwright.outputs.version }}
       - run: npm run format:check
         working-directory: frontend
       - run: npm run build
         working-directory: frontend
-      - run: npx playwright install --with-deps chromium
+      - name: Install Chromium system dependencies
+        run: npx playwright install-deps chromium
         working-directory: frontend
-      - run: npm test
+      - name: Download Chromium headless shell on cache miss
+        if: steps.browsers.outputs.cache-hit != 'true'
+        run: npx playwright install --only-shell chromium
         working-directory: frontend
+      - name: Run browser tests
+        run: npm test -- --reporter=line,json
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_FILE: ${{ github.workspace }}/frontend/test-results/results.json
+        working-directory: frontend
+      - name: Retain browser timings and failure traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gallery-results-${{ github.run_id }}-${{ github.run_attempt }}
+          path: frontend/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
 
   desktop-macos:
     name: Desktop package (macOS arm64)
+    needs: changes
+    if: needs.changes.outputs.desktop == 'true'
     runs-on: macos-15
     timeout-minutes: 30
     steps:
@@ -71,9 +175,12 @@ jobs:
       - run: npm ci
         working-directory: frontend
       - name: Build development archive
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
         shell: bash
         run: |
           mkdir -p build
+          brew list tesseract >/dev/null 2>&1 || brew install tesseract
           uv run --no-sync python packaging/build_macos.py 2>&1 | tee build/desktop-ci-build.log
       - name: Smoke test extracted package without model downloads
         run: uv run --no-sync python packaging/ci_smoke.py dist/RealOpenLens-macos-arm64.zip

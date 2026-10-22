@@ -65,7 +65,9 @@ class LauncherView:
         brand = ttk.Frame(header, style="Lens.TFrame")
         brand.pack(side="left")
         ttk.Label(brand, text="Lens", style="Brand.Lens.TLabel").pack(anchor="w")
-        ttk.Label(brand, text="B Y   R E A L O P E N", style="Small.Lens.TLabel").pack(anchor="w")
+        ttk.Label(brand, text="B Y   R E A L O P E N   A I", style="Small.Lens.TLabel").pack(
+            anchor="w"
+        )
         self.theme_button = ttk.Button(
             header, style="Secondary.Lens.TButton", command=self.toggle_theme
         )
@@ -184,7 +186,7 @@ class LauncherView:
         ).pack(anchor="w", pady=(12, 0))
         ttk.Button(
             setup_controls,
-            text="Install OCR / languages ↗",
+            text="OCR help ↗",
             command=actions["ocr_help"],
             style="Secondary.Lens.TButton",
         ).pack(side="left", padx=10)

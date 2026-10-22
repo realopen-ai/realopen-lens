@@ -51,7 +51,9 @@ uv run --no-sync lens serve --index-dir runs/personal-index-fp32 --allow-root da
 
 Open **http://127.0.0.1:8765**. Use your existing index directory; a fresh directory
 starts an empty library. Models and Tesseract language packs must be installed
-before indexing. Compiled assets run locally without a Vite server or internet.
+before indexing when running from source. The macOS desktop bundle includes
+Tesseract with English, French, Arabic and orientation data. Compiled assets run
+locally without a Vite server or internet.
 
 ## What you'll be able to do
 
@@ -130,16 +132,27 @@ explicit selection; the retrieval study did not establish an overall search bene
 The earlier [OCR engine experiments](docs/ocr-comparison.md) remain documented;
 current pipeline evaluation uses Tesseract only.
 
+## License
+
+Project source is licensed under [Apache-2.0](LICENSE). Third-party dependencies,
+downloaded model weights and OCR language data retain their own licenses.
+See [third-party notices](THIRD_PARTY_NOTICES.md) for the desktop dependency
+inventory, copyright notices and license texts.
+
 ## Roadmap
 
-- [ ] Validate multilingual inference, OCR quality, and memory use on 8 GB hardware.
 - [x] Build the Python package, CLI, and resumable ingestion pipeline.
 - [x] Implement visual, lexical, and semantic OCR retrieval with hybrid fusion.
 - [x] Publish reproducible baseline evaluations by language and image category.
 - [x] Train and evaluate an experimental logistic reranker against hybrid fusion.
-- [ ] Expand independent relevance review and compare a small neural reranker.
-- [ ] Add explicit feedback, validated model updates, and collection management.
-- [ ] Build the local image gallery and verify installation on all three platforms.
+- [x] Add explicit relevance feedback, exact-query memory, and local model training/evaluation.
+- [x] Add model activation/rollback controls; retain hybrid ranking as the default.
+- [x] Add folder management, virtual collections, and reviewable duplicate groups.
+- [x] Build the local image gallery with live task progress.
+- [x] Package an experimental macOS desktop launcher with device setup guidance.
+- [ ] Expand independent multilingual OCR/relevance review before promoting learned ranking.
+- [ ] Compare a small neural reranker against hybrid and logistic baselines.
+- [ ] Build and validate native desktop packages on Windows and Linux.
 
 See [the collection guide](docs/collections.md) for installation and CLI usage, and
 [the benchmark guide](docs/benchmark.md) for offline setup, query judgments, and

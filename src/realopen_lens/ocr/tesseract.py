@@ -3,7 +3,6 @@
 import io
 from contextlib import ExitStack, contextmanager
 import math
-import os
 import re
 import shutil
 import subprocess
@@ -17,15 +16,26 @@ from PIL import Image, ImageOps
 
 from realopen_lens.encoders.onnx import image_rgb
 from realopen_lens.models.manager import digest
+from realopen_lens.ocr import runtime
 
 
 @lru_cache(maxsize=8)
 def _environment(executable: str, languages: str) -> dict[str, Any]:
     version = subprocess.run(
-        [executable, "--version"], capture_output=True, text=True, check=True, timeout=10
+        [executable, "--version"],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=10,
+        env=runtime.environment(executable),
     )
     result = subprocess.run(
-        [executable, "--list-langs"], capture_output=True, text=True, check=True, timeout=10
+        [executable, "--list-langs"],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=10,
+        env=runtime.environment(executable),
     )
     requested = languages.split("+")
     if not all(re.fullmatch(r"[A-Za-z0-9_]+", code) for code in requested):
@@ -40,7 +50,14 @@ def _environment(executable: str, languages: str) -> dict[str, Any]:
             path = Path(match[1]) / f"{code}.traineddata"
             if path.is_file():
                 hashes[code] = digest(path)
-    return {"version": version.stdout.splitlines()[0], "language_pack_sha256": hashes}
+    provenance: dict[str, Any] = {
+        "version": version.stdout.splitlines()[0],
+        "language_pack_sha256": hashes,
+    }
+    bundled = runtime.fingerprint(executable)
+    if bundled:
+        provenance["bundled_runtime_sha256"] = bundled
+    return provenance
 
 
 def parse_tsv(text: str) -> dict[str, Any]:
@@ -93,7 +110,7 @@ def _recognize(
         input=payload.getvalue(),
         capture_output=True,
         timeout=remaining,
-        env={**os.environ, "OMP_THREAD_LIMIT": str(threads)},
+        env={**runtime.environment(executable), "OMP_THREAD_LIMIT": str(threads)},
     )
     if result.returncode:
         raise ValueError(
@@ -157,7 +174,7 @@ def _orientation(image: Image.Image, executable: str, threads: int, timeout: flo
         input=payload.getvalue(),
         capture_output=True,
         timeout=timeout,
-        env={**os.environ, "OMP_THREAD_LIMIT": str(threads)},
+        env={**runtime.environment(executable), "OMP_THREAD_LIMIT": str(threads)},
     )
     text = result.stdout.decode(errors="replace")
     angle = re.search(r"Rotate: (\d+)", text)
@@ -226,7 +243,7 @@ def extract(
         raise ValueError("OCR requires 1–32 threads and a positive timeout")
     if region_mode not in {"mask", "gate"}:
         raise ValueError("Text region mode must be 'mask' or 'gate'")
-    executable = shutil.which("tesseract")
+    executable = runtime.resolve(shutil.which("tesseract"))
     if executable is None:
         raise ValueError("Tesseract 5 is required for OCR")
     environment = _environment(executable, languages)

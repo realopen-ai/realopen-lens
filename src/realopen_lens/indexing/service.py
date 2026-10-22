@@ -66,7 +66,7 @@ def pipeline_config(options: dict) -> dict:
     if precision not in {"int8", "fp32"}:
         raise ValueError("SigLIP2 precision must be int8 or fp32")
     verify(Path(options["models"]), "int8", precision)
-    executable = shutil.which("tesseract")
+    executable = ocr.runtime.resolve(shutil.which("tesseract"))
     if executable is None:
         raise ValueError("Tesseract 5 is required for indexing")
     spec = {
