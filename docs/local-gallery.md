@@ -75,6 +75,28 @@ identity and a stable launch/update workflow.
 - Add or refresh a folder, selecting its collection, precision and installed OCR
   languages. Originals are never moved. Existing collections retain their precision.
 
+Each indexed folder has a **⋯** menu in the sidebar:
+
+- **Refresh index** scans its saved source path using its existing precision and OCR
+  languages. New/changed files are processed, unchanged analyses are reused, and
+  removed paths disappear from the new index. Progress, cancellation and reconnects
+  use the same live task display as initial indexing. Refresh is manual.
+- **Rename** changes the name in Lens without renaming the source directory.
+  Its stable collection ID, feedback, virtual collections, duplicate reviews and
+  model activation remain attached. Saved search records retain their original
+  names as historical provenance; new searches use the current name.
+- **Remove from Lens** asks for confirmation and unregisters the indexed collection.
+  It never deletes or changes original files. Shared analysis caches, immutable
+  artifacts, saved feedback/history and detached organization/review records remain
+  on disk; this is not a secure erase or storage cleanup operation. Adding the same
+  path later creates a new identity without inheriting those detached records.
+
+Rename/removal require an idle task queue. Stale folder identities and conflicting
+names are rejected rather than changing a replacement collection. A source folder
+must be available to refresh; it can still be renamed or removed while disconnected.
+Prepared training datasets from older versions that lack collection IDs need to be
+prepared again after a rename. Newly prepared datasets resolve their source by ID.
+
 Text and similarity queries return up to 50 results in the initial UI. The API
 supports up to 100. Image uploads are bounded to 64 MiB, with actual transferred
 bytes displayed during upload; the engine also enforces its existing decoded-pixel
@@ -144,6 +166,8 @@ Do not expose the factory through an external listener or multiple API workers.
 | Session/bootstrap and allowed import roots | `GET /api/session` |
 | Browse local image folders (200 per page) | `GET /api/folders` |
 | Saved collections | `GET /api/collections` |
+| Refresh a saved folder with live indexing progress | `POST /api/collections/refresh` |
+| Rename/unregister an indexed folder | `POST /api/collections/rename`, `/remove` |
 | Browse a collection | `GET /api/collections/{collection}/images?offset=0&limit=60` |
 | Index status and detailed issues | `GET /api/collections/{collection}/status` |
 | Verified media | `GET /api/collections/{collection}/images/{image_id}/thumbnail` or `/original` |
