@@ -1,4 +1,4 @@
-"""Model-free checks against an extracted macOS development archive."""
+"""Extracted macOS archive checks without SigLIP2/E5 weights or host OCR."""
 
 import argparse
 from http.cookiejar import CookieJar
@@ -16,7 +16,7 @@ import time
 import urllib.error
 import urllib.request
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 
 def validate(archive: Path, report_path: Path):
@@ -113,6 +113,43 @@ def validate(archive: Path, report_path: Path):
                 ),
             )
             report["bundle"] = diagnostics
+
+            def private_ocr():
+                engine = bundle / "Contents/Frameworks/lens-ocr/bin/tesseract"
+                data = bundle / "Contents/Resources/lens-ocr/tessdata"
+                target = base / "ocr.png"
+                sample = Image.new("RGB", (1000, 1000), "white")
+                draw = ImageDraw.Draw(sample)
+                for y in range(20, 950, 40):
+                    draw.text(
+                        (20, y),
+                        "Invoice ABC-123 pizza sample document text",
+                        fill="black",
+                        font_size=28,
+                    )
+                sample.save(target)
+                env = {k: v for k, v in environment.items() if not k.startswith("DYLD_")}
+                env.update(PATH=str(base / "no-external-tools"), TESSDATA_PREFIX=str(data))
+                recognized = subprocess.run(
+                    [str(engine), str(target), "stdout", "-l", "eng+fra+ara", "--psm", "6", "tsv"],
+                    env=env,
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                    timeout=30,
+                )
+                assert "Invoice" in recognized.stdout and "ABC-123" in recognized.stdout
+                oriented = subprocess.run(
+                    [str(engine), str(target), "stdout", "-l", "osd", "--psm", "0"],
+                    env=env,
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                    timeout=30,
+                )
+                assert "Rotate:" in oriented.stdout and "Orientation confidence:" in oriented.stdout
+
+            check("private OCR recognition and orientation without host tools", private_ocr)
             check(
                 "stage worker dispatch",
                 lambda: run(
@@ -254,9 +291,12 @@ def validate(archive: Path, report_path: Path):
                         assert not next(c for c in task["result"]["checks"] if c["id"] == "models")[
                             "ok"
                         ]
-                        assert not next(c for c in task["result"]["checks"] if c["id"] == "ocr")[
-                            "ok"
-                        ]
+                        assert next(c for c in task["result"]["checks"] if c["id"] == "ocr")["ok"]
+                        assert set(task["result"]["ocr"]["installed_languages"]) == {
+                            "eng",
+                            "fra",
+                            "ara",
+                        }
                     finally:
                         process.terminate()
                         try:

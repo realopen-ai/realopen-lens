@@ -186,7 +186,7 @@ class LauncherView:
         ).pack(anchor="w", pady=(12, 0))
         ttk.Button(
             setup_controls,
-            text="Install OCR / languages ↗",
+            text="OCR help ↗",
             command=actions["ocr_help"],
             style="Secondary.Lens.TButton",
         ).pack(side="left", padx=10)

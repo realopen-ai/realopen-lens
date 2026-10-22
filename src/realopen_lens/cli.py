@@ -83,7 +83,9 @@ def doctor() -> None:
     import onnxruntime
 
     onnxruntime.disable_telemetry_events()
-    executable = shutil.which("tesseract")
+    from realopen_lens.ocr import runtime as ocr_runtime
+
+    executable = ocr_runtime.resolve(shutil.which("tesseract"))
     database = sqlite3.connect(":memory:")
     try:
         database.execute("CREATE VIRTUAL TABLE check_fts USING fts5(text)")
@@ -96,10 +98,20 @@ def doctor() -> None:
     }
     if executable:
         version = subprocess.run(
-            [executable, "--version"], capture_output=True, text=True, check=True
+            [executable, "--version"],
+            capture_output=True,
+            text=True,
+            check=True,
+            env=ocr_runtime.environment(executable),
+            timeout=10,
         )
         langs = subprocess.run(
-            [executable, "--list-langs"], capture_output=True, text=True, check=True
+            [executable, "--list-langs"],
+            capture_output=True,
+            text=True,
+            check=True,
+            env=ocr_runtime.environment(executable),
+            timeout=10,
         )
         result["tesseract_version"] = version.stdout.splitlines()[0]
         result["ocr_languages"] = langs.stdout.splitlines()[1:]

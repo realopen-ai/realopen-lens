@@ -41,6 +41,9 @@ def main():
     environment = {
         k: v for k, v in os.environ.items() if k not in {"PYTHONPATH", "PYTHONHOME", "VIRTUAL_ENV"}
     }
+    # Only the app's private engine/data may satisfy frozen inference acceptance.
+    environment["PATH"] = ""
+    environment["TESSDATA_PREFIX"] = "/nonexistent-host-tessdata"
     with tempfile.TemporaryDirectory(prefix="lens-frozen-") as directory:
         base = Path(directory)
         images, index = base / "images", base / "index"
@@ -71,7 +74,7 @@ def main():
             "--models",
             models,
             "--languages",
-            "eng",
+            "eng+fra+ara",
             "--siglip-precision",
             args.siglip_precision,
         )
@@ -92,7 +95,7 @@ def main():
             "--models",
             models,
             "--languages",
-            "eng",
+            "eng+fra+ara",
             "--siglip-precision",
             args.siglip_precision,
         )

@@ -3,9 +3,13 @@
 import hashlib
 import importlib.util
 import io
+import json
+import os
 from pathlib import Path
 
 import pytest
+
+from realopen_lens.ocr import runtime
 
 
 def packaging_module():
@@ -15,6 +19,92 @@ def packaging_module():
     result = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(result)
     return result
+
+
+@pytest.fixture
+def private_runtime(tmp_path, monkeypatch):
+    app = tmp_path / "Lens.app"
+    engine = app / "Contents/Frameworks/lens-ocr/bin/tesseract"
+    resources = app / "Contents/Resources/lens-ocr"
+    engine.parent.mkdir(parents=True)
+    engine.write_bytes(b"private engine")
+    (resources / "tessdata/configs").mkdir(parents=True)
+    tsv = resources / "tessdata/configs/tsv"
+    tsv.write_bytes(b"tessedit_create_tsv 1\n")
+    manifest = {
+        "version": 1,
+        "engine": "tesseract 5",
+        "files": [
+            {
+                "file": engine.relative_to(app).as_posix(),
+                "sha256": hashlib.sha256(engine.read_bytes()).hexdigest(),
+            }
+        ],
+        "tessdata": {},
+        "tsv_sha256": hashlib.sha256(tsv.read_bytes()).hexdigest(),
+    }
+    for name in ("eng", "fra", "ara", "osd"):
+        data = name.encode()
+        (resources / "tessdata" / f"{name}.traineddata").write_bytes(data)
+        manifest["tessdata"][name] = {"sha256": hashlib.sha256(data).hexdigest()}
+    (resources / "runtime.json").write_text(json.dumps(manifest), encoding="utf-8")
+    monkeypatch.setattr(runtime, "bundle_paths", lambda: (engine, resources))
+    return engine, resources, manifest
+
+
+def test_source_install_keeps_system_engine_and_environment(monkeypatch):
+    monkeypatch.setattr(runtime, "bundle_paths", lambda: None)
+    monkeypatch.setenv("TESSDATA_PREFIX", "user-selected-data")
+    assert runtime.resolve("system-tesseract") == "system-tesseract"
+    assert runtime.resolve(None) is None
+    assert runtime.environment("system-tesseract")["TESSDATA_PREFIX"] == "user-selected-data"
+    assert runtime.verify("system-tesseract") is None
+
+
+def test_private_engine_ignores_host_prefix_and_loader_overrides(private_runtime, monkeypatch):
+    engine, resources, _ = private_runtime
+    monkeypatch.setenv("TESSDATA_PREFIX", "wrong-host-data")
+    monkeypatch.setenv("DYLD_LIBRARY_PATH", "wrong-host-libraries")
+    assert runtime.resolve("host-tesseract") == str(engine)
+    assert runtime.resolve(None) == str(engine)
+    environment = runtime.environment(str(engine))
+    assert environment["TESSDATA_PREFIX"] == str(resources / "tessdata")
+    assert "DYLD_LIBRARY_PATH" not in environment
+    assert os.environ["TESSDATA_PREFIX"] == "wrong-host-data"
+    assert runtime.verify(str(engine))["engine"] == "tesseract 5"
+    assert runtime.fingerprint(str(engine)) is not None
+
+
+@pytest.mark.parametrize("part", ["engine", "ara", "osd", "tsv"])
+def test_damaged_private_resource_is_reported(private_runtime, part):
+    engine, resources, _ = private_runtime
+    path = (
+        engine
+        if part == "engine"
+        else (
+            resources / "tessdata/configs/tsv"
+            if part == "tsv"
+            else resources / "tessdata" / f"{part}.traineddata"
+        )
+    )
+    path.write_bytes(b"damaged")
+    with pytest.raises(ValueError, match="integrity check failed"):
+        runtime.verify(str(engine))
+
+
+def test_missing_private_engine_does_not_fall_back_to_homebrew(private_runtime):
+    engine, _, _ = private_runtime
+    engine.unlink()
+    with pytest.raises(ValueError, match="reinstall"):
+        runtime.resolve("homebrew-tesseract")
+
+
+def test_manifest_cannot_escape_bundle(private_runtime):
+    engine, resources, manifest = private_runtime
+    manifest["files"].append({"file": "../outside", "sha256": "ignored"})
+    (resources / "runtime.json").write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="escapes"):
+        runtime.verify(str(engine))
 
 
 @pytest.mark.parametrize("local_matches", [True, False])
