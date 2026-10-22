@@ -51,7 +51,9 @@ uv run --no-sync lens serve --index-dir runs/personal-index-fp32 --allow-root da
 
 Open **http://127.0.0.1:8765**. Use your existing index directory; a fresh directory
 starts an empty library. Models and Tesseract language packs must be installed
-before indexing. Compiled assets run locally without a Vite server or internet.
+before indexing when running from source. The macOS desktop bundle includes
+Tesseract with English, French, Arabic and orientation data. Compiled assets run
+locally without a Vite server or internet.
 
 ## What you'll be able to do
 

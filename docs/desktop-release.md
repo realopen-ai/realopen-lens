@@ -12,6 +12,7 @@ Run it from Actions on the reviewed commit. Windows/Linux builds remain separate
 ```sh
 uv sync --locked --extra web --group packaging --no-editable
 npm --prefix frontend ci
+brew install tesseract
 uv run --no-sync python packaging/build_macos.py
 uv run --no-sync python packaging/acceptance.py \
   dist/RealOpenLens-macos-arm64.zip \
@@ -20,8 +21,8 @@ uv run --no-sync python packaging/acceptance.py \
 
 Use a new output directory for each run. Existing evidence is never overwritten.
 The report binds all checks to the ZIP's SHA256 and records per-stage outcomes,
-errors and elapsed time. The ten model-free package checks include startup without
-external developer tools/OCR and missing-prerequisite reporting. Supplying `--models`
+errors and elapsed time. The eleven model-free package checks include startup without
+external developer tools/OCR, bundled recognition/orientation and missing-model reporting. Supplying `--models`
 also exercises real INT8 and FP32 frozen indexing, lexical/hybrid retrieval with
 OCR ground truth, cached refresh, resident encoder workers and HTTP startup/shutdown.
 Use `--precision int8` or `--precision fp32` to test one installed profile.
@@ -29,7 +30,9 @@ All indexes and fixture images are temporary; existing models are read in place.
 
 Without `--models`, the report explicitly records inference as **not_run**. A
 passing packaging-only run does not imply inference acceptance. CI intentionally
-does not download weights or install OCR. These checks run on an existing host;
+does not download model weights. Tesseract is installed on the build runner and
+copied into the artifact; pinned language data may be fetched during the build.
+Acceptance uses the extracted app with host OCR hidden from PATH. These checks run on an existing host;
 they do not establish fresh-OS installation, Finder privacy prompts or Gatekeeper
 behavior. No retrieval-quality metric is inferred from the synthetic invoice.
 
@@ -41,19 +44,19 @@ shasum -a 256 -c RealOpenLens-macos-arm64.zip.sha256
 
 ## OCR provisioning
 
-For this milestone, **Tesseract 5 and language data remain external prerequisites**.
-The app includes neither Homebrew nor an OCR installer. The Device setup card
-reports installed languages, preserves explicit preferences and links to the
-[official installation guide](https://tesseract-ocr.github.io/tessdoc/Installation.html).
-On a Mac with Homebrew already installed, that guide documents installing
-`tesseract` and, when additional languages are needed, `tesseract-lang`.
-Installing Homebrew/system software remains an explicit user action.
+The macOS ZIP includes **Tesseract 5 with English, French, Arabic and orientation
+detection data**, including its non-system dylibs. The target Mac needs no separate
+OCR installation. Device setup verifies bundled hashes and language availability.
+The launcher, frozen CLI and isolated workers all use the same private engine/data
+and do not inherit a host `TESSDATA_PREFIX` override.
 
-After installation, reopen/check Device setup. Finder's minimal PATH is extended
-with `/opt/homebrew/bin` and `/usr/local/bin`. Missing requested languages are
-reported; Lens does not substitute English silently. Gallery browsing remains
-available before OCR/models are installed. Model downloads require confirmation;
-normal inference stays local and offline.
+The build machine supplies Tesseract 5; use Homebrew or `--tesseract` to select it.
+The helper reuses matching local language files or fetches the four upstream files
+pinned by size/SHA256 in `packaging/tessdata.json`. Runtime libraries are discovered,
+copied and relocated, not downloaded during app startup. Their hashes/architectures
+are retained in the bundle manifest. Source installations still use system Tesseract
+and can use additional installed packs. Additional desktop language installation
+is not implemented. Model downloads remain explicit; inference stays offline.
 
 The launcher recommends INT8 SigLIP2 below 16 GiB RAM and FP32 at or above 16 GiB;
 saved/manual choices override this recommendation. E5 remains INT8 in both cases.
@@ -93,22 +96,22 @@ Validate the distributed signed archive with `packaging/acceptance.py` using
 This code path requires actual credentials and signed-runtime acceptance before
 being considered validated; development archive tests cannot establish that.
 
-## Clean-machine acceptance before public publication
+## Optional first-run checks
 
-Use a separate Mac/user or clean macOS VM with no checkout, Python, uv, Node,
-models or Tesseract. Retain a dated record with macOS version, architecture,
+These checks can be performed on an available Mac without a separate machine or VM.
+Retain a dated record with macOS version, architecture,
 archive checksum, outcomes and errors for each item below. Do not include personal
 photos, paths or credentials in a public report.
 
 1. Download the exact ZIP through a browser, verify its checksum, extract and move
    the application to Applications. Open it from Finder with its normal quarantine
    metadata intact. A signed release must pass Gatekeeper normally.
-2. Verify that the missing-model/OCR guidance appears and the empty gallery opens.
+2. Verify that missing-model guidance appears, bundled OCR passes and the empty gallery opens.
    Check dark/light layouts, collapse/expand behavior and folder selection.
 3. Confirm the model download explicitly. Test cancellation, retry, progress and
    checksum failure reporting; confirm completed downloads pass setup verification.
-4. Install Tesseract/languages using the documented external path. Verify detection
-   from Finder, missing-language errors, and successful explicit language selection.
+4. Verify bundled English/French/Arabic selection from Finder and errors for an
+   unavailable language. Host Tesseract and Homebrew are not required.
 5. Index a small disposable folder containing a known text image and a photograph.
    Observe live progress; verify the reference text, expected results and thumbnails.
    Restart Lens and verify the folder/results persist without reimporting.
@@ -117,8 +120,7 @@ photos, paths or credentials in a public report.
 7. Disable network access and repeat search/browse. Quit Lens; confirm its server
    stops. Check the occupied-port message without attaching to another service.
 
-This walkthrough is not yet recorded as completed. The host archive/inference
-checks provide complementary automated evidence, not a replacement.
+Automated archive acceptance provides repeatable checks alongside these manual steps.
 
 ## Publication
 
@@ -131,7 +133,7 @@ and in Python distribution license metadata. Refresh it against the actual froze
 inventory when dependency/runtime versions change. The project license does not
 replace these terms.
 
-After reviewed-commit CI, final archive acceptance, clean-machine acceptance
+After reviewed-commit CI, final archive acceptance
 and dependency-notice review, prepare a **draft prerelease** in
 GitHub Releases. Attach the exact validated ZIP and checksum, supported OS/architecture,
 OCR setup instructions and known limitations. Review diagnostic reports for local
