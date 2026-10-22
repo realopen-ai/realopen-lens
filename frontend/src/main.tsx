@@ -846,7 +846,7 @@ function App() {
             <img src="/assets/lens.svg" alt="" aria-hidden="true" />
           </span>
           <span>
-            Lens<span className="brand-small">by RealOpen</span>
+            Lens<span className="brand-small">by RealOpen AI</span>
           </span>
         </a>
         <div className="workspace-label">YOUR WORKSPACE</div>
