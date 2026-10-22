@@ -103,6 +103,14 @@ class Catalog:
             raise ValueError(f"Collection {name!r} not found; run 'lens index' first")
         return dict(row)
 
+    def collection_name(self, collection_id: str) -> str:
+        row = self.db.execute(
+            "SELECT name FROM collections WHERE id=?", (collection_id,)
+        ).fetchone()
+        if row is None:
+            raise ValueError("Source collection was removed from Lens")
+        return row["name"]
+
     def ensure_collection(self, name: str, root: Path) -> dict:
         if not name.strip() or len(name) > 128:
             raise ValueError("Collection name must contain 1–128 characters")

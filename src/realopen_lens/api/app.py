@@ -493,25 +493,26 @@ def create_app(
 
     @app.get("/api/training/models")
     def trained_models():
-        from realopen_lens.learning.registry import state, versions
+        from realopen_lens.learning.registry import named_state, versions
 
         datasets = []
         for path in sorted((root / "training-datasets").glob("*/dataset.json")):
             data = json.loads(path.read_text(encoding="utf-8"))
             datasets.append({"id": path.parent.name, "queries": len(data["sessions"])})
-        return {"versions": versions(root), "datasets": datasets, **state(root)}
+        return {"versions": versions(root), "datasets": datasets, **named_state(root)}
 
     @app.post("/api/training/activation")
     def activate_model(body: ActivationInput):
-        from realopen_lens.learning.registry import change
+        from realopen_lens.learning.registry import change, named_state
 
-        return change(
+        change(
             root,
             body.collection,
             body.model_version,
             acknowledge_experimental=body.acknowledge_experimental,
             rollback=body.rollback,
         )
+        return named_state(root)
 
     @app.get("/api/tasks")
     def tasks():

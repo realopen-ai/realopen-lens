@@ -95,7 +95,14 @@ def aliases_for_run(root: Path, run: dict, image_id: str) -> tuple[str, ...]:
 
         catalog = Catalog(root, readonly=True)
         try:
-            found, generation = catalog.snapshot(run["collection"])
+            if (
+                catalog.db.execute(
+                    "SELECT 1 FROM collections WHERE id=?", (run["collection_id"],)
+                ).fetchone()
+                is None
+            ):
+                return tuple(sorted(aliases))  # Historical feedback outlives unregistration.
+            found, generation = catalog.snapshot(catalog.collection_name(run["collection_id"]))
             if found["id"] == run["collection_id"]:
                 pixels = _pixels(root, load_manifest(catalog, generation))
                 group = _content(root, image_id, pixels)
