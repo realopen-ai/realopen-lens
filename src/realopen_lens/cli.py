@@ -400,6 +400,7 @@ def similar_images(
     ] = None,
     image_id: Annotated[str | None, typer.Option(help="Image ID in the active generation")] = None,
     collection: Annotated[str, typer.Option()] = "personal",
+    all_folders: Annotated[bool, typer.Option(help="Search every indexed folder")] = False,
     virtual_collection: Annotated[
         str | None, typer.Option(help="Restrict to this virtual collection ID")
     ] = None,
@@ -423,6 +424,28 @@ def similar_images(
     from realopen_lens.search import search_similar
 
     try:
+        if all_folders:
+            from realopen_lens.retrieval.library import LibrarySession
+            from realopen_lens.storage.catalog import default_directory
+
+            if virtual_collection or virtual_revision or siglip_precision:
+                raise ValueError("Library similarity cannot use folder-specific overrides")
+            session = LibrarySession(
+                index_dir=index_dir or default_directory(), models=models, threads=threads
+            )
+            try:
+                result = session.similar(
+                    image,
+                    image_id=image_id,
+                    collection=collection,
+                    limit=limit,
+                    include_self=include_self,
+                    save_run=save_run,
+                )
+                typer.echo(json.dumps(result, ensure_ascii=False, indent=2))
+            finally:
+                session.close()
+            return
         options: dict[str, Any] = dict(
             image_id=image_id,
             collection=collection,

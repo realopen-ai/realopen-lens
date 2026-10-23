@@ -291,20 +291,30 @@ class TaskManager:
                 )
                 payload = asdict(result)
                 status = result.status
-            elif kind == "search" and request.get("all_folders"):
+            elif kind in {"search", "similar"} and request.get("all_folders"):
                 if self.library_session is None:
                     self._release_session()
                     self.library_session = LibrarySession(
                         index_dir=self.root, models=self.models, threads=self.threads
                     )
-                payload = self.library_session.search(
-                    request["query"],
-                    limit=request["limit"],
-                    mode=request["mode"],
-                    use_feedback=request.get("use_feedback", True),
-                    save_run=request.get("save_run", False),
-                    on_progress=progress,
-                )
+                if kind == "similar":
+                    payload = self.library_session.similar(
+                        Path(request["upload"]) if request.get("upload") else None,
+                        image_id=request.get("image_id"),
+                        collection=collection,
+                        limit=request["limit"],
+                        save_run=request.get("save_run", False),
+                        on_progress=progress,
+                    )
+                else:
+                    payload = self.library_session.search(
+                        request["query"],
+                        limit=request["limit"],
+                        mode=request["mode"],
+                        use_feedback=request.get("use_feedback", True),
+                        save_run=request.get("save_run", False),
+                        on_progress=progress,
+                    )
                 status = "completed"
             elif kind == "search":
                 from realopen_lens.indexing.service import collection_status

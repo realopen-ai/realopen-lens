@@ -44,6 +44,7 @@ class SearchInput(ScopedInput):
 
 
 class SimilarInput(ScopedInput):
+    all_folders: bool = False
     image_id: str = Field(pattern=r"^[a-f0-9]{64}$")
     limit: int = Field(default=50, ge=1, le=100)
     save_run: bool = False
@@ -433,6 +434,8 @@ def create_app(
 
     @app.post("/api/tasks/similar", status_code=202)
     def similar(body: SimilarInput):
+        if body.all_folders and (body.virtual_collection or body.virtual_revision):
+            raise HTTPException(422, "Library similarity cannot use a folder virtual collection")
         return submit("similar", body.model_dump())
 
     @app.post("/api/tasks/index", status_code=202)
@@ -496,6 +499,7 @@ def create_app(
         request: Request,
         collection: str = "personal",
         save_run: bool = False,
+        all_folders: bool = False,
         virtual_collection: str | None = None,
         virtual_revision: int | None = None,
     ):
@@ -504,6 +508,8 @@ def create_app(
             virtual_collection=virtual_collection,
             virtual_revision=virtual_revision,
         )
+        if all_folders and (virtual_collection or virtual_revision):
+            raise HTTPException(422, "Library similarity cannot use a folder virtual collection")
         directory = root / "api-uploads"
         directory.mkdir(parents=True, exist_ok=True)
         path = directory / (identifier() + ".image")
@@ -524,6 +530,7 @@ def create_app(
                     "save_run": save_run,
                     "limit": 50,
                     "upload": str(path),
+                    "all_folders": all_folders,
                     "virtual_collection": virtual_collection,
                     "virtual_revision": virtual_revision,
                 },

@@ -478,3 +478,186 @@ def test_library_session_serializes_concurrent_queries(app, encoders, monkeypatc
     finally:
         release.set()
         session.close()
+
+
+def test_library_similarity_reuses_each_precision_and_excludes_query(app, tmp_path, encoders):
+    root, store, second, run = populate(app, tmp_path)
+    from realopen_lens.models.manager import digest
+
+    key = digest(root / "one.png")
+    session = LibrarySession(index_dir=store)
+    try:
+        trace = {}
+        result = session.similar(image_id=key, trace=trace, save_run=True)
+        assert len(result["results"]) == 2
+        assert all(key not in {r["image_id"], *r["duplicate_ids"]} for r in result["results"])
+        assert trace["reused_image_precisions"] == ["fp32", "int8"]
+        assert result["ranking"]["mixed_precision_experimental"]
+        assert not result["feedback"]["enabled"]
+        assert encoders == []
+        saved = saved_search(result["run_id"], index_dir=store)
+        assert saved["query"] == {"kind": "image", "image_id": key}
+        assert len(saved["library_sources"]) == 2
+        assert len(session.similar(root / "one.png", include_self=True)["results"]) == 3
+        with pytest.raises(ValueError, match="not in the source"):
+            session.similar(image_id="0" * 64)
+    finally:
+        session.close()
+
+
+def test_library_similarity_encodes_only_missing_precision(app, tmp_path, monkeypatch):
+    from realopen_lens.models.manager import digest
+    from realopen_lens.retrieval import images
+
+    root, store, second, run = populate(app, tmp_path)
+    image(root / "unique.png", "yellow")
+    run()
+    calls = []
+    monkeypatch.setattr(images, "verify_image_encoder", lambda *a: None)
+
+    def encode(path, models, threads, precision):
+        calls.append(precision)
+        vector = np.zeros(768, dtype=np.float32)
+        vector[0] = 1
+        return vector
+
+    monkeypatch.setattr(images, "image_vector", encode)
+    session = LibrarySession(index_dir=store)
+    try:
+        result = session.similar(image_id=digest(root / "unique.png"))
+        assert calls == ["fp32"]
+        assert len(result["results"]) == 3
+        calls.clear()
+        external = tmp_path / "external.png"
+        image(external, "purple")
+        session.similar(external)
+        assert sorted(calls) == ["fp32", "int8"]
+
+        def changed(path, *args):
+            image(path, "orange")
+            return encode(path, *args)
+
+        monkeypatch.setattr(images, "image_vector", changed)
+        with pytest.raises(ValueError, match="Query image changed"):
+            session.similar(external)
+    finally:
+        session.close()
+
+
+def test_library_similarity_api_and_cli(web, encoders):
+    from typer.testing import CliRunner
+    from realopen_lens.cli import app as cli
+
+    client, root, store, run = web
+    folder = "personal"
+    key = client.get(f"/api/collections/{folder}/images").json()["results"][0]["image_id"]
+    response = client.post(
+        "/api/tasks/similar",
+        json={
+            "collection": folder,
+            "image_id": key,
+            "all_folders": True,
+            "save_run": True,
+        },
+    )
+    assert response.status_code == 202
+    task = completed(client, response.json()["id"])
+    assert task["status"] == "completed", task
+    assert task["all_folders"]
+    assert all(r["image_id"] != key for r in task["result"]["results"])
+    assert (
+        client.post(
+            "/api/tasks/similar",
+            json={
+                "collection": folder,
+                "image_id": key,
+                "all_folders": True,
+                "virtual_collection": "a" * 32,
+            },
+        ).status_code
+        == 422
+    )
+    uploaded = client.post(
+        f"/api/tasks/upload?collection={folder}&all_folders=true",
+        content=(root / "red.png").read_bytes(),
+    )
+    assert uploaded.status_code == 202
+    upload_task = completed(client, uploaded.json()["id"])
+    assert upload_task["status"] == "completed", upload_task
+    assert upload_task["all_folders"]
+    result = CliRunner().invoke(
+        cli,
+        [
+            "similar",
+            "--image-id",
+            key,
+            "--collection",
+            folder,
+            "--all-folders",
+            "--index-dir",
+            str(store),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+
+
+def test_library_similarity_matches_single_folder_without_models(app):
+    from realopen_lens.retrieval.images import search_similar
+    from realopen_lens.models.manager import digest
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    image(root / "two.png", "blue")
+    image(root / "three.png", "green")
+    run()
+    key = digest(root / "one.png")
+    expected = search_similar(image_id=key, index_dir=store)
+    session = LibrarySession(index_dir=store)
+    try:
+        actual = session.similar(image_id=key)
+        assert [r["image_id"] for r in actual["results"]] == [r.image_id for r in expected]
+        assert [r["visual_similarity"] for r in actual["results"]] == pytest.approx(
+            [r.visual_similarity for r in expected]
+        )
+        assert not actual["ranking"]["mixed_precision_experimental"]
+    finally:
+        session.close()
+
+
+def test_library_similarity_excludes_cross_format_pixel_copies(app, tmp_path, monkeypatch):
+    from realopen_lens.organization.duplicates import scan
+    from realopen_lens.retrieval import images
+
+    root, store, calls, run = app
+    image(root / "one.png")
+    run()
+    second = tmp_path / "other"
+    second.mkdir()
+    image(second / "copy.bmp")
+    run(root=str(second), collection="other")
+    scan(store, "personal")
+    scan(store, "other")
+    session = LibrarySession(index_dir=store)
+    try:
+        assert session.similar(root / "one.png")["results"] == []
+        external = tmp_path / "external.tiff"
+        image(external)
+        monkeypatch.setattr(images, "verify_image_encoder", lambda *a: None)
+        monkeypatch.setattr(images, "image_vector", lambda *a: np.eye(1, 768)[0])
+        assert session.similar(external)["results"] == []
+        recorded = session.similar(external, include_self=True, save_run=True)
+        assert len(recorded["results"]) == 1
+        change_judgment(
+            recorded["run_id"], recorded["results"][0]["image_id"], "irrelevant", index_dir=store
+        )
+        # Image judgments are retained for export, not exact-text query memory.
+        assert len(session.similar(external, include_self=True)["results"]) == 1
+
+        def cancel(event):
+            if event["phase"] == "library_encoding":
+                raise KeyboardInterrupt()
+
+        with pytest.raises(KeyboardInterrupt):
+            session.similar(external, on_progress=cancel)
+    finally:
+        session.close()
