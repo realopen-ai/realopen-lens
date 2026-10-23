@@ -77,6 +77,7 @@ class SetupInput(Input):
 
 
 class VirtualNameInput(Input):
+    all_folders: bool = False
     name: str = Field(min_length=1, max_length=80)
 
 
@@ -85,6 +86,7 @@ class VirtualRenameInput(VirtualNameInput):
 
 
 class VirtualRevisionInput(Input):
+    all_folders: bool = False
     revision: int = Field(ge=1)
 
 
@@ -372,32 +374,52 @@ def create_app(
         return review(root, body.collection, pair_id, body.state)
 
     @app.get("/api/virtual-collections")
-    def virtual_collections(collection: str = "personal"):
-        return organizing.list_collections(root, collection)
+    def virtual_collections(collection: str = "personal", all_folders: bool = False):
+        return organizing.list_collections(root, collection, all_folders=all_folders)
 
     @app.post("/api/virtual-collections", status_code=201)
     def create_virtual(body: VirtualNameInput):
-        return organizing.create(root, body.collection, body.name)
+        return organizing.create(root, body.collection, body.name, all_folders=body.all_folders)
 
     @app.patch("/api/virtual-collections/{virtual_id}")
     def rename_virtual(virtual_id: str, body: VirtualRenameInput):
-        return organizing.rename(root, body.collection, virtual_id, body.name, body.revision)
+        return organizing.rename(
+            root,
+            body.collection,
+            virtual_id,
+            body.name,
+            body.revision,
+            all_folders=body.all_folders,
+        )
 
     @app.delete("/api/virtual-collections/{virtual_id}")
     def delete_virtual(virtual_id: str, body: VirtualRevisionInput):
-        organizing.remove(root, body.collection, virtual_id, body.revision)
+        organizing.remove(
+            root, body.collection, virtual_id, body.revision, all_folders=body.all_folders
+        )
         return {"deleted": True}
 
     @app.post("/api/virtual-collections/{virtual_id}/members")
     def add_virtual_members(virtual_id: str, body: VirtualMembersInput):
         return organizing.change_members(
-            root, body.collection, virtual_id, body.image_ids, body.revision
+            root,
+            body.collection,
+            virtual_id,
+            body.image_ids,
+            body.revision,
+            all_folders=body.all_folders,
         )
 
     @app.delete("/api/virtual-collections/{virtual_id}/members")
     def remove_virtual_members(virtual_id: str, body: VirtualMembersInput):
         return organizing.change_members(
-            root, body.collection, virtual_id, body.image_ids, body.revision, remove=True
+            root,
+            body.collection,
+            virtual_id,
+            body.image_ids,
+            body.revision,
+            remove=True,
+            all_folders=body.all_folders,
         )
 
     @app.get("/api/virtual-collections/{virtual_id}/images")
@@ -408,34 +430,70 @@ def create_app(
         limit: int = 60,
         revision: int | None = None,
         generation: str | None = None,
+        all_folders: bool = False,
     ):
-        return organizing.browse(root, collection, virtual_id, offset, limit, revision, generation)
+        return organizing.browse(
+            root,
+            collection,
+            virtual_id,
+            offset,
+            limit,
+            revision,
+            generation,
+            all_folders=all_folders,
+        )
+
+    def library_scope(virtual_id: str | None, revision: int | None):
+        if virtual_id:
+            from realopen_lens.organization.collections import resolve_scope
+            from realopen_lens.storage.organization import CollectionConflict
+
+            try:
+                resolve_scope(root, "library-v1", virtual_id, revision)
+            except CollectionConflict:
+                raise
+            except ValueError as error:
+                raise HTTPException(422, str(error)) from error
+        elif revision is not None:
+            raise HTTPException(422, "A virtual revision requires a virtual collection")
 
     @app.post("/api/tasks/search", status_code=202)
     def search(body: SearchInput):
-        if body.all_folders and (body.virtual_collection or body.virtual_revision):
-            raise HTTPException(422, "Library search cannot use a folder virtual collection")
+        if body.all_folders:
+            library_scope(body.virtual_collection, body.virtual_revision)
         request = body.model_dump()
         if body.all_folders:
             request["collection"] = "All folders"
         return submit("search", request)
 
     @app.get("/api/library/hidden")
-    def library_hidden(query: str, offset: int = 0, limit: int = 50):
+    def library_hidden(
+        query: str,
+        offset: int = 0,
+        limit: int = 50,
+        virtual_collection: str | None = None,
+        virtual_revision: int | None = None,
+    ):
         from realopen_lens.retrieval.library import LibrarySession
 
         session = LibrarySession(index_dir=root)
         try:
             return session.search(
-                query, mode="lexical", hidden_only=True, offset=offset, limit=limit
+                query,
+                mode="lexical",
+                hidden_only=True,
+                offset=offset,
+                limit=limit,
+                virtual_collection=virtual_collection,
+                virtual_revision=virtual_revision,
             )
         finally:
             session.close()
 
     @app.post("/api/tasks/similar", status_code=202)
     def similar(body: SimilarInput):
-        if body.all_folders and (body.virtual_collection or body.virtual_revision):
-            raise HTTPException(422, "Library similarity cannot use a folder virtual collection")
+        if body.all_folders:
+            library_scope(body.virtual_collection, body.virtual_revision)
         return submit("similar", body.model_dump())
 
     @app.post("/api/tasks/index", status_code=202)
@@ -508,8 +566,8 @@ def create_app(
             virtual_collection=virtual_collection,
             virtual_revision=virtual_revision,
         )
-        if all_folders and (virtual_collection or virtual_revision):
-            raise HTTPException(422, "Library similarity cannot use a folder virtual collection")
+        if all_folders:
+            library_scope(virtual_collection, virtual_revision)
         directory = root / "api-uploads"
         directory.mkdir(parents=True, exist_ok=True)
         path = directory / (identifier() + ".image")
