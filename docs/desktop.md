@@ -1,5 +1,8 @@
 # Desktop build (experimental)
 
+For the native Windows x64 ZIP, first-run instructions and Windows CI checks, see
+[Windows desktop packaging](desktop-windows.md). The macOS instructions follow.
+
 The Finder/Dock application icon uses the mint Lens mark. Its source is
 `frontend/public/assets/lens.svg` (also the gallery mark and favicon);
 `packaging/icons.py` generates PNG/ICNS/ICO assets
@@ -38,7 +41,7 @@ For a new library:
 1. Choose the model precision and an existing model folder, or explicitly confirm
    **Download models / cancel**. Downloads retain byte progress and cancellation.
 2. Review **Text recognition**. The macOS app includes Tesseract 5, English,
-   French, Arabic and orientation data. Setup verifies these private resources;
+   French, Arabic and orientation data (also included in the Windows ZIP). Setup verifies these private resources;
    Homebrew or a separate OCR installation is not needed on the target Mac.
    Source installations still use their installed Tesseract/languages.
 3. Leave OCR languages blank to detect a usable installed selection, or specify
@@ -192,8 +195,8 @@ log; startup timeouts and forced kills fail the check.
 Successful development ZIPs and always-uploaded diagnostics have seven-day artifact
 retention. The JSON report records individual check outcomes/timing and is written
 even on failure; build/server logs are retained alongside it. These artifacts are
-not notarized releases. GUI usability, real inference, model downloading and
-Windows/Linux native packaging remain separate validation work.
+not notarized releases. Interactive GUI usability, model downloading, real-model
+Windows inference and Linux native packaging remain separate validation work.
 
 The macOS arm64 development build was exercised with real local INT8 models:
 frozen indexing completed all four stages without failed/degraded files, OCR
@@ -206,12 +209,10 @@ with existing models and Tesseract; they do not establish clean-machine setup or
 retrieval quality. Download progress/checksum/cancellation were tested with controlled
 responses; a fresh network model download was not executed.
 
-The launcher uses portable Tk/Python APIs and the spec emits a directory executable
-on Windows/Linux. These outputs require native builds and runtime validation; a
-macOS build cannot establish support on those platforms. Native folder permissions,
-Native installer packaging remains release work. Developer ID signing/notarization is optional for the experimental
-ad-hoc signed prerelease. This is a macOS
-packaging milestone, not a three-platform release.
+Windows has its own native build and extracted-package CI workflow; see the Windows
+guide above for its scope. Linux desktop packaging remains future work. Developer
+ID signing/notarization is optional for the experimental macOS ad-hoc signed
+prerelease.
 
 See [desktop release readiness](desktop-release.md) for archive acceptance,
 checksums, release candidates, signing/notarization and clean-machine acceptance.
