@@ -7,6 +7,11 @@ permissions:
   contents: read
 
 jobs:
+  windows:
+    uses: ./.github/workflows/desktop-windows.yml
+    with:
+      retention-days: 30
+
   macos:
     runs-on: macos-15
     timeout-minutes: 35

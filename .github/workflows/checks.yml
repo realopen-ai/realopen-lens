@@ -67,6 +67,7 @@ jobs:
               - '.gitattributes'
               - '.github/workflows/checks.yml'
               - '.github/workflows/desktop-candidate.yml'
+              - '.github/workflows/desktop-windows.yml'
             gallery:
               - 'frontend/**'
               - 'src/realopen_lens/api/**'
@@ -151,6 +152,12 @@ jobs:
           path: frontend/test-results/
           if-no-files-found: ignore
           retention-days: 7
+
+  desktop-windows:
+    name: Desktop package (Windows x64)
+    needs: changes
+    if: needs.changes.outputs.desktop == 'true'
+    uses: ./.github/workflows/desktop-windows.yml
 
   desktop-macos:
     name: Desktop package (macOS arm64)
