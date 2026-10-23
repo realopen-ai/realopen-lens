@@ -14,6 +14,7 @@ export interface VirtualCollection {
 
 export function VirtualCollections({
   collection,
+  allFolders = false,
   groups,
   activeId,
   creating,
@@ -23,6 +24,7 @@ export function VirtualCollections({
   onCreated,
 }: {
   collection: string;
+  allFolders?: boolean;
   groups: VirtualCollection[];
   activeId: string | null;
   creating: boolean;
@@ -100,6 +102,7 @@ export function VirtualCollections({
       if (creating) {
         const created = await post<{ id: string }>("/virtual-collections", {
           collection,
+          all_folders: allFolders,
           name,
         });
         id = created.id;
@@ -110,6 +113,7 @@ export function VirtualCollections({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             collection,
+            all_folders: group!.collection_id === "library-v1",
             revision: group!.revision,
             ...(remove ? {} : { name }),
           }),
@@ -161,7 +165,12 @@ export function VirtualCollections({
                 aria-current={activeId === value.id ? "page" : undefined}
                 onClick={() => onBrowse(value)}
               >
-                <span>{value.name}</span>
+                <span>
+                  {value.name}
+                  {value.collection_id === "library-v1" && (
+                    <small className="scope-label"> · All folders</small>
+                  )}
+                </span>
                 <span className="virtual-count">{value.available_count}</span>
               </button>
               <button
@@ -216,7 +225,7 @@ export function VirtualCollections({
               <p>
                 {deleting
                   ? `Remove “${group?.name || name}” and its memberships. Original image files stay in their source folders.`
-                  : `Organize images from ${collection}. Membership is saved separately from the indexed files.`}
+                  : `Organize images from ${group?.collection_id === "library-v1" || (!editing && allFolders) ? "all indexed folders" : collection}. Membership is saved separately from the indexed files.`}
               </p>
               {error && (
                 <p className="error" role="alert">
@@ -332,6 +341,7 @@ export function SelectionToolbar({
           {groups.map((group) => (
             <option value={group.id} key={group.id}>
               {group.name}
+              {group.collection_id === "library-v1" ? " (All folders)" : ""}
             </option>
           ))}
         </select>

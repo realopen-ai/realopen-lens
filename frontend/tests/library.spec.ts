@@ -144,7 +144,7 @@ test("library search preserves source media and feedback scope", async ({
   );
   await expect(
     page.getByLabel("Select pizza.png", { exact: true }),
-  ).toBeDisabled();
+  ).toBeEnabled();
   await page.getByText("Query feedback enabled", { exact: true }).click();
   await page
     .getByRole("button", { name: "Show hidden images", exact: true })
