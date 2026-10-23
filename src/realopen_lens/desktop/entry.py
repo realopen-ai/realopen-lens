@@ -10,6 +10,18 @@ WORKERS = {
 
 
 def main():
+    if sys.platform == "win32":
+        # Frozen worker pipes and CLI JSON use UTF-8 independently of the user's
+        # Windows code page. Reconfigure each child too, before reading requests.
+        for stream in (sys.stdin, sys.stdout, sys.stderr):
+            if stream is not None and hasattr(stream, "reconfigure"):
+                stream.reconfigure(encoding="utf-8")
+    if sys.argv[1:] == ["--check-gui"]:
+        import json
+        from realopen_lens.desktop.diagnostics import inspect_gui
+
+        print(json.dumps(inspect_gui()))
+        return
     if sys.argv[1:] == ["--check-bundle"]:
         import json
         from realopen_lens.desktop.diagnostics import inspect_bundle

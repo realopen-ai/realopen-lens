@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 import urllib.request
@@ -60,6 +61,7 @@ def main():
                 env=environment,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
                 timeout=180,
             )
             if result.returncode:
@@ -106,6 +108,7 @@ def main():
             env=environment,
             capture_output=True,
             text=True,
+            encoding="utf-8",
             timeout=120,
             input="".join(
                 json.dumps(
@@ -146,6 +149,7 @@ def main():
                 env=environment,
                 stdout=log,
                 stderr=log,
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == "win32" else 0,
             )
             try:
                 for _ in range(100):
@@ -198,18 +202,35 @@ def main():
                     )
                 )
             finally:
-                process.terminate()
+                if sys.platform == "win32":
+                    try:
+                        subprocess.run(
+                            [
+                                sys.executable,
+                                str(Path(__file__).with_name("windows_signal.py")),
+                                str(process.pid),
+                            ],
+                            check=True,
+                            timeout=10,
+                            capture_output=True,
+                        )
+                    except Exception:
+                        process.kill()
+                        process.wait(timeout=5)
+                        raise
+                else:
+                    process.terminate()
                 try:
                     process.wait(timeout=20)
                 except subprocess.TimeoutExpired:
                     process.kill()
                     process.wait()
                     raise TimeoutError("Frozen gallery required forced shutdown")
-                assert process.returncode == 0 or (
-                    process.returncode == -15
-                    and "Application shutdown complete"
-                    in (base / "server.log").read_text(encoding="utf-8")
-                ), "Frozen gallery did not shut down cleanly"
+                expected = (0, 3221225786, -1073741510) if sys.platform == "win32" else (0, -15)
+                assert process.returncode in expected, "Frozen gallery did not shut down cleanly"
+                assert "Application shutdown complete" in (base / "server.log").read_text(
+                    encoding="utf-8"
+                ), "Frozen gallery shutdown did not complete"
         assert hashlib.sha256((images / "invoice.png").read_bytes()).hexdigest() == original
 
 
