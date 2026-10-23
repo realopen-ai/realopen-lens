@@ -310,3 +310,8 @@ The **Duplicate groups** panel scans the selected source with live SSE progress,
 then shows exact pixel groups and reviewable near-duplicate suggestions. Scanning
 enables exact-copy collapse in subsequent searches; folder browsing retains file
 identities. See [duplicate groups](duplicate-groups.md) for refresh and review rules.
+
+
+Indexing progress distinguishes [processed and cached stage work](stage-cache.md),
+including an OCR summary at completion. A refresh does not imply rerunning OCR on
+every indexed image.
