@@ -35,6 +35,7 @@ class ScopedInput(Input):
 
 
 class SearchInput(ScopedInput):
+    all_folders: bool = False
     query: str = Field(min_length=1, max_length=4096)
     mode: Literal["hybrid", "visual", "lexical", "semantic"] = "hybrid"
     limit: int = Field(default=50, ge=1, le=100)
@@ -320,6 +321,24 @@ def create_app(
             raise HTTPException(404, str(error)) from error
         return Response(data, media_type=mime)
 
+    @app.get("/api/sources/{collection_id}/images/{image_id}/{kind}")
+    def source_image(
+        collection_id: str,
+        image_id: str,
+        kind: Literal["thumbnail", "original"],
+        generation: str | None = None,
+    ):
+        from realopen_lens.storage.catalog import Catalog
+
+        catalog = Catalog(root, readonly=True)
+        try:
+            collection = catalog.collection_name(collection_id)
+        except ValueError as error:
+            raise HTTPException(404, str(error)) from error
+        finally:
+            catalog.close()
+        return image(collection, image_id, kind, generation)
+
     def submit(kind: str, body: dict):
         try:
             return app.state.manager.submit(kind, body)
@@ -393,7 +412,24 @@ def create_app(
 
     @app.post("/api/tasks/search", status_code=202)
     def search(body: SearchInput):
-        return submit("search", body.model_dump())
+        if body.all_folders and (body.virtual_collection or body.virtual_revision):
+            raise HTTPException(422, "Library search cannot use a folder virtual collection")
+        request = body.model_dump()
+        if body.all_folders:
+            request["collection"] = "All folders"
+        return submit("search", request)
+
+    @app.get("/api/library/hidden")
+    def library_hidden(query: str, offset: int = 0, limit: int = 50):
+        from realopen_lens.retrieval.library import LibrarySession
+
+        session = LibrarySession(index_dir=root)
+        try:
+            return session.search(
+                query, mode="lexical", hidden_only=True, offset=offset, limit=limit
+            )
+        finally:
+            session.close()
 
     @app.post("/api/tasks/similar", status_code=202)
     def similar(body: SimilarInput):

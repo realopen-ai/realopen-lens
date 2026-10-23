@@ -327,6 +327,8 @@ def export_feedback(output: Path, *, index_dir: Path | None = None, overwrite: b
                         record["duplicate_ids"] = result["duplicate_ids"]
                     if "scope" in run:
                         record["scope"] = run["scope"]
+                    if "library_sources" in run:
+                        record["library_sources"] = run["library_sources"]
                     stream.write(json.dumps(record, ensure_ascii=False, allow_nan=False) + "\n")
                     count += 1
                 stream.flush()

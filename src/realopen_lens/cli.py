@@ -247,6 +247,7 @@ def show_status(
 @app.command("search")
 def find_images(
     query: Annotated[str, typer.Argument()],
+    all_folders: Annotated[bool, typer.Option(help="Search every indexed folder")] = False,
     collection: Annotated[str, typer.Option()] = "personal",
     virtual_collection: Annotated[
         str | None, typer.Option(help="Restrict to this virtual collection ID")
@@ -290,6 +291,37 @@ def find_images(
                 semantic=50 if semantic_candidates is None else semantic_candidates,
                 lexical=50 if lexical_candidates is None else lexical_candidates,
             )
+        if all_folders:
+            from realopen_lens.retrieval.library import LibrarySession
+            from realopen_lens.storage.catalog import default_directory
+
+            if (
+                virtual_collection
+                or virtual_revision
+                or reranker
+                or depths
+                or siglip_precision
+                or collection != "personal"
+            ):
+                raise ValueError("Library search cannot use folder-specific overrides")
+            session = LibrarySession(
+                index_dir=index_dir or default_directory(), models=models, threads=threads
+            )
+            try:
+                while query.strip():
+                    result = session.search(
+                        query, limit=limit, mode=mode, use_feedback=feedback, save_run=save_run
+                    )
+                    typer.echo(json.dumps(result, ensure_ascii=False, indent=2))
+                    if not interactive:
+                        break
+                    try:
+                        query = input("Search (empty line exits): ")
+                    except EOFError:
+                        break
+            finally:
+                session.close()
+            return
         options: dict[str, Any] = dict(
             limit=limit,
             mode=mode,
