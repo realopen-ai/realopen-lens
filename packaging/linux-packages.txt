@@ -1,0 +1,10 @@
+# Build-time OCR relocation and native launcher smoke checks (Ubuntu 24.04).
+tesseract-ocr
+patchelf
+xvfb
+xauth
+libx11-6
+libxext6
+libxft2
+libxrender1
+fonts-dejavu-core
