@@ -5,8 +5,9 @@ a text query. This searches the indexed folders in the current workspace. Result
 available source paths; originals remain untouched.
 
 Selecting a folder restricts browsing and search to that folder. Virtual
-collections, image similarity and bulk organization remain folder-scoped. From a
-library result, **Similar** searches the representative image's source folder.
+collections and bulk organization remain folder-scoped. **Similar** searches the
+currently selected scope: all folders from library results, or the selected folder.
+The image-search button also accepts a local query image in either scope.
 
 ## CLI and Python
 
@@ -14,6 +15,9 @@ library result, **Similar** searches the representative image's source folder.
 lens search "pizza" --all-folders --index-dir /path/to/workspace --limit 50
 lens search "invoice number" --all-folders --index-dir /path/to/workspace --mode lexical
 lens search "pizza" --all-folders --index-dir /path/to/workspace --interactive
+lens similar /path/to/query.jpg --all-folders --index-dir /path/to/workspace
+lens similar --image-id FULL_IMAGE_ID --collection photos --all-folders \
+  --index-dir /path/to/workspace
 ```
 
 Library CLI output is an object containing `results`, `ranking`, feedback state
@@ -67,6 +71,26 @@ metadata, OCR text, scores and an in-memory lexical index scale with library siz
 The initial implementation limits searches to 256 folders and 100,000 indexed
 image entries. It does not create a second permanent vector index.
 
+## Image similarity
+
+`LibrarySession.similar(image_path)` or `.similar(image_id=..., collection=...)`
+searches the same captured library snapshots by visual cosine similarity. The
+source collection identifies an indexed query; it does not restrict the results.
+Existing vectors for the exact query bytes are reused independently per precision.
+Only missing precisions require the matching vision model and a disposable image
+encoder process. Text workers are released first; vision workers run sequentially.
+No text encoder or E5 inference is used for image queries.
+
+The original query file must be available and unchanged. Query bytes and published
+exact-pixel aliases are excluded by default; `--include-self` overrides exclusion.
+Mixed-precision similarity is experimental too. The text relevance benchmark does
+not establish image-query retrieval quality.
+
+`all_folders: true` also works with `POST /api/tasks/similar` (indexed query) and
+`POST /api/tasks/upload?all_folders=true` (uploaded query). Both use normal queued
+jobs, progress and cancellation. Saved image-search judgments are retained for
+export; they do not create or apply exact-text query memory.
+
 ## Duplicates and feedback
 
 Identical file bytes collapse across folders automatically. Published duplicate
@@ -76,7 +100,7 @@ hidden automatically. If the same content has both precisions, a deterministic
 FP32 representative supplies its scores; other locations remain attached.
 
 **Save for feedback** records the library search and its source generations.
-Relevant/irrelevant judgments apply to that exact query across the library. They
+For text searches, relevant/irrelevant judgments apply to that exact query across the library. They
 are separate from folder and virtual-collection judgments. **Show hidden images**
 lets you review and clear library judgments without model inference.
 

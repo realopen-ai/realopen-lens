@@ -152,7 +152,7 @@ inventory, copyright notices and license texts.
 - [x] Add folder management, virtual collections, and reviewable duplicate groups.
 - [x] Add opt-in [automatic folder refresh](docs/automatic-refresh.md) with live progress.
 - [x] Build the local image gallery with live task progress.
-- [x] Add [library-wide text search](docs/library-search.md) across INT8/FP32 folders.
+- [x] Add [library-wide text and image search](docs/library-search.md) across INT8/FP32 folders.
 - [x] Package an experimental macOS desktop launcher with device setup guidance.
 - [ ] Expand independent multilingual OCR/relevance review before promoting learned ranking.
 - [ ] Compare a small neural reranker against hybrid and logistic baselines.

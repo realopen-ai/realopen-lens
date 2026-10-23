@@ -135,3 +135,21 @@ Raw records and configurations remain in the ignored local directories:
 
 The configurable runner is `benchmarks/experiments/library_search.py`; user-facing
 behavior and limitations are described in [Library search](../library-search.md).
+
+
+## Image-similarity extension
+
+Library image queries were checked separately from the 357 text queries above.
+Two real indexed queries, one from each precision partition of the saved mixed
+library, returned 50 results each and excluded the query's exact-content group.
+Each query reused its stored vector and encoded the missing precision with the
+actual vision model. Same-precision result scores matched the existing folder
+similarity path within `1e-5`. A native API job also completed with 50 results and
+SSE delivery. Individual outputs, source provenance, progress phases and score
+comparisons are retained locally in `runs/library-search-v1/similarity-native.json`.
+
+These are functional checks, not independent image-query relevance judgments or
+a replacement for the text-query metrics. Regression coverage additionally checks
+single-folder rank/score parity without models, cross-format self-exclusion,
+external image encoding, file mutation, cancellation, recording, API uploads and
+CLI routing. Mixed-precision similarity remains explicitly experimental.

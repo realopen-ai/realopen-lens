@@ -4,6 +4,11 @@ Image queries search the visual embeddings of a saved collection using SigLIP2.
 This is useful for finding related photographs, screenshots with similar layouts,
 and visually similar documents or diagrams. It works offline after indexing.
 
+For [library-wide similarity](library-search.md#image-similarity), add
+`--all-folders`, or select **All folders** in the gallery before using **Similar**
+or uploading an image. Mixed-precision library similarity remains experimental.
+The examples below describe single-folder search.
+
 ## Command line
 
 Use an image anywhere on your local disk:
@@ -26,7 +31,8 @@ dimensions, OCR preview, visual similarity, processing status and issues.
 
 By default the query image is excluded by its SHA256 content ID, including all
 byte-identical copies. Add `--include-self` to return it. Re-encoded or resized
-copies have different IDs and can appear in the results. Scores are cosine
+copies have different IDs. Published duplicate scans also exclude identical
+decoded-pixel copies; approximate copies can still appear in results. Scores are cosine
 similarities, not probabilities of relevance or proof of duplication.
 
 The collection determines INT8 or FP32 precision automatically. An optional
