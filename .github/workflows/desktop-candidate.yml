@@ -11,6 +11,7 @@ jobs:
     uses: ./.github/workflows/desktop-windows.yml
     with:
       retention-days: 30
+      candidate: true
 
   macos:
     uses: ./.github/workflows/desktop-macos.yml

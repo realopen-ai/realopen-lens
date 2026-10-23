@@ -1,0 +1,49 @@
+name: Set up desktop build dependencies
+description: Shared locked Python/npm setup and verified OCR-data caching
+outputs:
+  image-version:
+    description: Hosted runner image version for native compiler cache identity
+    value: ${{ steps.image.outputs.version }}
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@v6
+      with:
+        version: "0.8.5"
+        enable-cache: true
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "22"
+        cache: npm
+        cache-dependency-path: frontend/package-lock.json
+    - name: Install locked Python dependencies
+      shell: bash
+      run: |
+        uv python install 3.12
+        uv sync --locked --python 3.12 --extra web --group packaging --no-editable
+    - name: Identify runner image
+      id: image
+      shell: bash
+      run: uv run --no-sync python -c 'import os; print("version=" + os.environ["ImageVersion"])' >> "$GITHUB_OUTPUT"
+    - name: Check Tcl/Tk availability
+      shell: bash
+      run: uv run --no-sync python -c "import tkinter; print(tkinter.Tcl().eval('info patchlevel'))"
+    - name: Install locked gallery dependencies
+      shell: bash
+      run: npm --prefix frontend ci --prefer-offline --no-audit --no-fund
+    - name: Restore pinned OCR language data
+      id: tessdata
+      uses: actions/cache/restore@v4
+      with:
+        path: build/tessdata
+        key: ${{ runner.os }}-${{ runner.arch }}-tessdata-v1-${{ hashFiles('packaging/tessdata.json') }}
+    - name: Verify or populate OCR language cache
+      shell: bash
+      run: uv run --no-sync python packaging/prepare_tessdata.py --cache-dir build/tessdata
+    - name: Save verified OCR language data
+      if: steps.tessdata.outputs.cache-hit != 'true'
+      continue-on-error: true
+      uses: actions/cache/save@v4
+      with:
+        path: build/tessdata
+        key: ${{ steps.tessdata.outputs.cache-primary-key }}
