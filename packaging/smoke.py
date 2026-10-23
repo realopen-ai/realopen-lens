@@ -226,11 +226,13 @@ def main():
                     process.kill()
                     process.wait()
                     raise TimeoutError("Frozen gallery required forced shutdown")
-                expected = (0, 3221225786, -1073741510) if sys.platform == "win32" else (0, -15)
-                assert process.returncode in expected, "Frozen gallery did not shut down cleanly"
-                assert "Application shutdown complete" in (base / "server.log").read_text(
-                    encoding="utf-8"
-                ), "Frozen gallery shutdown did not complete"
+                from shutdown_check import verify_shutdown
+
+                verify_shutdown(
+                    process.returncode,
+                    (base / "server.log").read_text(encoding="utf-8"),
+                    windows=sys.platform == "win32",
+                )
         assert hashlib.sha256((images / "invoice.png").read_bytes()).hexdigest() == original
 
 

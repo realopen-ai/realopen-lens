@@ -8,7 +8,6 @@ from pathlib import Path
 import platform
 import plistlib
 import re
-import signal
 import socket
 import subprocess
 import sys
@@ -371,10 +370,15 @@ def validate(archive: Path, report_path: Path):
                         except subprocess.TimeoutExpired:
                             process.kill()
                             process.wait(timeout=5)
-                # Uvicorn restores and re-raises SIGTERM after successful cleanup.
-                expected = (0, 3221225786, -1073741510) if windows else (0, -signal.SIGTERM)
-                assert process.returncode in expected, process.returncode
-                assert "Application shutdown complete." in log_path.read_text(encoding="utf-8")
+                            raise TimeoutError("Frozen gallery required forced shutdown")
+                from shutdown_check import verify_shutdown
+
+                report["shutdown"] = {"returncode": process.returncode}
+                verify_shutdown(
+                    process.returncode,
+                    log_path.read_text(encoding="utf-8"),
+                    windows=windows,
+                )
 
             check("loopback gallery, authenticated API, assets and clean shutdown", server)
         report["status"] = "passed"

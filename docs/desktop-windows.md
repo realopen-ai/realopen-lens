@@ -54,6 +54,8 @@ versions and failure diagnostics. Checks exercise:
 - workspace CLI and authenticated loopback API, including non-Latin paths;
 - setup reporting missing model weights while bundled OCR is ready;
 - graceful server shutdown, failing the check if forced termination is needed.
+  Windows CRT signal exit code 3 is accepted only with completed Uvicorn shutdown,
+  a finished-server log and no logged server errors.
 
 These package checks do **not** download embedding models or establish retrieval
 accuracy. Real-model indexing/search can additionally be checked with existing

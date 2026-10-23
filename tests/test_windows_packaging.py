@@ -204,3 +204,31 @@ def test_windows_shutdown_helper_targets_only_owned_group(monkeypatch, failure):
         assert len(calls) == 2
     else:
         assert calls[2:] == [("signal", 1, 1234), "detach"]
+
+
+@pytest.mark.parametrize("returncode", [0, 3, 3221225786, -1073741510])
+def test_windows_signal_exit_requires_complete_clean_shutdown(monkeypatch, returncode):
+    check = script("shutdown_check", monkeypatch).verify_shutdown
+    complete = "INFO: Application shutdown complete.\nINFO: Finished server process [123]\n"
+    check(returncode, complete, windows=True)
+    for incomplete in (
+        "",
+        "INFO: Application shutdown complete.\n",
+        "INFO: Finished server process [123]\n",
+    ):
+        with pytest.raises(ValueError, match="did not complete"):
+            check(returncode, incomplete, windows=True)
+    for error in ("ERROR: Server failed\n", "Traceback (most recent call last):\n"):
+        with pytest.raises(ValueError, match="logged an error"):
+            check(returncode, error + complete, windows=True)
+
+
+@pytest.mark.parametrize("windows,returncode", [(False, 3), (True, 1), (False, 1)])
+def test_shutdown_rejects_unexpected_exit_even_with_cleanup_log(monkeypatch, windows, returncode):
+    check = script("shutdown_check", monkeypatch).verify_shutdown
+    with pytest.raises(ValueError, match="unexpectedly"):
+        check(
+            returncode,
+            "Application shutdown complete.\nFinished server process [123]\n",
+            windows=windows,
+        )
