@@ -29,7 +29,7 @@ app.add_typer(feedback_app, name="feedback")
 @models_app.command("fetch")
 def fetch_models(
     directory: Annotated[Path, typer.Option("--directory")] = Path("models"),
-    precision: Annotated[str, typer.Option()] = "int8",
+    precision: Annotated[str | None, typer.Option()] = None,
     siglip_precision: Annotated[
         str | None, typer.Option(help="Override SigLIP2 precision only: int8 or fp32")
     ] = None,
@@ -38,7 +38,12 @@ def fetch_models(
     from realopen_lens.models.manager import fetch
 
     try:
-        fetch(directory, precision, typer.echo, siglip_precision=siglip_precision)
+        from realopen_lens.runtime.precision import default_precision
+
+        selected = default_precision(
+            siglip_precision if siglip_precision is not None else precision
+        )
+        fetch(directory, precision or "int8", typer.echo, siglip_precision=selected)
     except (OSError, ValueError) as error:
         typer.echo(f"Error: {error}", err=True)
         raise typer.Exit(1) from error
@@ -47,7 +52,7 @@ def fetch_models(
 @models_app.command("verify")
 def verify_models(
     directory: Annotated[Path, typer.Option("--directory")] = Path("models"),
-    precision: Annotated[str, typer.Option()] = "int8",
+    precision: Annotated[str | None, typer.Option()] = None,
     siglip_precision: Annotated[
         str | None, typer.Option(help="Override SigLIP2 precision only: int8 or fp32")
     ] = None,
@@ -56,7 +61,12 @@ def verify_models(
     from realopen_lens.models.manager import verify
 
     try:
-        verify(directory, precision, siglip_precision)
+        from realopen_lens.runtime.precision import default_precision
+
+        selected = default_precision(
+            siglip_precision if siglip_precision is not None else precision
+        )
+        verify(directory, precision or "int8", selected)
     except (OSError, ValueError) as error:
         typer.echo(f"Error: {error}", err=True)
         raise typer.Exit(1) from error
@@ -190,8 +200,8 @@ def index_folder(
     ] = False,
     log: Annotated[bool, typer.Option("--log", help="Stream live indexing logs to stderr")] = False,
     siglip_precision: Annotated[
-        str, typer.Option(help="SigLIP2 precision: int8 or fp32; E5 stays int8")
-    ] = "int8",
+        str | None, typer.Option(help="Override device/index SigLIP2 precision; E5 stays int8")
+    ] = None,
 ):
     """Index or refresh a folder; unchanged processing resumes from durable cache."""
     from dataclasses import asdict

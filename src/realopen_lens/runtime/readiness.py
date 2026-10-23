@@ -67,12 +67,15 @@ def inspect(
     workspace: Path,
     models: Path,
     *,
-    siglip_precision: str = "int8",
+    siglip_precision: str | None = None,
     languages: str = "",
     source: Path | None = None,
     on_progress: Callable[[dict], None] | None = None,
 ) -> dict:
     """Verify files without loading inference sessions, scanning images or using a network."""
+    from realopen_lens.runtime.precision import default_precision
+
+    siglip_precision = default_precision(siglip_precision, workspace=workspace)
     selected = artifacts("int8", siglip_precision)
     if languages and not re.fullmatch(r"[A-Za-z0-9_]+(?:\+[A-Za-z0-9_]+)*", languages):
         raise ValueError("Use installed OCR language codes separated by +, for example eng+fra")

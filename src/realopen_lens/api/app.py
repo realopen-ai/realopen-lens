@@ -51,7 +51,7 @@ class SimilarInput(ScopedInput):
 class IndexInput(Input):
     root: str = Field(min_length=1, max_length=4096)
     languages: str = Field(default="eng+fra+ara", pattern=r"^[a-zA-Z0-9_+.-]{1,128}$")
-    siglip_precision: Literal["int8", "fp32"] = "int8"
+    siglip_precision: Literal["int8", "fp32"] | None = None
     rehash: bool = False
 
 
@@ -69,7 +69,7 @@ class FolderRenameInput(FolderInput):
 
 
 class SetupInput(Input):
-    siglip_precision: Literal["int8", "fp32"] = "int8"
+    siglip_precision: Literal["int8", "fp32"] | None = None
     languages: str = Field(default="", pattern=r"^(?:[A-Za-z0-9_]+(?:\+[A-Za-z0-9_]+)*)?$")
     source: str | None = Field(default=None, min_length=1, max_length=4096)
 
@@ -212,15 +212,21 @@ def create_app(
             json.dumps({"detail": str(error)}), status_code=400, media_type="application/json"
         )
 
+    def precision_default(explicit: str | None = None) -> str:
+        from realopen_lens.runtime.precision import default_precision
+
+        preferred = explicit
+        if preferred is None and preferred_siglip_precision is not None:
+            preferred = preferred_siglip_precision()
+        return default_precision(preferred, workspace=root)
+
     @app.get("/api/session")
     def session():
         response = Response(
             json.dumps(
                 {
                     "allowed_roots": [str(p) for p in roots],
-                    "default_siglip_precision": (
-                        preferred_siglip_precision() if preferred_siglip_precision else "int8"
-                    ),
+                    "default_siglip_precision": (precision_default()),
                     "default_ocr_languages": (
                         preferred_ocr_languages() if preferred_ocr_languages else ""
                     ),
@@ -241,7 +247,14 @@ def create_app(
         boundaries = (*roots, *(Path(c["root"]).resolve() for c in reading.collections(root)))
         if source and not any(source.is_relative_to(p) for p in boundaries):
             raise HTTPException(403, "Folder is outside the configured import roots")
-        return submit("setup", {**body.model_dump(), "source": str(source) if source else None})
+        return submit(
+            "setup",
+            {
+                **body.model_dump(),
+                "siglip_precision": precision_default(body.siglip_precision),
+                "source": str(source) if source else None,
+            },
+        )
 
     @app.post("/api/tasks/workspace-preview", status_code=202)
     def preview_workspace(body: WorkspacePreviewInput):
@@ -400,7 +413,16 @@ def create_app(
                     f"Collection '{body.collection}' already indexes '{collection['root']}'. "
                     "Use another collection name for this folder.",
                 )
-        return submit("index", {**body.model_dump(), "root": str(path)})
+        from realopen_lens.indexing.service import resolve_precision
+
+        explicit: str | None = body.siglip_precision
+        existing = next((c for c in collections if c["name"] == body.collection), None)
+        if explicit is None and existing is None:
+            explicit = precision_default()
+        selected = resolve_precision(root, body.collection, explicit)
+        return submit(
+            "index", {**body.model_dump(), "root": str(path), "siglip_precision": selected}
+        )
 
     @app.get("/api/folders")
     def folders(path: str | None = None, offset: int = Query(default=0, ge=0)):

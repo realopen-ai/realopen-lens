@@ -346,6 +346,36 @@ def run_index(options: dict, *, stage_runner=supervise) -> IndexResult:
             catalog.close()
 
 
+def resolve_precision(store: Path, collection: str, explicit: str | None = None) -> str:
+    """Refresh with the published profile; select a device default only for new indexes."""
+    from realopen_lens.runtime.precision import default_precision
+
+    if explicit is not None:
+        return default_precision(explicit, workspace=store)
+    if (store / "catalog.sqlite3").is_file():
+        catalog = Catalog(store, readonly=True)
+        try:
+            found = catalog.db.execute(
+                "SELECT id,active_generation FROM collections WHERE name=?", (collection,)
+            ).fetchone()
+            if found is not None and found["active_generation"]:
+                _, generation = catalog.snapshot(collection)
+                spec = json.loads(catalog.job(generation["job_id"])["config"])["spec"]
+                return default_precision(spec.get("siglip_precision", "int8"), workspace=store)
+            if found is not None:
+                previous = catalog.db.execute(
+                    "SELECT config FROM jobs WHERE collection_id=? "
+                    "ORDER BY started_at DESC, rowid DESC LIMIT 1",
+                    (found["id"],),
+                ).fetchone()
+                if previous is not None:
+                    spec = json.loads(previous["config"])["spec"]
+                    return default_precision(spec.get("siglip_precision", "int8"), workspace=store)
+        finally:
+            catalog.close()
+    return default_precision(workspace=store)
+
+
 def index_collection(
     root: Path,
     *,
@@ -356,16 +386,15 @@ def index_collection(
     languages: str = "eng+fra+ara",
     rehash: bool = False,
     log: bool = False,
-    siglip_precision: str = "int8",
+    siglip_precision: str | None = None,
     on_progress: Callable[[dict], None] | None = None,
     expected_source_identity: list[int] | None = None,
     expected_collection_id: str | None = None,
 ) -> IndexResult:
     if not 1 <= threads <= 8 or not collection.strip() or len(collection) > 128:
         raise ValueError("Use 1–8 threads and a collection name of 1–128 characters")
-    if siglip_precision not in {"int8", "fp32"}:
-        raise ValueError("SigLIP2 precision must be int8 or fp32")
     store = (index_dir or default_directory()).resolve()
+    siglip_precision = resolve_precision(store, collection, siglip_precision)
     options = {
         "root": str(root.resolve()),
         "store": str(store),
