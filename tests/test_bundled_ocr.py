@@ -21,12 +21,14 @@ def packaging_module():
     return result
 
 
-@pytest.fixture(params=["macos", "windows"])
+@pytest.fixture(params=["macos", "windows", "linux"])
 def private_runtime(tmp_path, monkeypatch, request):
     app = tmp_path / "Lens.app"
-    if request.param == "windows":
+    if request.param in {"windows", "linux"}:
         resources = app / "_internal/lens-ocr"
-        engine = resources / "bin/tesseract.exe"
+        engine = resources / (
+            "bin/tesseract.exe" if request.param == "windows" else "bin/tesseract"
+        )
     else:
         engine = app / "Contents/Frameworks/lens-ocr/bin/tesseract"
         resources = app / "Contents/Resources/lens-ocr"
@@ -69,11 +71,15 @@ def test_private_engine_ignores_host_prefix_and_loader_overrides(private_runtime
     engine, resources, _ = private_runtime
     monkeypatch.setenv("TESSDATA_PREFIX", "wrong-host-data")
     monkeypatch.setenv("DYLD_LIBRARY_PATH", "wrong-host-libraries")
+    monkeypatch.setenv("LD_LIBRARY_PATH", "frozen-python-libraries")
+    monkeypatch.setenv("LD_PRELOAD", "wrong-host-preload")
     assert runtime.resolve("host-tesseract") == str(engine)
     assert runtime.resolve(None) == str(engine)
     environment = runtime.environment(str(engine))
     assert environment["TESSDATA_PREFIX"] == str(resources / "tessdata")
     assert "DYLD_LIBRARY_PATH" not in environment
+    assert "LD_LIBRARY_PATH" not in environment
+    assert "LD_PRELOAD" not in environment
     assert os.environ["TESSDATA_PREFIX"] == "wrong-host-data"
     assert runtime.verify(str(engine))["engine"] == "tesseract 5"
     assert runtime.fingerprint(str(engine)) is not None
@@ -167,3 +173,14 @@ def test_packaging_resolves_loader_relative_dependency_and_rejects_missing(tmp_p
     library.unlink()
     with pytest.raises(ValueError, match="Cannot resolve"):
         build.dependencies(engine, engine)
+
+
+def test_frozen_linux_selects_private_ocr(monkeypatch, tmp_path):
+    import sys
+
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    monkeypatch.setattr(sys, "executable", str(tmp_path / "RealOpenLens"))
+    engine, resources = runtime.bundle_paths()
+    assert engine == tmp_path / "_internal/lens-ocr/bin/tesseract"
+    assert resources == tmp_path / "_internal/lens-ocr"

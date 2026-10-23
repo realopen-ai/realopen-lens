@@ -1,11 +1,12 @@
 # Desktop release readiness
 
-Release tooling supports **macOS arm64 and Windows x64**.
-The macOS archive is ad-hoc signed; the Windows ZIP is unsigned. The manual **Desktop release
-candidate** GitHub Actions workflow builds both archives and validates their extracted
-bytes, then retains the ZIP, SHA256 checksum and evidence for 30 days. It requires
+Release tooling supports **macOS arm64, Windows x64 and Ubuntu 24.04 x64**.
+The macOS archive is ad-hoc signed; the Windows ZIP and Linux tarball are unsigned. The manual **Desktop release
+candidate** GitHub Actions workflow builds all three archives and validates their extracted
+bytes, then retains the archives, SHA256 checksums and evidence for 30 days. It requires
 read-only repository permissions and does not create tags or publish releases.
-Run it from Actions on the reviewed commit. Linux packaging remains future work.
+Run it from Actions on the reviewed commit. See [Linux packaging](desktop-linux.md)
+for Linux compatibility, installation and native acceptance commands.
 
 ## Reproduce archive acceptance
 
@@ -20,10 +21,10 @@ uv run --no-sync python packaging/acceptance.py \
 ```
 
 Use a new output directory for each run. Existing evidence is never overwritten.
-The report binds all checks to the ZIP's SHA256, rejects archive mutation during
-acceptance and records per-stage outcomes, errors and elapsed time. Both platforms
+The report binds all checks to the archive's SHA256, rejects archive mutation during
+acceptance and records per-stage outcomes, errors and elapsed time. All three platforms
 run the same model-free checks (twelve on macOS including its signature check,
-eleven on Windows), including launcher rendering in both themes and startup without
+eleven each on Windows and Linux), including launcher rendering in both themes and startup without
 external developer tools/OCR, bundled recognition/orientation and missing-model reporting. Supplying `--models`
 also exercises real INT8 and FP32 frozen indexing, lexical/hybrid retrieval with
 OCR ground truth, cached refresh, resident encoder workers and HTTP startup/shutdown.
@@ -36,10 +37,11 @@ After [building the Windows ZIP](desktop-windows.md), the same wrapper runs in P
 uv run --no-sync python packaging/acceptance.py dist/RealOpenLens-windows-x64.zip --output runs/windows-acceptance
 ```
 
-Optional `--models`, `--precision` and inference reporting work on both platforms.
-`--require-notarized` applies only to macOS and is rejected on Windows. Candidate
+Optional `--models`, `--precision` and inference reporting work on all three platforms.
+`--require-notarized` applies only to macOS and is rejected on Windows and Linux. Candidate
 artifact names are `desktop-candidate-macos-arm64-<commit>` and
-`desktop-candidate-windows-x64-<commit>`, with separate platform evidence artifacts.
+`desktop-candidate-windows-x64-<commit>` and
+`desktop-candidate-linux-x64-<commit>`, with separate platform evidence artifacts.
 
 Without `--models`, the report explicitly records inference as **not_run**. A
 passing packaging-only run does not imply inference acceptance. CI intentionally
@@ -49,7 +51,7 @@ Acceptance uses the extracted app with host OCR hidden from PATH. These checks r
 they do not establish fresh-OS installation, Finder privacy prompts or Gatekeeper
 behavior. No retrieval-quality metric is inferred from the synthetic invoice.
 
-Each build writes a sibling `.zip.sha256` file. Check it from `dist/` using:
+Each build writes a sibling `.sha256` file (`.zip.sha256` or `.tar.gz.sha256`). Check it from `dist/` using:
 
 ```sh
 shasum -a 256 -c RealOpenLens-macos-arm64.zip.sha256

@@ -20,10 +20,11 @@ def digest(path):
 
 
 def validate(archive, output, models=None, precisions=("int8", "fp32"), require_notarized=False):
-    if sys.platform not in {"darwin", "win32"}:
-        raise ValueError("Validate desktop archives on macOS or Windows")
+    if sys.platform not in {"darwin", "win32", "linux"}:
+        raise ValueError("Validate desktop archives on macOS, Windows or Linux")
     windows = sys.platform == "win32"
-    if windows and require_notarized:
+    linux = sys.platform == "linux"
+    if sys.platform != "darwin" and require_notarized:
         raise ValueError("Notarization checks apply only to macOS archives")
     archive, output = archive.resolve(), output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -38,7 +39,9 @@ def validate(archive, output, models=None, precisions=("int8", "fp32"), require_
         "scope": "existing host with temporary workspaces; not a clean OS installation",
         "inference": "requested" if models else "not_run",
         "notarization": (
-            "not_applicable" if windows else ("required" if require_notarized else "not_checked")
+            "not_applicable"
+            if windows or linux
+            else ("required" if require_notarized else "not_checked")
         ),
         "status": "failed",
         "results": {},
@@ -92,6 +95,11 @@ def validate(archive, output, models=None, precisions=("int8", "fp32"), require_
                                 raise ValueError("Archive member escapes extraction directory")
                         zipped.extractall(destination)
                     executable = Path(directory) / "RealOpenLens/RealOpenLens.exe"
+                elif linux:
+                    from linux_archive import extract
+
+                    extract(archive, Path(directory))
+                    executable = Path(directory) / "RealOpenLens/RealOpenLens"
                 else:
                     run("extract", ["/usr/bin/ditto", "-x", "-k", str(archive), directory], 60)
                     executable = Path(directory) / "RealOpen Lens.app/Contents/MacOS/RealOpenLens"

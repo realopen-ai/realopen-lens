@@ -1,5 +1,10 @@
 name: Set up desktop build dependencies
 description: Shared locked Python/npm setup and verified OCR-data caching
+inputs:
+  python-executable:
+    description: Optional native Python path (Linux uses Ubuntu's dynamically linked Tk)
+    required: false
+    default: ""
 outputs:
   image-version:
     description: Hosted runner image version for native compiler cache identity
@@ -18,9 +23,14 @@ runs:
         cache-dependency-path: frontend/package-lock.json
     - name: Install locked Python dependencies
       shell: bash
+      env:
+        LENS_DESKTOP_PYTHON: ${{ inputs.python-executable }}
       run: |
-        uv python install 3.12
-        uv sync --locked --python 3.12 --extra web --group packaging --no-editable
+        if [ -z "$LENS_DESKTOP_PYTHON" ]; then
+          uv python install 3.12
+          LENS_DESKTOP_PYTHON=3.12
+        fi
+        uv sync --locked --python "$LENS_DESKTOP_PYTHON" --extra web --group packaging --no-editable
     - name: Identify runner image
       id: image
       shell: bash
