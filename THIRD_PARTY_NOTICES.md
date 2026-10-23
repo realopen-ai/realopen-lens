@@ -29,6 +29,14 @@ the copy of this file shipped inside that artifact. The inventory below remains
 the macOS build snapshot; the Windows package diagnostics record its Python
 distribution versions. The same pinned language data is used on both platforms.
 
+Linux builds use Ubuntu's Python/Tk and Tesseract 5. Package versions and Debian
+copyright notices for copied OCR libraries and the Python/Tk/X11 dependency
+closure are retained under `_internal/lens-ocr/`; common license texts referenced
+by those notices are included too. Full native notices are appended to the copy
+of this file shipped in the Linux archive. The component table below remains the
+original macOS snapshot; package diagnostics and the Linux runtime manifest record
+the actual Linux versions. All platforms use the same pinned OCR language data.
+
 For source availability under the tqdm Mozilla Public License portions, see
 [tqdm v4.70.1 source](https://github.com/tqdm/tqdm/tree/v4.70.1). Lens does not
 modify those upstream source files. The full MPL-2.0 text appears below.

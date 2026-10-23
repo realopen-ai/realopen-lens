@@ -85,7 +85,7 @@ it does not silently fall back to a system installation.
 
 Native package versions, source/copied hashes and required system libraries are
 recorded in `_internal/lens-ocr/runtime.json`. Debian package copyright notices
-and common license texts accompany the bundle and are appended to its third-party
+for OCR and the redistributed Python/Tk/X11 dependency closure, plus common license texts accompany the bundle and are appended to its third-party
 notices. Build-time apt package revisions follow the Ubuntu runner's repositories;
 the exact native binary versions are recorded rather than claimed to be pinned.
 Language assets and Python/npm dependencies remain pinned.

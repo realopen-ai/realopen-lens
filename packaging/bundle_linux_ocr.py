@@ -6,6 +6,8 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import sys
+import sysconfig
 
 from bundle_ocr import checksum, language_data
 
@@ -81,8 +83,8 @@ def bundle_ocr(bundle: Path, executable: Path, source_data: Path):
     (resources / "lib").mkdir()
     (resources / "licenses").mkdir()
     records, packages = [], {}
-    for name, source in {"tesseract": executable, **libraries}.items():
-        verify_elf(source)
+
+    def add_notice(source):
         package = package_for(source)
         if package not in packages:
             packages[package] = run("dpkg-query", "-W", "-f=${Version}", package).strip()
@@ -94,6 +96,10 @@ def bundle_ocr(bundle: Path, executable: Path, source_data: Path):
             records.append(
                 {"file": target.relative_to(bundle).as_posix(), "sha256": checksum(target)}
             )
+
+    for name, source in {"tesseract": executable, **libraries}.items():
+        verify_elf(source)
+        add_notice(source)
         target = resources / ("bin" if name == "tesseract" else "lib") / name
         shutil.copyfile(source, target)
         target.chmod(0o755)
@@ -111,6 +117,19 @@ def bundle_ocr(bundle: Path, executable: Path, source_data: Path):
                 "source_sha256": checksum(source),
             }
         )
+    # PyInstaller also redistributes Ubuntu's Python/Tk and X11/font libraries.
+    # Their notices belong in the archive even though OCR does not load them.
+    import _tkinter
+
+    tkinter = Path(_tkinter.__file__)
+    native = [Path(sys.executable).resolve(), tkinter, *dependencies(tkinter).values()]
+    python_library = Path(sysconfig.get_config_var("LIBDIR")) / sysconfig.get_config_var(
+        "LDLIBRARY"
+    )
+    if python_library.is_file():
+        native.append(python_library)
+    for source in native:
+        add_notice(source)
     # Debian copyright files may incorporate these license texts by reference.
     for notice in sorted(Path("/usr/share/common-licenses").iterdir()):
         if notice.is_file():
@@ -133,7 +152,7 @@ def bundle_ocr(bundle: Path, executable: Path, source_data: Path):
     (resources / "runtime.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     public = bundle / "_internal/licenses/realopen-lens/THIRD_PARTY_NOTICES.md"
     with public.open("a", encoding="utf-8") as stream:
-        stream.write("\n## Linux OCR dependency notices\n\n")
+        stream.write("\n## Linux native dependency notices\n\n")
         for notice in sorted((resources / "licenses").glob("*.txt")):
             stream.write(f"\n### {notice.stem}\n\n~~~~~~~~text\n")
             stream.write(notice.read_text(encoding="utf-8"))
