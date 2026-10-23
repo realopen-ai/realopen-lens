@@ -10,9 +10,12 @@ import sys
 def bundle_paths() -> tuple[Path, Path] | None:
     if not getattr(sys, "frozen", False):
         return None
-    if sys.platform == "win32":
+    if sys.platform in {"win32", "linux"}:
         private = Path(sys.executable).resolve().parent / "_internal/lens-ocr"
-        return private / "bin/tesseract.exe", private
+        return (
+            private / ("bin/tesseract.exe" if sys.platform == "win32" else "bin/tesseract"),
+            private,
+        )
     if sys.platform != "darwin":
         return None
     contents = Path(sys.executable).resolve().parents[1]
@@ -37,8 +40,13 @@ def environment(executable: str) -> dict[str, str]:
     paths = bundle_paths()
     if paths and Path(executable) == paths[0]:
         result["TESSDATA_PREFIX"] = str(paths[1] / "tessdata")
-        # Frozen Python's loader overrides must not replace OCR's private dylibs.
-        for name in ("DYLD_LIBRARY_PATH", "DYLD_FALLBACK_LIBRARY_PATH"):
+        # Frozen Python's loader overrides must not replace OCR's private libraries.
+        for name in (
+            "DYLD_LIBRARY_PATH",
+            "DYLD_FALLBACK_LIBRARY_PATH",
+            "LD_LIBRARY_PATH",
+            "LD_PRELOAD",
+        ):
             result.pop(name, None)
     return result
 
@@ -54,10 +62,9 @@ def verify(executable: str) -> dict | None:
     paths = bundle_paths()
     if not paths or Path(executable) != paths[0]:
         return None
-    # Keep macOS v1 manifests relative to the .app root. Windows manifests use
-    # the portable directory root, with resources confined to _internal.
-    windows = paths[0].name == "tesseract.exe"
-    contents = paths[1].parent if windows else paths[1].parents[1]
+    # Portable manifests use the directory root; macOS uses the .app root.
+    portable = paths[1].parent.name == "_internal"
+    contents = paths[1].parent if portable else paths[1].parents[1]
     manifest = json.loads((paths[1] / "runtime.json").read_text(encoding="utf-8"))
     if (
         not isinstance(manifest, dict)
