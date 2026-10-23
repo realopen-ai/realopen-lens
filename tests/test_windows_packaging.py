@@ -74,8 +74,9 @@ def test_windows_ocr_accepts_windows_libraries_and_api_contracts(tmp_path, monke
     system = tmp_path / "System32"
     system.mkdir()
     (system / "kernel32.dll").touch()
+    (system / "xmllite.dll").touch()
     monkeypatch.setenv("SystemRoot", str(tmp_path))
-    names = ["KERNEL32.dll", "api-ms-win-core-file-l1-1-0.dll"]
+    names = ["KERNEL32.dll", "XmlLite.dll", "api-ms-win-core-file-l1-1-0.dll"]
     binary = SimpleNamespace(
         FILE_HEADER=SimpleNamespace(Machine=0x8664),
         DIRECTORY_ENTRY_IMPORT=[SimpleNamespace(dll=name.encode()) for name in names],

@@ -14,7 +14,7 @@ from bundle_ocr import checksum, language_data
 SYSTEM_DLLS = frozenset(
     "advapi32 bcrypt comdlg32 crypt32 gdi32 iphlpapi kernel32 kernelbase msvcrt "
     "netapi32 normaliz ntdll ole32 oleaut32 rpcrt4 secur32 setupapi shell32 "
-    "shlwapi ucrtbase user32 userenv version winhttp wininet winmm ws2_32".split()
+    "shlwapi ucrtbase user32 userenv version winhttp wininet winmm ws2_32 xmllite".split()
 )
 
 
