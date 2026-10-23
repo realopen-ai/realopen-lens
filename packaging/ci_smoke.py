@@ -24,6 +24,7 @@ from PIL import Image, ImageDraw
 def validate(archive: Path, report_path: Path):
     report = {"archive": archive.name, "host": platform.platform(), "checks": []}
     windows = sys.platform == "win32"
+    linux = sys.platform == "linux"
     environment = {
         key: value
         for key, value in os.environ.items()
@@ -86,6 +87,12 @@ def validate(archive: Path, report_path: Path):
                 check("extract archive", extract)
                 bundle = base / "RealOpenLens"
                 executable = bundle / "RealOpenLens.exe"
+            elif linux:
+                from linux_archive import extract
+
+                check("extract archive", lambda: extract(archive, base))
+                bundle = base / "RealOpenLens"
+                executable = bundle / "RealOpenLens"
             else:
                 check(
                     "extract archive",
@@ -102,13 +109,17 @@ def validate(archive: Path, report_path: Path):
                 )
 
             def icon():
-                resources = bundle / "_internal" if windows else bundle / "Contents/Resources"
-                if not windows:
+                resources = (
+                    bundle / "_internal" if windows or linux else bundle / "Contents/Resources"
+                )
+                if not (windows or linux):
                     info = plistlib.loads((bundle / "Contents/Info.plist").read_bytes())
                     assert info["CFBundleIdentifier"] == "org.realopen.lens"
                     assert info["CFBundleVersion"] == info["CFBundleShortVersionString"]
                 else:
-                    assert executable.read_bytes()[:2] == b"MZ"
+                    header = executable.read_bytes()[:4]
+                    assert header == b"\x7fELF" if linux else header[:2] == b"MZ"
+                    assert not linux or os.access(executable, os.X_OK)
                     assert (bundle / "README.txt").is_file()
                 license_text = (resources / "licenses/realopen-lens/LICENSE").read_text(
                     encoding="utf-8"
@@ -123,7 +134,7 @@ def validate(archive: Path, report_path: Path):
                 )
                 artwork = (
                     resources / "realopen_lens/desktop/assets/Lens.png"
-                    if windows
+                    if windows or linux
                     else resources / info["CFBundleIconFile"]
                 )
                 with Image.open(artwork) as image:
@@ -153,11 +164,15 @@ def validate(archive: Path, report_path: Path):
                 engine = bundle / (
                     "_internal/lens-ocr/bin/tesseract.exe"
                     if windows
-                    else "Contents/Frameworks/lens-ocr/bin/tesseract"
+                    else (
+                        "_internal/lens-ocr/bin/tesseract"
+                        if linux
+                        else "Contents/Frameworks/lens-ocr/bin/tesseract"
+                    )
                 )
                 data = bundle / (
                     "_internal/lens-ocr/tessdata"
-                    if windows
+                    if windows or linux
                     else "Contents/Resources/lens-ocr/tessdata"
                 )
                 target = base / "ocr.png"
@@ -171,7 +186,7 @@ def validate(archive: Path, report_path: Path):
                         font_size=28,
                     )
                 sample.save(target)
-                env = {k: v for k, v in environment.items() if not k.startswith("DYLD_")}
+                env = {k: v for k, v in environment.items() if not k.startswith(("DYLD_", "LD_"))}
                 env.update(PATH=str(base / "no-external-tools"), TESSDATA_PREFIX=str(data))
                 recognized = subprocess.run(
                     [str(engine), str(target), "stdout", "-l", "eng+fra+ara", "--psm", "6", "tsv"],

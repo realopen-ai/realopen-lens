@@ -93,7 +93,7 @@ def test_inference_check_requires_correct_image_and_ocr(change, tmp_path):
         smoke.verify_search([] if change == "empty" else [result], source)
 
 
-@pytest.mark.parametrize("host", ["darwin", "win32"])
+@pytest.mark.parametrize("host", ["darwin", "win32", "linux"])
 def test_acceptance_failure_retains_checksum_and_failed_stage(tmp_path, monkeypatch, host):
     acceptance = script("acceptance")
     monkeypatch.setattr(acceptance.sys, "platform", host)
@@ -112,7 +112,7 @@ def test_acceptance_failure_retains_checksum_and_failed_stage(tmp_path, monkeypa
     assert report["inference"] == "not_run"
 
 
-@pytest.mark.parametrize("host", ["darwin", "win32"])
+@pytest.mark.parametrize("host", ["darwin", "win32", "linux"])
 def test_package_only_acceptance_does_not_claim_inference(tmp_path, monkeypatch, host):
     acceptance = script("acceptance")
     monkeypatch.setattr(acceptance.sys, "platform", host)
@@ -124,10 +124,10 @@ def test_package_only_acceptance_does_not_claim_inference(tmp_path, monkeypatch,
     archive.write_bytes(b"candidate")
     report = acceptance.validate(archive, tmp_path / "evidence")
     assert report["status"] == "passed" and report["inference"] == "not_run"
-    assert report["notarization"] == ("not_applicable" if host == "win32" else "not_checked")
+    assert report["notarization"] == ("not_applicable" if host != "darwin" else "not_checked")
 
 
-@pytest.mark.parametrize("host", ["darwin", "win32"])
+@pytest.mark.parametrize("host", ["darwin", "win32", "linux"])
 def test_acceptance_rejects_archive_mutation(tmp_path, monkeypatch, host):
     acceptance = script("acceptance")
     monkeypatch.setattr(acceptance.sys, "platform", host)
@@ -168,7 +168,7 @@ def test_release_acceptance_rejects_missing_stapled_ticket(tmp_path, monkeypatch
     assert not any("/usr/sbin/spctl" in command for command in commands)
 
 
-@pytest.mark.parametrize("host", ["darwin", "win32"])
+@pytest.mark.parametrize("host", ["darwin", "win32", "linux"])
 def test_missing_archive_is_recorded_without_claiming_validation(tmp_path, monkeypatch, host):
     acceptance = script("acceptance")
     monkeypatch.setattr(acceptance.sys, "platform", host)
