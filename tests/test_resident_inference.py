@@ -309,3 +309,23 @@ def test_interrupted_benchmark_archives_partial_resident_sequence_and_rewarms(
     assert calls.count(("int8", True)) == 2  # Startup and warm query rerun together.
     archived = json.loads((args.output / "int8-interrupted-001.json").read_text(encoding="utf-8"))
     assert archived["requests"][0]["phase"] == "resident_cold"
+
+
+def test_release_unloads_models_but_revalidates_changes_before_reuse(encoder):
+    client, root, model, checks = encoder
+    encode(client, root)
+    first = client.pid
+    client.release()
+    assert client.pid is None and not psutil.pid_exists(first)
+    encode(client, root)
+    assert len(checks) == 1  # Unchanged signatures reuse the integrity check.
+    second = client.pid
+    client.release()
+    assert not psutil.pid_exists(second)
+    model.write_bytes(b"broken")
+    with pytest.raises(ValueError, match="integrity"):
+        encode(client, root)
+    assert len(checks) == 2 and client.pid is None
+    client.close()
+    with pytest.raises(RuntimeError, match="closed"):
+        client.release()
