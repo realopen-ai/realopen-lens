@@ -9,6 +9,8 @@ from time import perf_counter
 from threading import RLock
 from typing import Any
 
+import numpy as np
+
 from realopen_lens.models.manager import digest, registry
 from realopen_lens.organization import duplicates
 from realopen_lens.retrieval import memory, ranking
@@ -69,6 +71,34 @@ class LibrarySession:
         finally:
             self._operation_lock.release()
 
+    def similar(
+        self,
+        image: Path | None = None,
+        *,
+        image_id: str | None = None,
+        collection: str = "personal",
+        include_self: bool = False,
+        **options: Any,
+    ) -> dict:
+        """Search every folder using compatible image vectors, never text embeddings."""
+        if (image is None) == (image_id is None):
+            raise ValueError("Supply exactly one image path or image_id")
+        if not self._operation_lock.acquire(timeout=120):
+            raise TimeoutError("Library search session is busy")
+        try:
+            return self._search(
+                "",
+                mode="visual",
+                use_feedback=False,
+                image=image,
+                image_id=image_id,
+                image_collection=collection,
+                include_self=include_self,
+                **options,
+            )
+        finally:
+            self._operation_lock.release()
+
     def _search(
         self,
         query: str,
@@ -82,7 +112,12 @@ class LibrarySession:
         profile: dict | None = None,
         hidden_only: bool = False,
         offset: int = 0,
+        image: Path | None = None,
+        image_id: str | None = None,
+        image_collection: str = "personal",
+        include_self: bool = False,
     ) -> dict:
+        image_query = image is not None or image_id is not None
         if self.closed:
             raise RuntimeError("Library session is closed")
         if hidden_only and (mode != "lexical" or save_run or not use_feedback):
@@ -90,7 +125,7 @@ class LibrarySession:
         if offset < 0:
             raise ValueError("Offset must be nonnegative")
         if (
-            not query.strip()
+            (not image_query and not query.strip())
             or len(query) > 4096
             or not 1 <= limit <= 100
             or mode not in {"hybrid", "visual", "lexical", "semantic"}
@@ -148,12 +183,51 @@ class LibrarySession:
                         or spec["inference_sha256"] != encoder_hash
                         or any(
                             spec["packages"][n] != version(n)
-                            for n in ("numpy", "onnxruntime", "tokenizers")
+                            for n in (
+                                ("numpy", "Pillow", "onnxruntime")
+                                if image_query
+                                else ("numpy", "onnxruntime", "tokenizers")
+                            )
                         )
                     ):
                         raise ValueError(f"Re-index incompatible folder {folder['name']!r}")
                 snapshots.append((folder, generation, manifest, precision))
             catalog.db.commit()
+            # Image inference is disposable; release any resident text model first.
+            query_vectors = {}
+            query_path = None
+            query_pixels = None
+            if image_query:
+                if self.encoder is not None:
+                    self.encoder.release()
+                if image is not None:
+                    query_path = image.expanduser().resolve(strict=True)
+                    if not query_path.is_file() or query_path.stat().st_size > 64 * 1024 * 1024:
+                        raise ValueError("Query image must be a local file no larger than 64 MiB")
+                    image_id = digest(query_path)
+                else:
+                    source = next((s for s in snapshots if s[0]["name"] == image_collection), None)
+                    if source is None or image_id not in source[2]["vision_ids"]:
+                        raise ValueError("Query image is not in the source folder generation")
+                    valid_query = source_paths(Path(source[0]["root"]), source[2])
+                    if image_id not in valid_query:
+                        raise ValueError("Query image source is unavailable or changed")
+                    query_path = Path(valid_query[image_id][0])
+                from realopen_lens.organization.fingerprints import fingerprint
+
+                try:
+                    query_pixels = fingerprint(query_path)["pixels"]
+                except (OSError, ValueError):
+                    pass  # Same decoded-pixel eligibility as duplicate scans.
+                if digest(query_path) != image_id:
+                    raise ValueError("Query image changed during duplicate validation")
+                for f, g, m, precision in snapshots:
+                    if image_id in m["vision_ids"] and precision not in query_vectors:
+                        vision, passages = matrices(catalog, m)
+                        query_vectors[precision] = np.array(
+                            vision[m["vision_ids"].index(image_id)], dtype=np.float32, copy=True
+                        )
+                        del vision, passages
             paths = {}
             pixels = {}
             unavailable = []
@@ -224,19 +298,44 @@ class LibrarySession:
                         collection=folder["name"],
                         siglip_precision=precision,
                     )
-                    if (
+                    if not image_query and (
                         mode in {"hybrid", "visual"}
                         and precision not in visual_queries
                         or mode in {"hybrid", "semantic"}
                         and semantic_query is None
                     ):
                         self._select(precision)
-                    assert self.encoder is not None
-                    if mode in {"hybrid", "semantic"} and semantic_query is None:
+                    if image_query and precision not in visual_queries:
+                        if precision in query_vectors:
+                            vector = query_vectors[precision]
+                        else:
+                            from realopen_lens.retrieval.images import (
+                                image_vector,
+                                verify_image_encoder,
+                            )
+
+                            verify_image_encoder(manifest["config"]["spec"], self.models, precision)
+                            assert query_path is not None
+                            vector = image_vector(query_path, self.models, self.threads, precision)
+                        norm = np.linalg.norm(vector)
+                        if vector.shape != (768,) or not np.isfinite(vector).all() or norm == 0:
+                            raise ValueError("Invalid image query embedding")
+                        visual_queries[precision] = vector / norm
+                    if (
+                        not image_query
+                        and mode in {"hybrid", "semantic"}
+                        and semantic_query is None
+                    ):
+                        assert self.encoder is not None
                         semantic_query = self.encoder.encode(
                             query, "e5", self.models, self.threads, precision
                         )
-                    if mode in {"hybrid", "visual"} and precision not in visual_queries:
+                    if (
+                        not image_query
+                        and mode in {"hybrid", "visual"}
+                        and precision not in visual_queries
+                    ):
+                        assert self.encoder is not None
                         visual_queries[precision] = self.encoder.encode(
                             query, "siglip2", self.models, self.threads, precision
                         )
@@ -293,6 +392,19 @@ class LibrarySession:
                     ranked = sorted(scores, key=lambda k: (-scores[k], k))
             finally:
                 index.close()
+            if image_query:
+                assert query_path is not None
+                if digest(query_path) != image_id:
+                    raise ValueError("Query image changed during search; retry with a stable file")
+                if not include_self:
+                    excluded = {canonical[image_id]} if image_id in canonical else set()
+                    if query_pixels is not None:
+                        excluded.update(
+                            canonical[k]
+                            for k, p in pixels.items()
+                            if p == query_pixels and k in canonical
+                        )
+                    ranked = [k for k in ranked if k not in excluded]
             # Library exact-query memory has its own namespace. A folder label
             # cannot hide copies elsewhere; library decisions cover the whole group.
             synthetic = {"pipeline": LIBRARY_ID, "images": []}
@@ -357,6 +469,8 @@ class LibrarySession:
                 searchable_images=len(selected),
                 unavailable=unavailable,
                 pending_folders=pending,
+                query_image_id=image_id,
+                reused_image_precisions=sorted(query_vectors),
                 merge_policy="global-cosine-hybrid-v1",
             )
             run_id = None
@@ -365,7 +479,11 @@ class LibrarySession:
 
                 payload = dict(
                     version=1,
-                    query={"kind": "text", "text": query},
+                    query=(
+                        {"kind": "image", "image_id": image_id}
+                        if image_query
+                        else {"kind": "text", "text": query}
+                    ),
                     collection="All folders",
                     collection_id=LIBRARY_ID,
                     generation=None,

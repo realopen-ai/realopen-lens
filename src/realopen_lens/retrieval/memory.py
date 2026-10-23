@@ -109,7 +109,7 @@ def aliases_for_run(root: Path, run: dict, image_id: str) -> tuple[str, ...]:
             cached = _cached(root / "duplicates/cache" / (key + ".json"), key)
             if cached:
                 pixels[key] = cached["pixels"]
-        if pixels and (root / "feedback.sqlite3").is_file():
+        if pixels and run["query"]["kind"] == "text" and (root / "feedback.sqlite3").is_file():
             if len(set(pixels.values())) != 1:
                 raise ValueError("Library duplicate identities disagree; scan duplicates again")
             pixels[image_id] = next(iter(pixels.values()))
