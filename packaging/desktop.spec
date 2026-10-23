@@ -38,6 +38,7 @@ a = Analysis(
 pyz = PYZ(a.pure)
 # Keep standard streams: isolated engine children use stdin/stdout JSON protocols.
 exe = EXE(pyz, a.scripts, [], exclude_binaries=True, name="RealOpenLens", console=True,
+          hide_console="hide-early" if sys.platform == "win32" else None,
           codesign_identity=identity,
           entitlements_file=str(root / "packaging/entitlements.plist") if identity else None,
           icon=str(icons / "Lens.ico") if sys.platform == "win32" else None)

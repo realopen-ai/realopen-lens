@@ -1,0 +1,8 @@
+{
+  "name": "lens-windows-ocr",
+  "version-string": "1",
+  "builtin-baseline": "a073c28e52d920cb2465a17512324b3b6684d03a",
+  "dependencies": [
+    {"name": "tesseract", "default-features": false}
+  ]
+}
