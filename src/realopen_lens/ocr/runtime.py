@@ -8,7 +8,12 @@ import sys
 
 
 def bundle_paths() -> tuple[Path, Path] | None:
-    if not getattr(sys, "frozen", False) or sys.platform != "darwin":
+    if not getattr(sys, "frozen", False):
+        return None
+    if sys.platform == "win32":
+        private = Path(sys.executable).resolve().parent / "_internal/lens-ocr"
+        return private / "bin/tesseract.exe", private
+    if sys.platform != "darwin":
         return None
     contents = Path(sys.executable).resolve().parents[1]
     return (
@@ -49,7 +54,10 @@ def verify(executable: str) -> dict | None:
     paths = bundle_paths()
     if not paths or Path(executable) != paths[0]:
         return None
-    contents = paths[1].parents[1]
+    # Keep macOS v1 manifests relative to the .app root. Windows manifests use
+    # the portable directory root, with resources confined to _internal.
+    windows = paths[0].name == "tesseract.exe"
+    contents = paths[1].parent if windows else paths[1].parents[1]
     manifest = json.loads((paths[1] / "runtime.json").read_text(encoding="utf-8"))
     if (
         not isinstance(manifest, dict)
