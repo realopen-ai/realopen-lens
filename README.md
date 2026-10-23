@@ -2,6 +2,7 @@
 
 Experimental native launcher/build instructions: [Desktop packaging](docs/desktop.md).
 Windows x64 ZIP build and CI instructions: [Windows desktop](docs/desktop-windows.md).
+Ubuntu 24.04 x64 tarball and CI instructions: [Linux desktop](docs/desktop-linux.md).
 
 Private, offline image search for your own collection.
 

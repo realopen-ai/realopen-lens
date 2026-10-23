@@ -1,7 +1,8 @@
 # Desktop build (experimental)
 
 For the native Windows x64 ZIP, first-run instructions and Windows CI checks, see
-[Windows desktop packaging](desktop-windows.md). The macOS instructions follow.
+[Windows desktop packaging](desktop-windows.md). For the Ubuntu 24.04 x64 tarball,
+see [Linux desktop packaging](desktop-linux.md). The macOS instructions follow.
 
 The Finder/Dock application icon uses the mint Lens mark. Its source is
 `frontend/public/assets/lens.svg` (also the gallery mark and favicon);
@@ -41,7 +42,7 @@ For a new library:
 1. Choose the model precision and an existing model folder, or explicitly confirm
    **Download models / cancel**. Downloads retain byte progress and cancellation.
 2. Review **Text recognition**. The macOS app includes Tesseract 5, English,
-   French, Arabic and orientation data (also included in the Windows ZIP). Setup verifies these private resources;
+   French, Arabic and orientation data (also included in Windows and Linux archives). Setup verifies these private resources;
    Homebrew or a separate OCR installation is not needed on the target Mac.
    Source installations still use their installed Tesseract/languages.
 3. Leave OCR languages blank to detect a usable installed selection, or specify
@@ -176,7 +177,7 @@ benchmarks, packaging, scripts/configs, dependency/license inputs or Python chec
 configuration changes. A PR changing only root `README.md` or documentation text
 under `docs/` skips all three workloads; only change detection runs. The manually dispatched candidate
 workflow remains unconditional. Both callers use reusable per-platform workflows:
-`desktop-macos.yml` and `desktop-windows.yml`. Both candidate callers enable
+`desktop-macos.yml`, `desktop-windows.yml` and `desktop-linux.yml`. All candidate jobs enable
 archive acceptance and 30-day retention; ordinary checks use package smoke tests
 and seven-day retention. The shared `setup-desktop` composite action installs
 locked Python/npm dependencies, checks Tcl/Tk and prepares cached OCR data.
@@ -189,9 +190,9 @@ The shared checks cover archive extraction, icon metadata/padding,
 frozen dependency imports/version metadata, Tcl/Tk scripts, pinned model registry,
 stage/resident worker dispatch/protocol handling, CLI workspace info, loopback API
 startup, gallery assets/favicon, authenticated empty-workspace reads and graceful
-shutdown. Both platforms render the real launcher in light/dark modes and exercise
+shutdown. All three platforms render the real launcher in light/dark modes and exercise
 its collapsible setup card. macOS adds ad-hoc signature verification, giving twelve
-checks on macOS and eleven on Windows. Host Python path/environment overrides are removed for frozen subprocesses.
+checks on macOS and eleven each on Windows and Linux (using Xvfb). Host Python path/environment overrides are removed for frozen subprocesses.
 The smoke server also hides external command-line tools from PATH and verifies
 that setup reports missing models while bundled OCR remains ready. A dense-text
 fixture exercises OCR with `eng+fra+ara` and loads `osd` for orientation detection.
@@ -202,7 +203,7 @@ finished-server log and no logged server errors; timeouts/forced kills fail.
 
 ### Build caches
 
-Both platforms cache uv/npm downloads and pinned `eng/fra/ara/osd` data. OCR data
+All three platforms cache uv/npm downloads and pinned `eng/fra/ara/osd` data. OCR data
 is keyed by the language registry, then checked for size/SHA256 on every run;
 missing/corrupt files are replaced only with verified downloads. The build
 rechecks those same pins when copying data into the app.
@@ -216,15 +217,19 @@ with vcpkg's compiler/ABI validation still active. Only a completed OCR installa
 may save those caches, even if subsequent app packaging fails; partial source
 builds cannot freeze an incomplete cache under an immutable key.
 
+Linux caches Ubuntu package downloads by runner image, architecture and package
+list; native libraries and their package versions are copied and recorded afresh.
+
 Cache upload failures do not waive any checks. Final archives, signatures,
 PyInstaller analysis/output, virtual environments and `node_modules` are rebuilt;
 caches do not substitute for fresh dependency installation or archive acceptance.
 
-Successful development ZIPs and always-uploaded diagnostics have seven-day artifact
+Successful development archives and always-uploaded diagnostics have seven-day artifact
 retention. The JSON report records individual check outcomes/timing and is written
 even on failure; build/server logs are retained alongside it. These artifacts are
-not notarized releases. Interactive GUI usability, model downloading, real-model
-Windows inference and Linux native packaging remain separate validation work.
+not notarized releases. Interactive desktop integration and real-model inference
+remain distinct from model-free package checks. Native Linux builds and package checks run in their own Ubuntu workflow; optional
+frozen inference requires existing model weights on the target host.
 
 The macOS arm64 development build was exercised with real local INT8 models:
 frozen indexing completed all four stages without failed/degraded files, OCR
@@ -238,7 +243,8 @@ retrieval quality. Download progress/checksum/cancellation were tested with cont
 responses; a fresh network model download was not executed.
 
 Windows has its own native build and extracted-package CI workflow; see the Windows
-guide above for its scope. Linux desktop packaging remains future work. Developer
+guide above for its scope. Linux has a matching native Ubuntu workflow and
+portable tarball; see the Linux guide for its compatibility baseline. Developer
 ID signing/notarization is optional for the experimental macOS ad-hoc signed
 prerelease.
 
