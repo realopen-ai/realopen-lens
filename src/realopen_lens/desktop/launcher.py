@@ -14,7 +14,7 @@ import threading
 import webbrowser
 from typing import Any
 
-import psutil
+from realopen_lens.runtime.precision import memory_bytes, recommended_precision
 
 from realopen_lens.storage.catalog import default_directory
 from realopen_lens.workspace.identity import metadata, models_directory
@@ -52,20 +52,6 @@ def settings(root: Path) -> dict:
             raise ValueError("Invalid desktop settings")
         return value
     return {}
-
-
-def memory_bytes() -> int | None:
-    try:
-        return psutil.virtual_memory().total
-    except (OSError, NotImplementedError, psutil.Error):
-        return None
-
-
-def recommended_precision(total: int | None) -> str:
-    """Use installed physical RAM, not momentary free memory; fall back conservatively."""
-    # Decimal GB keeps the 16 GB class eligible even when the OS reserves a little
-    # of a nominal 16 GiB installation for hardware.
-    return "fp32" if total is not None and total >= 16_000_000_000 else "int8"
 
 
 def selected_precision(config: dict, total: int | None) -> str:

@@ -15,6 +15,7 @@ from realopen_lens.indexing.service import index_collection
 from realopen_lens.learning.feedback import similar_and_record
 from realopen_lens.retrieval.images import search_similar
 from realopen_lens.retrieval.session import SearchSession
+from realopen_lens.retrieval.library import LibrarySession
 from realopen_lens.storage.artifacts import atomic_bytes
 from realopen_lens.storage.catalog import identifier
 
@@ -39,6 +40,7 @@ class TaskManager:
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="lens-jobs")
         self.session: SearchSession | None = None
         self.identity: tuple | None = None
+        self.library_session: LibrarySession | None = None
         uploads = index_dir / "api-uploads"
         if uploads.exists():
             for upload in uploads.glob("*.image"):
@@ -118,6 +120,7 @@ class TaskManager:
                 "virtual_revision": request.get("virtual_revision"),
                 "collection": request["collection"],
                 "collection_id": request.get("collection_id"),
+                "all_folders": request.get("all_folders", False),
                 "origin": request.get("origin", "manual"),
                 "status": "queued",
                 "phase": "queued",
@@ -180,6 +183,9 @@ class TaskManager:
             return self.submit("index", request)
 
     def _release_session(self):
+        if self.library_session is not None:
+            self.library_session.close()
+            self.library_session = None
         if self.session is not None:
             self.session.close()
         self.session, self.identity = None, None
@@ -285,6 +291,31 @@ class TaskManager:
                 )
                 payload = asdict(result)
                 status = result.status
+            elif kind in {"search", "similar"} and request.get("all_folders"):
+                if self.library_session is None:
+                    self._release_session()
+                    self.library_session = LibrarySession(
+                        index_dir=self.root, models=self.models, threads=self.threads
+                    )
+                if kind == "similar":
+                    payload = self.library_session.similar(
+                        Path(request["upload"]) if request.get("upload") else None,
+                        image_id=request.get("image_id"),
+                        collection=collection,
+                        limit=request["limit"],
+                        save_run=request.get("save_run", False),
+                        on_progress=progress,
+                    )
+                else:
+                    payload = self.library_session.search(
+                        request["query"],
+                        limit=request["limit"],
+                        mode=request["mode"],
+                        use_feedback=request.get("use_feedback", True),
+                        save_run=request.get("save_run", False),
+                        on_progress=progress,
+                    )
+                status = "completed"
             elif kind == "search":
                 from realopen_lens.indexing.service import collection_status
 

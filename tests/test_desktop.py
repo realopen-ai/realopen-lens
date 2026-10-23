@@ -123,8 +123,10 @@ def test_precision_recommendation_uses_physical_ram_threshold(memory, expected):
 
 
 def test_ram_detection_failure_is_conservative(monkeypatch):
+    from realopen_lens.runtime import precision
+
     monkeypatch.setattr(
-        launcher.psutil, "virtual_memory", lambda: (_ for _ in ()).throw(OSError("missing"))
+        precision.psutil, "virtual_memory", lambda: (_ for _ in ()).throw(OSError("missing"))
     )
     assert launcher.memory_bytes() is None
 

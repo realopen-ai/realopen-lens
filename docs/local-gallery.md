@@ -5,6 +5,12 @@ as the CLI. The engine stays independent of FastAPI and React. Normal runtime
 uses local files and compiled assets, without a Vite server, CDN, remote fonts,
 telemetry or model downloads.
 
+Search one folder or choose **All folders** for [library-wide text and image search](library-search.md),
+including source labels, cross-folder exact-content grouping and separately scoped feedback.
+
+Standalone serving uses the same [RAM-based precision default](siglip2-precision.md)
+as the desktop launcher. Existing folder profiles and manual overrides take priority.
+
 ## Build and run
 
 From a checkout, install Node.js 22.12+ and the existing Python/Tesseract

@@ -42,6 +42,7 @@ class SearchResult:
     issues: tuple[dict, ...] = ()
     duplicate_ids: tuple[str, ...] = ()
     feedback: dict | None = None
+    sources: tuple[dict, ...] = ()
 
 
 def source_paths(root: Path, manifest: dict) -> dict[str, tuple[str, ...]]:

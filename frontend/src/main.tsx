@@ -101,6 +101,7 @@ function App() {
   >("library");
   const [collections, setCollections] = useState<Collection[]>([]);
   const [collection, setCollection] = useState("");
+  const [allFolders, setAllFolders] = useState(false);
   const selectedCollection = useRef("");
   const [virtuals, setVirtuals] = useState<VirtualCollection[]>([]);
   const [virtualId, setVirtualId] = useState<string | null>(null);
@@ -287,12 +288,37 @@ function App() {
     }
     return values;
   }
+  function openLibrary() {
+    ++requestVersion.current;
+    foreground.current = null;
+    sessionStorage.removeItem("lens-task");
+    virtualScope.current = null;
+    setVirtualId(null);
+    setAllFolders(true);
+    setView("library");
+    setImages([]);
+    setTotal(0);
+    setSelected(new Set());
+    setDetail(null);
+    setRunId(null);
+    setLabels({});
+    setUndo(null);
+    setRepeatSearch(null);
+    setMemoryEnabled(false);
+    setGeneration(null);
+    setLoading(false);
+    setError("");
+    setOrganizationNotice("");
+    setTitle("Search all folders");
+    setIsBrowse(false);
+  }
   async function browse(
     value: string,
     offset = 0,
     group: VirtualCollection | null = null,
   ) {
     setView("library");
+    setAllFolders(false);
     const version = ++requestVersion.current;
     foreground.current = null;
     setRepeatSearch(null);
@@ -476,9 +502,25 @@ function App() {
       return;
     }
     if (task.status === "completed" && task.result?.results) {
+      setAllFolders(Boolean(task.all_folders));
+      if (
+        task.result.unavailable?.length ||
+        task.result.pending_folders?.length
+      )
+        setOrganizationNotice(
+          [
+            ...(task.result.unavailable || []).map(
+              (f) => `${f.collection}: ${f.images} unavailable images`,
+            ),
+            ...(task.result.pending_folders || []).map(
+              (f) => `${f}: not indexed yet`,
+            ),
+          ].join(" · "),
+        );
+
       setResultRanking(
         task.result.ranking
-          ? `${task.result.ranking.kind}${task.result.ranking.sha256 ? ` · ${task.result.ranking.sha256.slice(0, 8)}` : ""}`
+          ? `${task.result.ranking.kind}${task.result.ranking.sha256 ? ` · ${task.result.ranking.sha256.slice(0, 8)}` : ""}${task.result.ranking.mixed_precision_experimental ? " · mixed precision (experimental)" : ""}`
           : "",
       );
       setMemoryEnabled(Boolean(task.result.feedback?.enabled));
@@ -557,11 +599,14 @@ function App() {
         (t) =>
           t.id === remembered &&
           t.kind !== "index" &&
-          values.some((value) => value.name === t.collection),
+          (t.all_folders ||
+            values.some((value) => value.name === t.collection)),
       );
       let restore = true;
       if (values.length) {
-        const source = previous?.collection || values[0].name;
+        const source = previous?.all_folders
+          ? values[0].name
+          : previous?.collection || values[0].name;
         const scopes = await loadVirtuals(source);
         const group =
           scopes.find((value) => value.id === previous?.virtual_collection) ||
@@ -576,6 +621,7 @@ function App() {
       setTasks(pending);
       pending.forEach((task) => seenTasks.current.set(task.id, task.revision));
       if (previous && restore) {
+        setAllFolders(Boolean(previous.all_folders));
         foreground.current = previous.id;
         sessionStorage.setItem("lens-task", previous.id);
         setTitle("Search results");
@@ -678,7 +724,22 @@ function App() {
     heading: string,
   ) {
     setView("library");
-    const scope = virtualScope.current;
+    const library = Boolean(body.all_folders);
+    const scope = library ? null : virtualScope.current;
+    if (kind === "similar" && !library) {
+      const source = String(body.collection);
+      const changed = selectedCollection.current !== source;
+      setAllFolders(false);
+      setCollection(source);
+      selectedCollection.current = source;
+      if (changed) {
+        setVirtuals([]);
+        setTargetVirtual("");
+        setVirtualId(null);
+        virtualScope.current = null;
+        void loadVirtuals(source).catch((e) => setError(String(e)));
+      }
+    }
     body = {
       ...body,
       ...(!("virtual_collection" in body) && scope
@@ -719,7 +780,7 @@ function App() {
   async function upload(file: File, record = saveRun) {
     setSelected(new Set());
     setOrganizationNotice("");
-    const scope = virtualScope.current;
+    const scope = allFolders ? null : virtualScope.current;
     setUndo(null);
     setMemoryEnabled(false);
     setRepeatSearch({ kind: "upload", file });
@@ -740,7 +801,7 @@ function App() {
     setTitle(`Similar to ${file.name}`);
     try {
       const task = await uploadImage(
-        `/tasks/upload?collection=${encodeURIComponent(collection)}&save_run=${record}${scope ? `&virtual_collection=${scope.id}&virtual_revision=${scope.revision}` : ""}`,
+        `/tasks/upload?collection=${encodeURIComponent(collection)}&save_run=${record}&all_folders=${allFolders}${scope ? `&virtual_collection=${scope.id}&virtual_revision=${scope.revision}` : ""}`,
         file,
         (loaded, total) => setUploadBytes({ loaded, total }),
       );
@@ -904,6 +965,14 @@ function App() {
   const active = tasks.filter((t) => !terminal(t));
   const latest =
     active.find((t) => t.status === "running") || active[0] || tasks[0];
+  function imageCollection(image: ImageResult) {
+    const source = image.sources?.[0];
+    return (
+      collections.find((c) => c.id === source?.collection_id)?.name ||
+      source?.collection ||
+      collection
+    );
+  }
   const current = collections.find((c) => c.name === collection);
   return (
     <div className="app-shell">
@@ -918,8 +987,9 @@ function App() {
         </a>
         <div className="workspace-label">YOUR WORKSPACE</div>
         <button
-          className={`nav-item ${view === "library" && !virtualId ? "selected" : ""}`}
-          onClick={() => collection && void browse(collection)}
+          className={`nav-item ${view === "library" && allFolders ? "selected" : ""}`}
+          onClick={openLibrary}
+          disabled={!collection}
         >
           <Icon name="grid" />
           Image library
@@ -938,7 +1008,7 @@ function App() {
           {collections.map((c) => (
             <div className="folder-row" key={c.id || c.name}>
               <button
-                className={`collection-item ${collection === c.name ? "current" : ""}`}
+                className={`collection-item ${!allFolders && collection === c.name ? "current" : ""}`}
                 onClick={() => void browse(c.name)}
               >
                 <Icon name="folder" size={17} />
@@ -957,16 +1027,18 @@ function App() {
             <p className="muted small">Your collections will appear here.</p>
           )}
         </div>
-        <VirtualCollections
-          collection={collection}
-          groups={virtuals}
-          activeId={virtualId}
-          creating={creatingVirtual}
-          setCreating={setCreatingVirtual}
-          onBrowse={(group) => void browse(collection, 0, group)}
-          onChanged={organizationChanged}
-          onCreated={setTargetVirtual}
-        />
+        {!allFolders && (
+          <VirtualCollections
+            collection={collection}
+            groups={virtuals}
+            activeId={virtualId}
+            creating={creatingVirtual}
+            setCreating={setCreatingVirtual}
+            onBrowse={(group) => void browse(collection, 0, group)}
+            onChanged={organizationChanged}
+            onCreated={setTargetVirtual}
+          />
+        )}
         <div className="workspace-label tools-label">TOOLS</div>
         <nav className="tools-nav" aria-label="Workspace tools">
           <button
@@ -1161,6 +1233,7 @@ function App() {
                     {
                       query,
                       collection,
+                      all_folders: allFolders,
                       mode,
                       save_run: saveRun,
                       use_feedback: useFeedback,
@@ -1213,6 +1286,26 @@ function App() {
               <span>Search by meaning or words inside an image.</span>
               <div>
                 <label>
+                  Search in{" "}
+                  <select
+                    aria-label="Search in"
+                    disabled={!collection}
+                    value={allFolders ? "" : collection}
+                    onChange={(e) =>
+                      e.target.value === ""
+                        ? openLibrary()
+                        : void browse(e.target.value)
+                    }
+                  >
+                    <option value="">All folders</option>
+                    {collections.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
                   Search mode{" "}
                   <select
                     aria-label="Search mode"
@@ -1252,6 +1345,7 @@ function App() {
                 </summary>
                 <QueryMemory
                   enabled={memoryEnabled}
+                  allFolders={Boolean(repeatSearch.body.all_folders)}
                   key={JSON.stringify(repeatSearch.body)}
                   collection={String(repeatSearch.body.collection)}
                   query={String(repeatSearch.body.query)}
@@ -1439,7 +1533,11 @@ function App() {
                 </span>
               </div>
               <div className="gallery-context">
-                {current && <span className="pill">{current.name}</span>}
+                {allFolders ? (
+                  <span className="pill">All folders</span>
+                ) : (
+                  current && <span className="pill">{current.name}</span>
+                )}
                 {!isBrowse && resultRanking && (
                   <span className="ranking-caption">{resultRanking}</span>
                 )}
@@ -1473,7 +1571,7 @@ function App() {
                 {organizationNotice}
               </p>
             )}
-            {images.length > 0 && !loading && (
+            {images.length > 0 && !loading && !allFolders && (
               <div className="selection-controls">
                 <button
                   className="text-button"
@@ -1525,30 +1623,34 @@ function App() {
                   <Icon name={collection ? "search" : "image"} size={35} />
                 </div>
                 <h2>
-                  {collection
-                    ? virtualId
-                      ? !isBrowse
-                        ? "No matching images"
-                        : unavailable
-                          ? "No saved images are available"
-                          : "This collection is empty"
-                      : !isBrowse
-                        ? "No matching images"
-                        : "Nothing here yet"
-                    : "Make room for a little discovery."}
+                  {allFolders && !repeatSearch
+                    ? "Search across your folders"
+                    : collection
+                      ? virtualId
+                        ? !isBrowse
+                          ? "No matching images"
+                          : unavailable
+                            ? "No saved images are available"
+                            : "This collection is empty"
+                        : !isBrowse
+                          ? "No matching images"
+                          : "Nothing here yet"
+                      : "Make room for a little discovery."}
                 </h2>
                 <p>
-                  {collection
-                    ? virtualId
-                      ? !isBrowse
-                        ? "Try a different query or search all images in the source folder."
-                        : unavailable
-                          ? "Restore the source files and refresh their folder index to see them here again."
-                          : "Select images from the library or search results, then add them to this collection."
-                      : !isBrowse
-                        ? "Try another query, review hidden images, or browse the library."
-                        : "Try another search or index a folder to start exploring."
-                    : "Add a folder of photos, screenshots, documents or diagrams. Lens keeps your original files right where they are."}
+                  {allFolders && !repeatSearch
+                    ? "Describe a photo, screenshot or document. Lens searches every indexed folder."
+                    : collection
+                      ? virtualId
+                        ? !isBrowse
+                          ? "Try a different query or search all images in the source folder."
+                          : unavailable
+                            ? "Restore the source files and refresh their folder index to see them here again."
+                            : "Select images from the library or search results, then add them to this collection."
+                        : !isBrowse
+                          ? "Try another query, review hidden images, or browse the library."
+                          : "Try another search or index a folder to start exploring."
+                      : "Add a folder of photos, screenshots, documents or diagrams. Lens keeps your original files right where they are."}
                 </p>
                 {virtualId || (collection && !isBrowse) ? (
                   <button
@@ -1587,7 +1689,7 @@ function App() {
                         type="checkbox"
                         aria-label={`Select ${filename(image)}`}
                         checked={selected.has(image.image_id)}
-                        disabled={selectionBusy || loading}
+                        disabled={selectionBusy || loading || allFolders}
                         onChange={() => toggleImage(image)}
                       />
                     </label>
@@ -1626,6 +1728,13 @@ function App() {
                           : ""}
                       </span>
                     </div>
+                    {allFolders && image.sources && (
+                      <p className="source-caption">
+                        {[
+                          ...new Set(image.sources.map((s) => s.collection)),
+                        ].join(" · ")}
+                      </p>
+                    )}
                     <div className="card-actions">
                       <button
                         title="Find similar images"
@@ -1633,8 +1742,10 @@ function App() {
                           void start(
                             "similar",
                             {
-                              collection,
-                              image_id: image.image_id,
+                              collection: imageCollection(image),
+                              all_folders: allFolders,
+                              image_id:
+                                image.sources?.[0]?.image_id || image.image_id,
                               save_run: saveRun,
                               limit: 50,
                             },
@@ -1815,7 +1926,8 @@ function App() {
                   />
                 </label>
                 <p className="field-help">
-                  Refresh an existing collection with its current precision.
+                  New folders default to INT8 below 16 GB RAM and FP32 at 16 GB
+                  or above. Existing collections keep their current precision.
                   Models and language packs must already be installed.
                 </p>
               </details>
@@ -1893,8 +2005,10 @@ function App() {
                   void start(
                     "similar",
                     {
-                      collection,
-                      image_id: detail.image_id,
+                      collection: imageCollection(detail),
+                      all_folders: allFolders,
+                      image_id:
+                        detail.sources?.[0]?.image_id || detail.image_id,
                       save_run: saveRun,
                       limit: 50,
                     },

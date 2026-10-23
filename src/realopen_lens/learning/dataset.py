@@ -66,6 +66,8 @@ def _prepare(index_dir: Path, review: Path, output: Path, on_progress=None) -> d
                 raise ValueError("Query family leaks across splits")
             families[family] = split
             run = store.run(run_id)
+            if "library_sources" in run:
+                raise ValueError("Library feedback requires a library-aware training evaluation")
 
             catalog = Catalog(index_dir, readonly=True)
             try:

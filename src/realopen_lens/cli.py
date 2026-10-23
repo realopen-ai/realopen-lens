@@ -29,7 +29,7 @@ app.add_typer(feedback_app, name="feedback")
 @models_app.command("fetch")
 def fetch_models(
     directory: Annotated[Path, typer.Option("--directory")] = Path("models"),
-    precision: Annotated[str, typer.Option()] = "int8",
+    precision: Annotated[str | None, typer.Option()] = None,
     siglip_precision: Annotated[
         str | None, typer.Option(help="Override SigLIP2 precision only: int8 or fp32")
     ] = None,
@@ -38,7 +38,12 @@ def fetch_models(
     from realopen_lens.models.manager import fetch
 
     try:
-        fetch(directory, precision, typer.echo, siglip_precision=siglip_precision)
+        from realopen_lens.runtime.precision import default_precision
+
+        selected = default_precision(
+            siglip_precision if siglip_precision is not None else precision
+        )
+        fetch(directory, precision or "int8", typer.echo, siglip_precision=selected)
     except (OSError, ValueError) as error:
         typer.echo(f"Error: {error}", err=True)
         raise typer.Exit(1) from error
@@ -47,7 +52,7 @@ def fetch_models(
 @models_app.command("verify")
 def verify_models(
     directory: Annotated[Path, typer.Option("--directory")] = Path("models"),
-    precision: Annotated[str, typer.Option()] = "int8",
+    precision: Annotated[str | None, typer.Option()] = None,
     siglip_precision: Annotated[
         str | None, typer.Option(help="Override SigLIP2 precision only: int8 or fp32")
     ] = None,
@@ -56,7 +61,12 @@ def verify_models(
     from realopen_lens.models.manager import verify
 
     try:
-        verify(directory, precision, siglip_precision)
+        from realopen_lens.runtime.precision import default_precision
+
+        selected = default_precision(
+            siglip_precision if siglip_precision is not None else precision
+        )
+        verify(directory, precision or "int8", selected)
     except (OSError, ValueError) as error:
         typer.echo(f"Error: {error}", err=True)
         raise typer.Exit(1) from error
@@ -190,8 +200,8 @@ def index_folder(
     ] = False,
     log: Annotated[bool, typer.Option("--log", help="Stream live indexing logs to stderr")] = False,
     siglip_precision: Annotated[
-        str, typer.Option(help="SigLIP2 precision: int8 or fp32; E5 stays int8")
-    ] = "int8",
+        str | None, typer.Option(help="Override device/index SigLIP2 precision; E5 stays int8")
+    ] = None,
 ):
     """Index or refresh a folder; unchanged processing resumes from durable cache."""
     from dataclasses import asdict
@@ -237,6 +247,7 @@ def show_status(
 @app.command("search")
 def find_images(
     query: Annotated[str, typer.Argument()],
+    all_folders: Annotated[bool, typer.Option(help="Search every indexed folder")] = False,
     collection: Annotated[str, typer.Option()] = "personal",
     virtual_collection: Annotated[
         str | None, typer.Option(help="Restrict to this virtual collection ID")
@@ -280,6 +291,37 @@ def find_images(
                 semantic=50 if semantic_candidates is None else semantic_candidates,
                 lexical=50 if lexical_candidates is None else lexical_candidates,
             )
+        if all_folders:
+            from realopen_lens.retrieval.library import LibrarySession
+            from realopen_lens.storage.catalog import default_directory
+
+            if (
+                virtual_collection
+                or virtual_revision
+                or reranker
+                or depths
+                or siglip_precision
+                or collection != "personal"
+            ):
+                raise ValueError("Library search cannot use folder-specific overrides")
+            session = LibrarySession(
+                index_dir=index_dir or default_directory(), models=models, threads=threads
+            )
+            try:
+                while query.strip():
+                    result = session.search(
+                        query, limit=limit, mode=mode, use_feedback=feedback, save_run=save_run
+                    )
+                    typer.echo(json.dumps(result, ensure_ascii=False, indent=2))
+                    if not interactive:
+                        break
+                    try:
+                        query = input("Search (empty line exits): ")
+                    except EOFError:
+                        break
+            finally:
+                session.close()
+            return
         options: dict[str, Any] = dict(
             limit=limit,
             mode=mode,
@@ -358,6 +400,7 @@ def similar_images(
     ] = None,
     image_id: Annotated[str | None, typer.Option(help="Image ID in the active generation")] = None,
     collection: Annotated[str, typer.Option()] = "personal",
+    all_folders: Annotated[bool, typer.Option(help="Search every indexed folder")] = False,
     virtual_collection: Annotated[
         str | None, typer.Option(help="Restrict to this virtual collection ID")
     ] = None,
@@ -381,6 +424,28 @@ def similar_images(
     from realopen_lens.search import search_similar
 
     try:
+        if all_folders:
+            from realopen_lens.retrieval.library import LibrarySession
+            from realopen_lens.storage.catalog import default_directory
+
+            if virtual_collection or virtual_revision or siglip_precision:
+                raise ValueError("Library similarity cannot use folder-specific overrides")
+            session = LibrarySession(
+                index_dir=index_dir or default_directory(), models=models, threads=threads
+            )
+            try:
+                result = session.similar(
+                    image,
+                    image_id=image_id,
+                    collection=collection,
+                    limit=limit,
+                    include_self=include_self,
+                    save_run=save_run,
+                )
+                typer.echo(json.dumps(result, ensure_ascii=False, indent=2))
+            finally:
+                session.close()
+            return
         options: dict[str, Any] = dict(
             image_id=image_id,
             collection=collection,

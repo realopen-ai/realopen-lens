@@ -27,7 +27,14 @@ def _content(root: Path, key: str, pixels: dict[str, str]) -> str:
 
 
 def resolve(
-    root: Path, collection_id: str, query: str, scope_key: str, manifest: dict, available: dict
+    root: Path,
+    collection_id: str,
+    query: str,
+    scope_key: str,
+    manifest: dict,
+    available: dict,
+    *,
+    content_pixels: dict[str, str] | None = None,
 ) -> tuple[dict[str, dict], dict]:
     summary = {
         "enabled": True,
@@ -42,7 +49,9 @@ def resolve(
     with FeedbackStore(root, readonly=True) as store:
         store.db.execute("BEGIN")
         rows = store.memory(collection_id, query, scope_key)
-    pixels = _pixels(root, manifest) if rows else {}
+    pixels = (
+        (content_pixels if content_pixels is not None else _pixels(root, manifest)) if rows else {}
+    )
     content = {key: _content(root, key, pixels) for key in available}
     latest: dict[str, dict] = {}
     for row in rows:
@@ -89,6 +98,28 @@ def apply(ranking: list[str], decisions: dict[str, dict]) -> list[str]:
 def aliases_for_run(root: Path, run: dict, image_id: str) -> tuple[str, ...]:
     row: dict = next((r for r in run["results"] if r["image_id"] == image_id), {})
     aliases = {image_id, *row.get("duplicate_ids", [])}
+    if run.get("library_sources") is not None:
+        from realopen_lens.organization.duplicates import _cached
+
+        # The current run may contain only a new format alias after an old
+        # source disappeared. Include historical aliases before the optimistic
+        # event check, just as collection-scoped query memory does.
+        pixels = {}
+        for key in aliases:
+            cached = _cached(root / "duplicates/cache" / (key + ".json"), key)
+            if cached:
+                pixels[key] = cached["pixels"]
+        if pixels and run["query"]["kind"] == "text" and (root / "feedback.sqlite3").is_file():
+            if len(set(pixels.values())) != 1:
+                raise ValueError("Library duplicate identities disagree; scan duplicates again")
+            pixels[image_id] = next(iter(pixels.values()))
+            group = _content(root, image_id, pixels)
+            with FeedbackStore(root, readonly=True) as store:
+                rows = store.memory(run["collection_id"], run["query"]["text"])
+            aliases.update(
+                row["image_id"] for row in rows if _content(root, row["image_id"], pixels) == group
+            )
+        return tuple(sorted(aliases))
     if (root / "catalog.sqlite3").is_file():
         from realopen_lens.storage.catalog import Catalog
         from realopen_lens.storage.artifacts import load_manifest

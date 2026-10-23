@@ -35,6 +35,7 @@ class ScopedInput(Input):
 
 
 class SearchInput(ScopedInput):
+    all_folders: bool = False
     query: str = Field(min_length=1, max_length=4096)
     mode: Literal["hybrid", "visual", "lexical", "semantic"] = "hybrid"
     limit: int = Field(default=50, ge=1, le=100)
@@ -43,6 +44,7 @@ class SearchInput(ScopedInput):
 
 
 class SimilarInput(ScopedInput):
+    all_folders: bool = False
     image_id: str = Field(pattern=r"^[a-f0-9]{64}$")
     limit: int = Field(default=50, ge=1, le=100)
     save_run: bool = False
@@ -51,7 +53,7 @@ class SimilarInput(ScopedInput):
 class IndexInput(Input):
     root: str = Field(min_length=1, max_length=4096)
     languages: str = Field(default="eng+fra+ara", pattern=r"^[a-zA-Z0-9_+.-]{1,128}$")
-    siglip_precision: Literal["int8", "fp32"] = "int8"
+    siglip_precision: Literal["int8", "fp32"] | None = None
     rehash: bool = False
 
 
@@ -69,7 +71,7 @@ class FolderRenameInput(FolderInput):
 
 
 class SetupInput(Input):
-    siglip_precision: Literal["int8", "fp32"] = "int8"
+    siglip_precision: Literal["int8", "fp32"] | None = None
     languages: str = Field(default="", pattern=r"^(?:[A-Za-z0-9_]+(?:\+[A-Za-z0-9_]+)*)?$")
     source: str | None = Field(default=None, min_length=1, max_length=4096)
 
@@ -212,15 +214,21 @@ def create_app(
             json.dumps({"detail": str(error)}), status_code=400, media_type="application/json"
         )
 
+    def precision_default(explicit: str | None = None) -> str:
+        from realopen_lens.runtime.precision import default_precision
+
+        preferred = explicit
+        if preferred is None and preferred_siglip_precision is not None:
+            preferred = preferred_siglip_precision()
+        return default_precision(preferred, workspace=root)
+
     @app.get("/api/session")
     def session():
         response = Response(
             json.dumps(
                 {
                     "allowed_roots": [str(p) for p in roots],
-                    "default_siglip_precision": (
-                        preferred_siglip_precision() if preferred_siglip_precision else "int8"
-                    ),
+                    "default_siglip_precision": (precision_default()),
                     "default_ocr_languages": (
                         preferred_ocr_languages() if preferred_ocr_languages else ""
                     ),
@@ -241,7 +249,14 @@ def create_app(
         boundaries = (*roots, *(Path(c["root"]).resolve() for c in reading.collections(root)))
         if source and not any(source.is_relative_to(p) for p in boundaries):
             raise HTTPException(403, "Folder is outside the configured import roots")
-        return submit("setup", {**body.model_dump(), "source": str(source) if source else None})
+        return submit(
+            "setup",
+            {
+                **body.model_dump(),
+                "siglip_precision": precision_default(body.siglip_precision),
+                "source": str(source) if source else None,
+            },
+        )
 
     @app.post("/api/tasks/workspace-preview", status_code=202)
     def preview_workspace(body: WorkspacePreviewInput):
@@ -306,6 +321,24 @@ def create_app(
         except (ValueError, OSError) as error:
             raise HTTPException(404, str(error)) from error
         return Response(data, media_type=mime)
+
+    @app.get("/api/sources/{collection_id}/images/{image_id}/{kind}")
+    def source_image(
+        collection_id: str,
+        image_id: str,
+        kind: Literal["thumbnail", "original"],
+        generation: str | None = None,
+    ):
+        from realopen_lens.storage.catalog import Catalog
+
+        catalog = Catalog(root, readonly=True)
+        try:
+            collection = catalog.collection_name(collection_id)
+        except ValueError as error:
+            raise HTTPException(404, str(error)) from error
+        finally:
+            catalog.close()
+        return image(collection, image_id, kind, generation)
 
     def submit(kind: str, body: dict):
         try:
@@ -380,10 +413,29 @@ def create_app(
 
     @app.post("/api/tasks/search", status_code=202)
     def search(body: SearchInput):
-        return submit("search", body.model_dump())
+        if body.all_folders and (body.virtual_collection or body.virtual_revision):
+            raise HTTPException(422, "Library search cannot use a folder virtual collection")
+        request = body.model_dump()
+        if body.all_folders:
+            request["collection"] = "All folders"
+        return submit("search", request)
+
+    @app.get("/api/library/hidden")
+    def library_hidden(query: str, offset: int = 0, limit: int = 50):
+        from realopen_lens.retrieval.library import LibrarySession
+
+        session = LibrarySession(index_dir=root)
+        try:
+            return session.search(
+                query, mode="lexical", hidden_only=True, offset=offset, limit=limit
+            )
+        finally:
+            session.close()
 
     @app.post("/api/tasks/similar", status_code=202)
     def similar(body: SimilarInput):
+        if body.all_folders and (body.virtual_collection or body.virtual_revision):
+            raise HTTPException(422, "Library similarity cannot use a folder virtual collection")
         return submit("similar", body.model_dump())
 
     @app.post("/api/tasks/index", status_code=202)
@@ -400,7 +452,16 @@ def create_app(
                     f"Collection '{body.collection}' already indexes '{collection['root']}'. "
                     "Use another collection name for this folder.",
                 )
-        return submit("index", {**body.model_dump(), "root": str(path)})
+        from realopen_lens.indexing.service import resolve_precision
+
+        explicit: str | None = body.siglip_precision
+        existing = next((c for c in collections if c["name"] == body.collection), None)
+        if explicit is None and existing is None:
+            explicit = precision_default()
+        selected = resolve_precision(root, body.collection, explicit)
+        return submit(
+            "index", {**body.model_dump(), "root": str(path), "siglip_precision": selected}
+        )
 
     @app.get("/api/folders")
     def folders(path: str | None = None, offset: int = Query(default=0, ge=0)):
@@ -438,6 +499,7 @@ def create_app(
         request: Request,
         collection: str = "personal",
         save_run: bool = False,
+        all_folders: bool = False,
         virtual_collection: str | None = None,
         virtual_revision: int | None = None,
     ):
@@ -446,6 +508,8 @@ def create_app(
             virtual_collection=virtual_collection,
             virtual_revision=virtual_revision,
         )
+        if all_folders and (virtual_collection or virtual_revision):
+            raise HTTPException(422, "Library similarity cannot use a folder virtual collection")
         directory = root / "api-uploads"
         directory.mkdir(parents=True, exist_ok=True)
         path = directory / (identifier() + ".image")
@@ -466,6 +530,7 @@ def create_app(
                     "save_run": save_run,
                     "limit": 50,
                     "upload": str(path),
+                    "all_folders": all_folders,
                     "virtual_collection": virtual_collection,
                     "virtual_revision": virtual_revision,
                 },

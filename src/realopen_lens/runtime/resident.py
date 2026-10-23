@@ -214,6 +214,13 @@ class ResidentQueryEncoder:
                 if stream is not None:
                     stream.close()
 
+    def release(self):
+        """Unload the worker but retain signature-checked verification for reuse."""
+        with self._lock:
+            if self._closed:
+                raise RuntimeError("Resident query encoder is closed")
+            self._stop()
+
     def close(self):
         with self._lock:
             self._closed = True

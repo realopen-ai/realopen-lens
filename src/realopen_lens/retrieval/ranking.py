@@ -218,6 +218,39 @@ def hybrid_rank(
     semantic = (
         vector_scores(passage_vectors, semantic_query, passage_ids) if len(passage_ids) else {}
     )
+    return hybrid_scores(
+        visual,
+        semantic,
+        query,
+        ocr_records,
+        limit=limit,
+        semantic_floor=semantic_floor,
+        semantic_margin=semantic_margin,
+        lexical_candidates=lexical_candidates,
+        lexical_statistics=lexical_statistics,
+        trace=trace,
+        candidate_depths=depths,
+    )
+
+
+def hybrid_scores(
+    visual: dict[str, float],
+    semantic: dict[str, float],
+    query: str,
+    ocr_records: list[dict[str, Any]],
+    *,
+    limit: int = 50,
+    semantic_floor: float = 0.83,
+    semantic_margin: float = 0.04,
+    lexical_candidates: list[str] | None = None,
+    lexical_statistics: tuple[int, dict[str, int]] | None = None,
+    trace: dict | None = None,
+    candidate_depths: CandidateDepths | None = None,
+) -> list[str]:
+    """Fuse already aggregated scores with the same single-collection policy."""
+    if limit < 1:
+        raise ValueError("Retrieval limit must be positive")
+    depths = candidate_depths or CandidateDepths(visual=max(50, limit))
     background = float(np.median(list(semantic.values()))) if semantic else 0
     texts = {row["image_id"]: row["text"] for row in ocr_records}
     alternatives = {row["image_id"]: row.get("alternate_texts", []) for row in ocr_records}

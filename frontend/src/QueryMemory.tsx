@@ -13,12 +13,14 @@ export function QueryMemory({
   scope,
   revision,
   enabled,
+  allFolders = false,
 }: {
   collection: string;
   query: string;
   scope?: string;
   revision?: number;
   enabled: boolean;
+  allFolders?: boolean;
 }) {
   const [page, setPage] = useState<{
     results: ImageResult[];
@@ -41,7 +43,11 @@ export function QueryMemory({
     if (scope) params.set("virtual_collection", scope);
     if (revision) params.set("virtual_revision", String(revision));
     try {
-      setPage(await api(`/feedback/hidden?${params}`));
+      setPage(
+        await api(
+          `${allFolders ? "/library/hidden" : "/feedback/hidden"}?${params}`,
+        ),
+      );
       setOffset(start);
     } catch (e) {
       setError(String(e));
@@ -71,7 +77,7 @@ export function QueryMemory({
       <div className="memory-heading">
         <span>
           {enabled
-            ? "Relevant images come first; irrelevant images are hidden for this exact query and collection."
+            ? "Relevant images come first; irrelevant images are hidden for this exact query and search scope."
             : "Query feedback is disabled for these results. You can still review hidden judgments."}
         </span>
         <button

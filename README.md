@@ -92,9 +92,9 @@ derived data separately.
 ## Built for consumer hardware
 
 The first release targets **macOS, Windows, and Linux**, with **CPU-only operation
-and 8 GB RAM** as the minimum hardware goal. A 16 GB profile will allow larger
-indexing batches and more resident models. Docker and a dedicated GPU will not be
-required.
+and 8 GB RAM** as the minimum hardware goal. New collections default to INT8
+SigLIP2 below 16 GB physical RAM and FP32 at 16 GB or above; E5 stays INT8.
+Docker and a dedicated GPU are not required.
 
 Hardware support, memory use, and performance are targets awaiting validation on
 real machines. Language support will be evaluated separately for visual search,
@@ -152,6 +152,7 @@ inventory, copyright notices and license texts.
 - [x] Add folder management, virtual collections, and reviewable duplicate groups.
 - [x] Add opt-in [automatic folder refresh](docs/automatic-refresh.md) with live progress.
 - [x] Build the local image gallery with live task progress.
+- [x] Add [library-wide text and image search](docs/library-search.md) across INT8/FP32 folders.
 - [x] Package an experimental macOS desktop launcher with device setup guidance.
 - [ ] Expand independent multilingual OCR/relevance review before promoting learned ranking.
 - [ ] Compare a small neural reranker against hybrid and logistic baselines.
@@ -212,8 +213,10 @@ The [fresh-source scope study](docs/benchmarks/2026-10-20-reranker-scope-study.m
 adds reviewed document/screenshot coverage, feature ablations and a protected
 top-50 reranking scope, with individual results and remaining recall limitations.
 
-Collection indexing now supports opt-in [FP32 SigLIP2](docs/siglip2-precision.md)
-with matching query encoders and a separate index; INT8 remains the default.
+New collections use a shared [device precision policy](docs/siglip2-precision.md):
+INT8 SigLIP2 below 16 GB physical RAM, FP32 at 16 GB or above, with E5 INT8.
+Saved preferences and explicit overrides are respected; existing indexes retain
+their recorded precision.
 See the [production validation](docs/benchmarks/2026-10-20-siglip2-precision.md)
 for measured quality, cold-query latency, and memory.
 The [full saved-collection comparison](docs/benchmarks/2026-10-20-full-siglip2-precision.md)

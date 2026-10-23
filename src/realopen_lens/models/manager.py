@@ -46,7 +46,10 @@ def verify(root: Path, precision: str, siglip_precision: str | None = None) -> N
     for name, key, spec in artifacts(precision, siglip_precision):
         path = artifact_path(root, name, key)
         if not path.is_file():
-            raise ValueError(f"Missing model file: {path}. Run 'lens models fetch' first.")
+            raise ValueError(
+                f"Missing model file: {path}. Run 'lens models fetch --precision {precision} "
+                f"--siglip-precision {siglip_precision or precision}' first."
+            )
         if path.stat().st_size != spec["size"] or digest(path) != spec["sha256"]:
             raise ValueError(f"Model integrity check failed: {path}")
 

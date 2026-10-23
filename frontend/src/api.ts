@@ -4,7 +4,16 @@ export interface MemoryDecision {
   event_id: number;
   run_id: string;
 }
+export interface ImageSource {
+  collection: string;
+  collection_id: string;
+  generation: string;
+  image_id: string;
+  paths: string[];
+  siglip_precision: string;
+}
 export interface ImageResult {
+  sources?: ImageSource[];
   rank: number;
   image_id: string;
   duplicate_ids?: string[];
@@ -51,6 +60,7 @@ export interface SetupReport {
   ocr_guide: string;
 }
 export interface Task {
+  all_folders?: boolean;
   origin?: "manual" | "automatic";
   id: string;
   kind: string;
@@ -73,6 +83,8 @@ export interface Task {
     current_image?: string;
   };
   result: {
+    unavailable?: { collection: string; images: number }[];
+    pending_folders?: string[];
     ready?: boolean;
     checks?: SetupReport["checks"];
     languages?: string;
@@ -86,7 +98,11 @@ export interface Task {
       positive_groups?: number;
       hidden_groups?: number;
     };
-    ranking?: { kind: string; sha256: string | null };
+    ranking?: {
+      kind: string;
+      sha256: string | null;
+      mixed_precision_experimental?: boolean;
+    };
     results?: ImageResult[];
     run_id?: string | null;
     images?: number;
@@ -134,6 +150,9 @@ export function media(
   kind = "thumbnail",
   generation: string | null = null,
 ) {
+  const source = image.sources?.[0];
+  if (source)
+    return `/api/sources/${source.collection_id}/images/${source.image_id}/${kind}?generation=${encodeURIComponent(source.generation)}`;
   return (
     `/api/collections/${encodeURIComponent(collection)}/images/${image.image_id}/${kind}` +
     (generation ? `?generation=${encodeURIComponent(generation)}` : "")
