@@ -3,6 +3,7 @@
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import tarfile
 from types import SimpleNamespace
@@ -49,7 +50,8 @@ def test_linux_archive_preserves_executable_and_confined_symlinks(tmp_path, scri
     target = tmp_path / "out"
     scripts("linux_archive").extract(archive, target)
     executable = target / "RealOpenLens/RealOpenLens"
-    assert executable.stat().st_mode & 0o111
+    if os.name != "nt":
+        assert executable.stat().st_mode & 0o111
     assert (target / "RealOpenLens/lib.so").read_bytes() == b"library"
 
 
@@ -126,7 +128,8 @@ def test_linux_model_acceptance_extracts_executable(tmp_path, scripts, monkeypat
         if Path(command[1]).name == "smoke.py":
             executable = Path(command[2])
             assert executable.name == "RealOpenLens" and executable.is_file()
-            assert executable.stat().st_mode & 0o111
+            if os.name != "nt":
+                assert executable.stat().st_mode & 0o111
             kwargs["stdout"].write(json.dumps({"siglip_precision": command[-1]}) + "\n")
         return SimpleNamespace(returncode=0)
 
