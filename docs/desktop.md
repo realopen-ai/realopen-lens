@@ -169,31 +169,56 @@ uv run --no-sync python packaging/ci_smoke.py dist/RealOpenLens-macos-arm64.zip
 
 A lightweight change-detection job gates desktop builds on application source,
 frontend, packaging, dependency manifests/lockfile, licenses/notices, `.gitignore`
-and desktop workflow changes. README-, documentation- and benchmark-only changes
+and desktop workflow/shared setup-action changes. README-, documentation- and benchmark-only changes
 skip the desktop job. Gallery build/browser checks run for frontend, API or checks
 workflow changes. Python lint/type/test jobs run for Python files, source/tests,
 benchmarks, packaging, scripts/configs, dependency/license inputs or Python check
 configuration changes. A PR changing only root `README.md` or documentation text
 under `docs/` skips all three workloads; only change detection runs. The manually dispatched candidate
 workflow remains unconditional. Both callers use reusable per-platform workflows:
-`desktop-macos.yml` and `desktop-windows.yml`. The macOS candidate caller enables
+`desktop-macos.yml` and `desktop-windows.yml`. Both candidate callers enable
 archive acceptance and 30-day retention; ordinary checks use package smoke tests
-and seven-day retention. Shared setup/build steps stay in the platform workflow.
+and seven-day retention. The shared `setup-desktop` composite action installs
+locked Python/npm dependencies, checks Tcl/Tk and prepares cached OCR data.
+Build and platform-specific validation stay in the platform workflow.
 Push filtering uses the pre-push branch revision; PR filtering uses the full PR
 diff, so a PR that includes application changes still runs the desktop job even
 when its newest commit only updates documentation.
 
-The eleven checks cover archive extraction, ad-hoc signing, icon metadata/padding,
+The shared checks cover archive extraction, icon metadata/padding,
 frozen dependency imports/version metadata, Tcl/Tk scripts, pinned model registry,
 stage/resident worker dispatch/protocol handling, CLI workspace info, loopback API
 startup, gallery assets/favicon, authenticated empty-workspace reads and graceful
-shutdown. Host Python path/environment overrides are removed for frozen subprocesses.
+shutdown. Both platforms render the real launcher in light/dark modes and exercise
+its collapsible setup card. macOS adds ad-hoc signature verification, giving twelve
+checks on macOS and eleven on Windows. Host Python path/environment overrides are removed for frozen subprocesses.
 The smoke server also hides external command-line tools from PATH and verifies
 that setup reports missing models while bundled OCR remains ready. A dense-text
 fixture exercises OCR with `eng+fra+ara` and loads `osd` for orientation detection.
-No model weights, host Tesseract installation or GUI window are required. Uvicorn's
-post-cleanup SIGTERM exit is accepted only with an application-shutdown completion
-log; startup timeouts and forced kills fail the check.
+No model weights or host Tesseract installation are required. GUI checks create
+a temporary launcher window without starting services or changing user settings.
+Uvicorn's platform signal exit is accepted only with complete cleanup and a
+finished-server log and no logged server errors; timeouts/forced kills fail.
+
+### Build caches
+
+Both platforms cache uv/npm downloads and pinned `eng/fra/ara/osd` data. OCR data
+is keyed by the language registry, then checked for size/SHA256 on every run;
+missing/corrupt files are replaced only with verified downloads. The build
+rechecks those same pins when copying data into the app.
+
+macOS reuses the runner's installed Tesseract. When installation is needed, an
+isolated Homebrew download cache is keyed by macOS version, architecture and runner
+image; installed Cellar contents are never restored over a fresh runner.
+Windows caches pinned vcpkg source/tool downloads separately from compiled
+packages. The binary cache key includes the OCR manifest/triplet and runner image,
+with vcpkg's compiler/ABI validation still active. Only a completed OCR installation
+may save those caches, even if subsequent app packaging fails; partial source
+builds cannot freeze an incomplete cache under an immutable key.
+
+Cache upload failures do not waive any checks. Final archives, signatures,
+PyInstaller analysis/output, virtual environments and `node_modules` are rebuilt;
+caches do not substitute for fresh dependency installation or archive acceptance.
 
 Successful development ZIPs and always-uploaded diagnostics have seven-day artifact
 retention. The JSON report records individual check outcomes/timing and is written

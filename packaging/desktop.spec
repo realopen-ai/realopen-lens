@@ -19,20 +19,13 @@ datas += [(str(icons / "Lens.png"), "realopen_lens/desktop/assets")]
 for distribution in ("realopen-lens", "Pillow", "numpy", "onnxruntime", "tokenizers",
                      "psutil", "fastapi", "uvicorn"):
     datas += copy_metadata(distribution)
-for name in ("onnxruntime", "tokenizers"):
-    # Lens consumes pinned, already exported/quantized models. Model conversion
-    # tools need the optional `onnx` package and are not part of inference.
-    data, binary, hidden = collect_all(
-        name,
-        filter_submodules=lambda module: not (
-            module == "onnxruntime.quantization"
-            or module.startswith("onnxruntime.quantization.")
-        ),
-        exclude_datas=["quantization/**"] if name == "onnxruntime" else None,
-    )
-    datas += data
-    binaries += binary
-    hiddenimports += hidden
+# Follow ONNX Runtime's inference imports normally. PyInstaller's onnxruntime
+# hook collects native provider libraries; collect_all would also import optional
+# backend/conversion tools that require `onnx`, which inference does not need.
+data, binary, hidden = collect_all("tokenizers")
+datas += data
+binaries += binary
+hiddenimports += hidden
 if not (root / "src/realopen_lens/api/static/index.html").is_file():
     raise RuntimeError("Build the gallery before freezing the desktop app")
 a = Analysis(

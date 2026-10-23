@@ -93,9 +93,10 @@ def test_inference_check_requires_correct_image_and_ocr(change, tmp_path):
         smoke.verify_search([] if change == "empty" else [result], source)
 
 
-def test_acceptance_failure_retains_checksum_and_failed_stage(tmp_path, monkeypatch):
+@pytest.mark.parametrize("host", ["darwin", "win32"])
+def test_acceptance_failure_retains_checksum_and_failed_stage(tmp_path, monkeypatch, host):
     acceptance = script("acceptance")
-    monkeypatch.setattr(acceptance.sys, "platform", "darwin")
+    monkeypatch.setattr(acceptance.sys, "platform", host)
     monkeypatch.setattr(acceptance.platform, "platform", lambda: "test-host")
     monkeypatch.setattr(
         acceptance.subprocess, "run", lambda *a, **kw: SimpleNamespace(returncode=1)
@@ -111,9 +112,10 @@ def test_acceptance_failure_retains_checksum_and_failed_stage(tmp_path, monkeypa
     assert report["inference"] == "not_run"
 
 
-def test_package_only_acceptance_does_not_claim_inference(tmp_path, monkeypatch):
+@pytest.mark.parametrize("host", ["darwin", "win32"])
+def test_package_only_acceptance_does_not_claim_inference(tmp_path, monkeypatch, host):
     acceptance = script("acceptance")
-    monkeypatch.setattr(acceptance.sys, "platform", "darwin")
+    monkeypatch.setattr(acceptance.sys, "platform", host)
     monkeypatch.setattr(acceptance.platform, "platform", lambda: "test-host")
     monkeypatch.setattr(
         acceptance.subprocess, "run", lambda *a, **kw: SimpleNamespace(returncode=0)
@@ -122,11 +124,13 @@ def test_package_only_acceptance_does_not_claim_inference(tmp_path, monkeypatch)
     archive.write_bytes(b"candidate")
     report = acceptance.validate(archive, tmp_path / "evidence")
     assert report["status"] == "passed" and report["inference"] == "not_run"
+    assert report["notarization"] == ("not_applicable" if host == "win32" else "not_checked")
 
 
-def test_acceptance_rejects_archive_mutation(tmp_path, monkeypatch):
+@pytest.mark.parametrize("host", ["darwin", "win32"])
+def test_acceptance_rejects_archive_mutation(tmp_path, monkeypatch, host):
     acceptance = script("acceptance")
-    monkeypatch.setattr(acceptance.sys, "platform", "darwin")
+    monkeypatch.setattr(acceptance.sys, "platform", host)
     monkeypatch.setattr(acceptance.platform, "platform", lambda: "test-host")
     archive = tmp_path / "candidate.zip"
     archive.write_bytes(b"candidate")
@@ -164,12 +168,58 @@ def test_release_acceptance_rejects_missing_stapled_ticket(tmp_path, monkeypatch
     assert not any("/usr/sbin/spctl" in command for command in commands)
 
 
-def test_missing_archive_is_recorded_without_claiming_validation(tmp_path, monkeypatch):
+@pytest.mark.parametrize("host", ["darwin", "win32"])
+def test_missing_archive_is_recorded_without_claiming_validation(tmp_path, monkeypatch, host):
     acceptance = script("acceptance")
-    monkeypatch.setattr(acceptance.sys, "platform", "darwin")
+    monkeypatch.setattr(acceptance.sys, "platform", host)
     monkeypatch.setattr(acceptance.platform, "platform", lambda: "test-host")
     with pytest.raises(FileNotFoundError):
         acceptance.validate(tmp_path / "missing.zip", tmp_path / "evidence")
     report = json.loads((tmp_path / "evidence/acceptance.json").read_text(encoding="utf-8"))
     assert report["status"] == "failed" and report["archive_sha256"] is None
     assert report["checks"] == [] and "FileNotFoundError" in report["error"]
+
+
+def test_windows_rejects_mac_signing_checks_before_running_commands(tmp_path, monkeypatch):
+    acceptance = script("acceptance")
+    monkeypatch.setattr(acceptance.sys, "platform", "win32")
+    with pytest.raises(ValueError, match="only to macOS"):
+        acceptance.validate(tmp_path / "candidate.zip", tmp_path / "out", require_notarized=True)
+    assert not (tmp_path / "out").exists()
+
+
+@pytest.mark.parametrize("unsafe", [False, True])
+def test_windows_model_acceptance_extracts_the_windows_layout(tmp_path, monkeypatch, unsafe):
+    import zipfile
+
+    acceptance = script("acceptance")
+    monkeypatch.setattr(acceptance.sys, "platform", "win32")
+    monkeypatch.setattr(acceptance.platform, "platform", lambda: "test-host")
+    archive = tmp_path / "candidate.zip"
+    output = tmp_path / "out"
+    with zipfile.ZipFile(archive, "w") as zipped:
+        zipped.writestr(
+            "../escape" if unsafe else "RealOpenLens/RealOpenLens.exe", b"fake executable"
+        )
+    commands = []
+
+    def run(command, **kwargs):
+        commands.append(command)
+        if Path(command[1]).name == "smoke.py":
+            executable = Path(command[2])
+            assert executable.name == "RealOpenLens.exe" and executable.is_file()
+            assert executable.parent.name == "RealOpenLens"
+            precision = command[-1]
+            kwargs["stdout"].write(json.dumps({"siglip_precision": precision}) + "\n")
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(acceptance.subprocess, "run", run)
+    if unsafe:
+        with pytest.raises(ValueError, match="escapes"):
+            acceptance.validate(archive, output, models=tmp_path / "models")
+        assert len(commands) == 1
+    else:
+        report = acceptance.validate(archive, output, models=tmp_path / "models")
+        assert report["inference"] == "passed" and set(report["results"]) == {"int8", "fp32"}
+        assert len(commands) == 3
+    assert not any("/usr/bin/ditto" in command for command in commands)

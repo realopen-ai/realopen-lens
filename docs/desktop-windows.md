@@ -40,7 +40,9 @@ queries in non-Latin scripts.
 Pull requests and pushes to `main` build Windows packages when desktop inputs
 change, using the same component gate as macOS. Documentation-only changes skip
 the builds. **Desktop release candidate** also builds both platforms manually.
-The Windows steps live in the reusable `desktop-windows.yml` workflow.
+The Windows steps live in the reusable `desktop-windows.yml` workflow. Both platforms
+use the same dependency setup action and core smoke checks; manual candidates use
+the same checksum-bound acceptance wrapper and archive-mutation check.
 
 After a successful run, download the `desktop-windows-x64-<commit>` artifact and
 extract the contained application ZIP. Its accompanying evidence artifact has
@@ -56,6 +58,10 @@ versions and failure diagnostics. Checks exercise:
 - graceful server shutdown, failing the check if forced termination is needed.
   Windows CRT signal exit code 3 is accepted only with completed Uvicorn shutdown,
   a finished-server log and no logged server errors.
+
+Manual candidate artifacts use `desktop-candidate-windows-x64-<commit>` and retain
+`candidate-acceptance/acceptance.json` plus individual package results/logs. Ordinary
+PR/main runs retain their smoke report; both modes test the extracted ZIP.
 
 These package checks do **not** download embedding models or establish retrieval
 accuracy. Real-model indexing/search can additionally be checked with existing
@@ -81,8 +87,10 @@ uv run --no-sync python packaging/ci_smoke.py dist/RealOpenLens-windows-x64.zip
 ```
 
 The first build downloads and compiles OCR dependencies. CI caches vcpkg binary
-packages with compiler/ABI tracking; changing the manifest/triplet changes the
-cache key. Compiled packages are saved even if later packaging checks fail, so
+packages with compiler/ABI tracking; changing the manifest/triplet or hosted runner
+image changes the binary cache key. Source/tool downloads have a separate cache
+keyed by the pinned vcpkg revision. OCR language data is cached and hash-verified
+on every run, then reused by the build. Completed OCR packages are saved even if later packaging checks fail, so
 fixing those checks does not require another full compilation. Cache upload
 failures do not waive package validation. Compilation uses two concurrent jobs
 in CI. The source revision is

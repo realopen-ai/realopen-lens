@@ -21,19 +21,40 @@ jobs:
     timeout-minutes: ${{ inputs.candidate && 35 || 30 }}
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: ./.github/actions/setup-desktop
+        id: setup
+      - name: Check build-time OCR installation
+        id: brew
+        shell: bash
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+        run: |
+          if brew list tesseract >/dev/null 2>&1; then
+            echo "installed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "installed=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Restore Homebrew downloads when installation is needed
+        if: steps.brew.outputs.installed != 'true'
+        id: brew-cache
+        uses: actions/cache/restore@v4
         with:
-          version: "0.8.5"
-          enable-cache: true
-      - uses: actions/setup-node@v4
+          path: build/homebrew-cache
+          key: macos-15-${{ runner.arch }}-homebrew-tesseract-v1-${{ steps.setup.outputs.image-version }}
+      - name: Install build-time OCR
+        if: steps.brew.outputs.installed != 'true'
+        id: brew-install
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_CACHE: ${{ github.workspace }}/build/homebrew-cache
+        run: brew install tesseract
+      - name: Save Homebrew downloads
+        if: ${{ !cancelled() && steps.brew-install.outcome == 'success' && steps.brew-cache.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
         with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - run: uv python install 3.12
-      - run: uv sync --locked --python 3.12 --extra web --group packaging --no-editable
-      - run: uv run --no-sync python -c "import tkinter; print(tkinter.Tcl().eval('info patchlevel'))"
-      - run: npm --prefix frontend ci
+          path: build/homebrew-cache
+          key: ${{ steps.brew-cache.outputs.cache-primary-key }}
       - name: Build ad-hoc signed archive with private OCR
         env:
           HOMEBREW_NO_AUTO_UPDATE: "1"
@@ -42,8 +63,7 @@ jobs:
         run: |
           mkdir -p build
           set -o pipefail
-          brew list tesseract >/dev/null 2>&1 || brew install tesseract
-          uv run --no-sync python packaging/build_macos.py 2>&1 | tee "$LENS_BUILD_LOG"
+          uv run --no-sync python packaging/build_macos.py --tessdata-dir build/tessdata 2>&1 | tee "$LENS_BUILD_LOG"
       - name: Smoke test extracted package without model downloads
         if: ${{ !inputs.candidate }}
         run: uv run --no-sync python packaging/ci_smoke.py dist/RealOpenLens-macos-arm64.zip
@@ -63,7 +83,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.candidate && 'desktop-candidate-evidence' || 'desktop-macos-diagnostics' }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: ${{ inputs.candidate && 'desktop-candidate-macos-evidence' || 'desktop-macos-evidence' }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             build/desktop-ci-*.log
             build/desktop-ci-report.json

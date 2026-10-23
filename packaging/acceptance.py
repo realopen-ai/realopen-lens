@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import zipfile
 
 
 def digest(path):
@@ -19,8 +20,11 @@ def digest(path):
 
 
 def validate(archive, output, models=None, precisions=("int8", "fp32"), require_notarized=False):
-    if sys.platform != "darwin":
-        raise ValueError("Validate macOS archives on macOS")
+    if sys.platform not in {"darwin", "win32"}:
+        raise ValueError("Validate desktop archives on macOS or Windows")
+    windows = sys.platform == "win32"
+    if windows and require_notarized:
+        raise ValueError("Notarization checks apply only to macOS archives")
     archive, output = archive.resolve(), output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     root = Path(__file__).resolve().parent
@@ -33,7 +37,9 @@ def validate(archive, output, models=None, precisions=("int8", "fp32"), require_
         "checks": [],
         "scope": "existing host with temporary workspaces; not a clean OS installation",
         "inference": "requested" if models else "not_run",
-        "notarization": "required" if require_notarized else "not_checked",
+        "notarization": (
+            "not_applicable" if windows else ("required" if require_notarized else "not_checked")
+        ),
         "status": "failed",
         "results": {},
     }
@@ -74,10 +80,23 @@ def validate(archive, output, models=None, precisions=("int8", "fp32"), require_
         )
         if models or require_notarized:
             with tempfile.TemporaryDirectory(prefix="lens-acceptance-") as directory:
-                run("extract", ["/usr/bin/ditto", "-x", "-k", str(archive), directory], 60)
-                executable = Path(directory) / "RealOpen Lens.app/Contents/MacOS/RealOpenLens"
-                bundle = executable.parents[2]
+                if windows:
+                    with zipfile.ZipFile(archive) as zipped:
+                        destination = Path(directory).resolve()
+                        for item in zipped.infolist():
+                            if (
+                                not (destination / item.filename)
+                                .resolve()
+                                .is_relative_to(destination)
+                            ):
+                                raise ValueError("Archive member escapes extraction directory")
+                        zipped.extractall(destination)
+                    executable = Path(directory) / "RealOpenLens/RealOpenLens.exe"
+                else:
+                    run("extract", ["/usr/bin/ditto", "-x", "-k", str(archive), directory], 60)
+                    executable = Path(directory) / "RealOpen Lens.app/Contents/MacOS/RealOpenLens"
                 if require_notarized:
+                    bundle = executable.parents[2]
                     run(
                         "stapled-ticket", ["/usr/bin/xcrun", "stapler", "validate", str(bundle)], 60
                     )

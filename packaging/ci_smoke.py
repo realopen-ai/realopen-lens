@@ -143,12 +143,11 @@ def validate(archive: Path, report_path: Path):
                 ),
             )
             report["bundle"] = diagnostics
-            if windows:
-                check(
-                    "native launcher render in both themes",
-                    lambda: json.loads(run([str(executable), "--check-gui"], cwd=base).stdout),
-                    verify=lambda value: require(value["rendered"], "Launcher did not render"),
-                )
+            check(
+                "native launcher render in both themes",
+                lambda: json.loads(run([str(executable), "--check-gui"], cwd=base).stdout),
+                verify=lambda value: require(value["rendered"], "Launcher did not render"),
+            )
 
             def private_ocr():
                 engine = bundle / (

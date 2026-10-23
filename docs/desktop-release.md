@@ -1,11 +1,11 @@
 # Desktop release readiness
 
-The current supported build target for release tooling is **macOS arm64**.
-The standard archive is ad-hoc signed for development. The manual **Desktop release
-candidate** GitHub Actions workflow builds that archive and validates the extracted
+Release tooling supports **macOS arm64 and Windows x64**.
+The macOS archive is ad-hoc signed; the Windows ZIP is unsigned. The manual **Desktop release
+candidate** GitHub Actions workflow builds both archives and validates their extracted
 bytes, then retains the ZIP, SHA256 checksum and evidence for 30 days. It requires
 read-only repository permissions and does not create tags or publish releases.
-Run it from Actions on the reviewed commit. Windows/Linux builds remain separate work.
+Run it from Actions on the reviewed commit. Linux packaging remains future work.
 
 ## Reproduce archive acceptance
 
@@ -20,13 +20,26 @@ uv run --no-sync python packaging/acceptance.py \
 ```
 
 Use a new output directory for each run. Existing evidence is never overwritten.
-The report binds all checks to the ZIP's SHA256 and records per-stage outcomes,
-errors and elapsed time. The eleven model-free package checks include startup without
+The report binds all checks to the ZIP's SHA256, rejects archive mutation during
+acceptance and records per-stage outcomes, errors and elapsed time. Both platforms
+run the same model-free checks (twelve on macOS including its signature check,
+eleven on Windows), including launcher rendering in both themes and startup without
 external developer tools/OCR, bundled recognition/orientation and missing-model reporting. Supplying `--models`
 also exercises real INT8 and FP32 frozen indexing, lexical/hybrid retrieval with
 OCR ground truth, cached refresh, resident encoder workers and HTTP startup/shutdown.
 Use `--precision int8` or `--precision fp32` to test one installed profile.
 All indexes and fixture images are temporary; existing models are read in place.
+
+After [building the Windows ZIP](desktop-windows.md), the same wrapper runs in PowerShell:
+
+```powershell
+uv run --no-sync python packaging/acceptance.py dist/RealOpenLens-windows-x64.zip --output runs/windows-acceptance
+```
+
+Optional `--models`, `--precision` and inference reporting work on both platforms.
+`--require-notarized` applies only to macOS and is rejected on Windows. Candidate
+artifact names are `desktop-candidate-macos-arm64-<commit>` and
+`desktop-candidate-windows-x64-<commit>`, with separate platform evidence artifacts.
 
 Without `--models`, the report explicitly records inference as **not_run**. A
 passing packaging-only run does not imply inference acceptance. CI intentionally
