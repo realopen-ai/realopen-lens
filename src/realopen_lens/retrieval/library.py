@@ -13,6 +13,7 @@ from typing import Any
 
 import numpy as np
 
+from realopen_lens.indexing.stage_cache import implementation
 from realopen_lens.models.manager import digest, registry
 from realopen_lens.organization import duplicates
 from realopen_lens.retrieval import memory, ranking
@@ -173,7 +174,9 @@ class LibrarySession:
         if encoder_source is None or encoder_source.origin is None:
             raise ValueError("Query encoder source provenance is unavailable")
         encoder_hash = (
-            digest(Path(encoder_source.origin)) if mode not in {"lexical", "browse"} else None
+            implementation(Path(encoder_source.origin))
+            if mode not in {"lexical", "browse"}
+            else None
         )
         catalog = Catalog(self.root, readonly=True)
         try:
@@ -209,7 +212,8 @@ class LibrarySession:
                 if mode not in {"lexical", "browse"}:
                     if (
                         spec["model_registry"] != registry()
-                        or spec["inference_sha256"] != encoder_hash
+                        or spec["inference_sha256"]
+                        not in {encoder_hash, digest(Path(encoder_source.origin))}
                         or any(
                             spec["packages"][n] != version(n)
                             for n in (

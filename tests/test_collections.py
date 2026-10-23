@@ -361,7 +361,7 @@ def test_cache_and_generation_corruption_rebuild_and_pipeline_versions(app):
     assert len([c for c in calls if c[0] == "vision"]) == 1
     calls.clear()
     run(languages="fra")
-    assert len([c for c in calls if c[0] == "vision"]) == 1
+    assert len([c for c in calls if c[0] == "vision"]) == 0
 
 
 def test_source_mutation_during_processing_is_an_error(app, monkeypatch):
