@@ -85,6 +85,7 @@ def main():
         destination.with_suffix(".zip.sha256").write_text(
             f"{digest}  {destination.name}\n",
             encoding="utf-8",
+            newline="\n",
         )
         print(f"Windows portable archive: {destination}")
 
