@@ -54,7 +54,22 @@ def environment(executable: str) -> dict[str, str]:
 def fingerprint(executable: str) -> str | None:
     paths = bundle_paths()
     if paths and Path(executable) == paths[0]:
-        return hashlib.sha256((paths[1] / "runtime.json").read_bytes()).hexdigest()
+        manifest = json.loads((paths[1] / "runtime.json").read_text(encoding="utf-8"))
+        # Code signing, relocation, paths and notice files do not change OCR.
+        # Original binary hashes still change for real engine/library updates.
+        binaries = [
+            (Path(row["file"]).name, row.get("source_sha256", row["sha256"]))
+            for row in manifest["files"]
+            if "/bin/" in row["file"] or "/lib/" in row["file"]
+        ]
+        value = {
+            "engine": manifest["engine"],
+            "binaries": sorted(binaries),
+            "tsv_sha256": manifest["tsv_sha256"],
+        }
+        if not binaries:
+            raise ValueError("Bundled OCR manifest contains no runtime binaries")
+        return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
     return None
 
 

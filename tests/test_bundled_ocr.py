@@ -184,3 +184,18 @@ def test_frozen_linux_selects_private_ocr(monkeypatch, tmp_path):
     engine, resources = runtime.bundle_paths()
     assert engine == tmp_path / "_internal/lens-ocr/bin/tesseract"
     assert resources == tmp_path / "_internal/lens-ocr"
+
+
+def test_runtime_identity_ignores_signing_and_notices_but_tracks_original_binaries(private_runtime):
+    engine, resources, manifest = private_runtime
+    manifest["files"][0]["source_sha256"] = "original-engine"
+    path = resources / "runtime.json"
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    first = runtime.fingerprint(str(engine))
+    manifest["files"][0]["sha256"] = "resigned-copy"
+    manifest["files"].append({"file": "licenses/notice.txt", "sha256": "changed-notice"})
+    path.write_text(json.dumps(manifest, indent=4), encoding="utf-8")
+    assert runtime.fingerprint(str(engine)) == first
+    manifest["files"][0]["source_sha256"] = "new-engine-build"
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    assert runtime.fingerprint(str(engine)) != first
