@@ -80,7 +80,10 @@ uv run --no-sync python packaging/ci_smoke.py dist/RealOpenLens-windows-x64.zip
 
 The first build downloads and compiles OCR dependencies. CI caches vcpkg binary
 packages with compiler/ABI tracking; changing the manifest/triplet changes the
-cache key. Compilation uses two concurrent jobs in CI. The source revision is
+cache key. Compiled packages are saved even if later packaging checks fail, so
+fixing those checks does not require another full compilation. Cache upload
+failures do not waive package validation. Compilation uses two concurrent jobs
+in CI. The source revision is
 pinned and verified before building. The custom triplet uses static libraries and
 CRT, disables Tesseract OpenMP and CPU-native tuning, and builds only Release.
 The builder rejects the wrong PE architecture and dependencies on non-system DLLs
