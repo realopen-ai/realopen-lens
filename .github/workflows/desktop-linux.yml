@@ -21,14 +21,16 @@ jobs:
     timeout-minutes: ${{ inputs.candidate && 35 || 30 }}
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-desktop
-        id: setup
+      - name: Identify native runner image
+        id: image
+        shell: bash
+        run: echo "version=${ImageVersion:?}" >> "$GITHUB_OUTPUT"
       - name: Restore Ubuntu package downloads
         id: apt-cache
         uses: actions/cache/restore@v4
         with:
           path: build/apt-cache
-          key: ubuntu-24.04-${{ runner.arch }}-desktop-apt-v1-${{ steps.setup.outputs.image-version }}-${{ hashFiles('packaging/linux-packages.txt') }}
+          key: ubuntu-24.04-${{ runner.arch }}-desktop-apt-v1-${{ steps.image.outputs.version }}-${{ hashFiles('packaging/linux-packages.txt') }}
       - name: Install build and display dependencies
         shell: bash
         run: |
@@ -45,6 +47,10 @@ jobs:
         with:
           path: build/apt-cache
           key: ${{ steps.apt-cache.outputs.cache-primary-key }}
+      - uses: ./.github/actions/setup-desktop
+        id: setup
+        with:
+          python-executable: /usr/bin/python3.12
       - name: Build portable archive with private OCR
         env:
           LENS_BUILD_LOG: ${{ inputs.candidate && 'build/candidate-build.log' || 'build/desktop-ci-build.log' }}

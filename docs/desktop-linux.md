@@ -37,6 +37,12 @@ docs-only PRs do not build the application. Manual **Desktop release candidate**
 runs all three platforms with `candidate: true` and 30-day artifact retention.
 The workflow does not publish a release.
 
+Linux freezes Ubuntu's Python 3.12 and dynamically linked Tk. The shared setup
+accepts this explicit interpreter path; macOS and Windows keep their managed Python
+selection. This avoids the standalone Python/Tk X11 conflict tracked in
+[python-build-standalone #503](https://github.com/astral-sh/python-build-standalone/issues/503).
+The frozen app still includes Python/Tk; users do not install Python.
+
 The shared setup action installs locked Python/npm dependencies and verifies the
 cached, pinned `eng`, `fra`, `ara` and `osd` data. Linux additionally caches Ubuntu
 package downloads by runner image, architecture and package-list hash. Package
@@ -47,7 +53,7 @@ PyInstaller analysis and installed system directories are not cached.
 # On Ubuntu 24.04 x64; apt needs administrator privileges only on the build host.
 sudo apt-get update
 sudo apt-get install --no-install-recommends -y $(sed '/^#/d; /^$/d' packaging/linux-packages.txt)
-uv sync --locked --python 3.12 --extra web --group packaging --no-editable
+uv sync --locked --python /usr/bin/python3.12 --extra web --group packaging --no-editable
 npm --prefix frontend ci
 uv run --no-sync python packaging/prepare_tessdata.py --cache-dir build/tessdata
 uv run --no-sync python packaging/build_linux.py --tessdata-dir build/tessdata

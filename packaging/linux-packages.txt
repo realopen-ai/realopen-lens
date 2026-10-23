@@ -1,5 +1,7 @@
 # Build-time OCR relocation and native launcher smoke checks (Ubuntu 24.04).
 tesseract-ocr
+python3-tk
+python3.12-venv
 patchelf
 xvfb
 xauth
