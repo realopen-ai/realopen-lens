@@ -6,8 +6,10 @@ Status: accepted direction, 2026-10-18.
 
 RealOpen Lens is a standalone, private, offline image search and organization
 application. Its first release targets macOS, Windows, and Linux, including
-CPU-only consumer machines with 8 GB RAM. The 16 GB profile improves throughput
-and model residency rather than enabling essential features unavailable at 8 GB.
+CPU-only consumer machines with 8 GB RAM. New collections use INT8 SigLIP2 below
+16 GB physical RAM and FP32 at 16 GB or above, with E5 INT8. This shared policy
+applies across launchers and adapters; explicit choices and saved collection
+profiles take priority.
 
 Multilingual retrieval is part of the first release. Supported and tested
 languages must be documented separately from the language coverage advertised by

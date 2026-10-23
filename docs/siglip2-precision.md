@@ -1,8 +1,35 @@
 # SigLIP2 precision
 
-Collection indexing supports `int8` (the default) and `fp32` SigLIP2. Both the
+Collection indexing supports `int8` and `fp32` SigLIP2. Both the
 image encoder and visual query encoder use the selected precision. E5 semantic
 text embeddings remain INT8; Tesseract and keyword search are unchanged.
+
+## Shared device default
+
+The desktop launcher, standalone gallery/API, CLI model fetch/verification,
+setup checks and Python/CLI indexing share one policy for new collections:
+
+- Less than 16 GB physical RAM: INT8 SigLIP2.
+- At least 16 GB physical RAM: FP32 SigLIP2.
+- Unknown RAM: INT8.
+
+This preserves the launcher's threshold of 16,000,000,000 bytes and uses total
+physical memory, not fluctuating available memory. E5 stays INT8 under this policy.
+Explicit precision options override the default. A saved desktop preference in the
+selected workspace's `desktop.json` is also respected by standalone serving and
+indexing; model commands use the default workspace preference unless overridden.
+
+Refreshing an existing index retains its saved precision, even if the device or
+preference changes. Searches always use the index's matching encoder. There is no
+automatic conversion, model download or fallback to another installed precision.
+Old INT8 indexes therefore remain INT8 on a 16 GB device; rebuild them separately
+if you want a uniform FP32 library. Defaults alone do not eliminate existing mixed
+libraries or imports from other devices.
+
+`lens models fetch` and `lens models verify` select the shared default without
+requiring a precision flag. Use `--siglip-precision int8` or `fp32` for an explicit
+choice. Low-level benchmark/worker requests continue recording an explicit frozen
+profile so benchmark configuration does not depend on the machine running it.
 
 ## Try FP32 on your images
 
@@ -45,8 +72,8 @@ and remain searchable when their existing model/runtime checks pass.
 
 FP32 uses more memory and has higher model startup/query encoding costs in the
 [earlier diagnostic study](benchmarks/2026-10-20-candidate-retrieval.md).
-It is opt-in; this feature does not certify 8 GB hardware or native Windows/Linux
-inference. Existing experimental rerankers and their training exporters require
+Native Windows/Linux inference evidence is documented separately.
+Existing experimental rerankers and their training exporters require
 INT8 SigLIP2 until a precision-aware training artifact is introduced.
 
 ## Python API
