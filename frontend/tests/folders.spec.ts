@@ -263,3 +263,68 @@ test("automatic completion keeps the current tool open", async ({ page }) => {
     page.getByRole("heading", { name: "Activity", exact: true }),
   ).toBeVisible();
 });
+
+for (const theme of ["light", "dark"] as const) {
+  test(`folder popover stays visible outside a short folder list in ${theme} mode`, async ({
+    page,
+  }, info) => {
+    await page.emulateMedia({ colorScheme: theme });
+    // Match the packaged app's style policy: positioning must work without unsafe-inline.
+    await page.route("http://127.0.0.1:4173/", async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        headers: {
+          ...response.headers(),
+          "Content-Security-Policy":
+            "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' blob:",
+        },
+      });
+    });
+    await setup(page);
+    await page.locator(".collection-list").evaluate((el) => {
+      el.style.maxHeight = "50px";
+    });
+    const trigger = page.getByRole("button", {
+      name: "Manage folder personal",
+      exact: true,
+    });
+    await trigger.click();
+    const menu = page.getByRole("dialog", {
+      name: "Actions for personal",
+      exact: true,
+    });
+    await expect(
+      menu.getByRole("button", { name: "Remove from Lens", exact: true }),
+    ).toBeVisible();
+    await menu
+      .getByRole("checkbox", { name: "Automatic refresh", exact: true })
+      .check();
+    await expect(
+      menu.getByLabel("Refresh interval for personal"),
+    ).toBeVisible();
+    const bounds = await menu.boundingBox();
+    expect(bounds).not.toBeNull();
+    expect(bounds!.x).toBeGreaterThanOrEqual(0);
+    expect(bounds!.y).toBeGreaterThanOrEqual(0);
+    expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(
+      page.viewportSize()!.height,
+    );
+    await expect(
+      menu.getByRole("button", { name: "Refresh index", exact: true }),
+    ).toHaveCSS("font-size", "12px");
+    await page.screenshot({
+      path: `../runs/folder-popover-${theme}-${info.project.name}.png`,
+      fullPage: true,
+    });
+    await page.keyboard.press("Escape");
+    await expect(menu).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+    await trigger.click();
+    await page.mouse.click(
+      page.viewportSize()!.width - 8,
+      page.viewportSize()!.height - 8,
+    );
+    await expect(menu).toHaveCount(0);
+  });
+}
