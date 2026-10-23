@@ -20,7 +20,16 @@ for distribution in ("realopen-lens", "Pillow", "numpy", "onnxruntime", "tokeniz
                      "psutil", "fastapi", "uvicorn"):
     datas += copy_metadata(distribution)
 for name in ("onnxruntime", "tokenizers"):
-    data, binary, hidden = collect_all(name)
+    # Lens consumes pinned, already exported/quantized models. Model conversion
+    # tools need the optional `onnx` package and are not part of inference.
+    data, binary, hidden = collect_all(
+        name,
+        filter_submodules=lambda module: not (
+            module == "onnxruntime.quantization"
+            or module.startswith("onnxruntime.quantization.")
+        ),
+        exclude_datas=["quantization/**"] if name == "onnxruntime" else None,
+    )
     datas += data
     binaries += binary
     hiddenimports += hidden
@@ -33,7 +42,7 @@ a = Analysis(
     datas=datas,
     hiddenimports=hiddenimports + ["uvicorn.logging", "uvicorn.loops.asyncio",
                                  "uvicorn.protocols.http.h11_impl", "uvicorn.lifespan.on"],
-    excludes=["pytest", "benchmarks", "rapidocr", "cv2"],
+    excludes=["pytest", "benchmarks", "rapidocr", "cv2", "onnxruntime.quantization"],
 )
 pyz = PYZ(a.pure)
 # Keep standard streams: isolated engine children use stdin/stdout JSON protocols.
