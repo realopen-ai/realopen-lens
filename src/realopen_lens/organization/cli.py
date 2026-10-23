@@ -28,8 +28,11 @@ def call(method: str, index_dir: Path | None, collection: str, *args: Any, **opt
 def list_groups(
     index_dir: Annotated[Path | None, typer.Option()] = None,
     collection: Annotated[str, typer.Option()] = "personal",
+    all_folders: Annotated[
+        bool, typer.Option(help="Use a collection spanning all folders")
+    ] = False,
 ):
-    call("list_collections", index_dir, collection)
+    call("list_collections", index_dir, collection, all_folders=all_folders)
 
 
 @app.command("create")
@@ -37,8 +40,11 @@ def create_group(
     name: str,
     index_dir: Annotated[Path | None, typer.Option()] = None,
     collection: Annotated[str, typer.Option()] = "personal",
+    all_folders: Annotated[
+        bool, typer.Option(help="Use a collection spanning all folders")
+    ] = False,
 ):
-    call("create", index_dir, collection, name)
+    call("create", index_dir, collection, name, all_folders=all_folders)
 
 
 @app.command("rename")
@@ -48,8 +54,11 @@ def rename_group(
     revision: Annotated[int, typer.Option(min=1)],
     index_dir: Annotated[Path | None, typer.Option()] = None,
     collection: Annotated[str, typer.Option()] = "personal",
+    all_folders: Annotated[
+        bool, typer.Option(help="Use a collection spanning all folders")
+    ] = False,
 ):
-    call("rename", index_dir, collection, group_id, name, revision)
+    call("rename", index_dir, collection, group_id, name, revision, all_folders=all_folders)
 
 
 @app.command("delete")
@@ -58,9 +67,12 @@ def delete_group(
     revision: Annotated[int, typer.Option(min=1)],
     index_dir: Annotated[Path | None, typer.Option()] = None,
     collection: Annotated[str, typer.Option()] = "personal",
+    all_folders: Annotated[
+        bool, typer.Option(help="Use a collection spanning all folders")
+    ] = False,
 ):
     """Delete the group and memberships; source images remain in place."""
-    call("remove", index_dir, collection, group_id, revision)
+    call("remove", index_dir, collection, group_id, revision, all_folders=all_folders)
 
 
 @app.command("add")
@@ -70,8 +82,19 @@ def add_images(
     revision: Annotated[int, typer.Option(min=1)],
     index_dir: Annotated[Path | None, typer.Option()] = None,
     collection: Annotated[str, typer.Option()] = "personal",
+    all_folders: Annotated[
+        bool, typer.Option(help="Use a collection spanning all folders")
+    ] = False,
 ):
-    call("change_members", index_dir, collection, group_id, image_ids, revision)
+    call(
+        "change_members",
+        index_dir,
+        collection,
+        group_id,
+        image_ids,
+        revision,
+        all_folders=all_folders,
+    )
 
 
 @app.command("remove")
@@ -81,8 +104,20 @@ def remove_images(
     revision: Annotated[int, typer.Option(min=1)],
     index_dir: Annotated[Path | None, typer.Option()] = None,
     collection: Annotated[str, typer.Option()] = "personal",
+    all_folders: Annotated[
+        bool, typer.Option(help="Use a collection spanning all folders")
+    ] = False,
 ):
-    call("change_members", index_dir, collection, group_id, image_ids, revision, remove=True)
+    call(
+        "change_members",
+        index_dir,
+        collection,
+        group_id,
+        image_ids,
+        revision,
+        remove=True,
+        all_folders=all_folders,
+    )
 
 
 @app.command("images")
@@ -90,7 +125,18 @@ def browse_group(
     group_id: str,
     index_dir: Annotated[Path | None, typer.Option()] = None,
     collection: Annotated[str, typer.Option()] = "personal",
+    all_folders: Annotated[
+        bool, typer.Option(help="Use a collection spanning all folders")
+    ] = False,
     offset: Annotated[int, typer.Option(min=0)] = 0,
     limit: Annotated[int, typer.Option(min=1, max=100)] = 60,
 ):
-    call("browse", index_dir, collection, group_id, offset=offset, limit=limit)
+    call(
+        "browse",
+        index_dir,
+        collection,
+        group_id,
+        offset=offset,
+        limit=limit,
+        all_folders=all_folders,
+    )
