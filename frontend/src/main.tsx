@@ -221,6 +221,17 @@ function App() {
   }, [importing]);
   const [languages, setLanguages] = useState("eng+fra+ara");
   const streams = useRef(new Map<string, EventSource>());
+  const seenTasks = useRef(new Map<string, number>());
+  const automaticBrowse = useRef(false);
+  useEffect(() => {
+    automaticBrowse.current =
+      view === "library" &&
+      isBrowse &&
+      !detail &&
+      !importing &&
+      !creatingVirtual &&
+      selected.size === 0;
+  }, [view, isBrowse, detail, importing, creatingVirtual, selected.size]);
   const foreground = useRef<string | null>(null);
   const requestVersion = useRef(0);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -407,6 +418,8 @@ function App() {
     }
   }
   function receive(task: Task) {
+    if ((seenTasks.current.get(task.id) ?? -1) > task.revision) return;
+    seenTasks.current.set(task.id, task.revision);
     setTasks((old) =>
       [task, ...old.filter((t) => t.id !== task.id)].slice(0, 50),
     );
@@ -421,25 +434,34 @@ function App() {
     ) {
       void loadCollections()
         .then(() => {
+          if (task.origin === "automatic" && !automaticBrowse.current) {
+            if (selectedCollection.current === task.collection)
+              setOrganizationNotice(
+                "Folder updated. Select it again to load the latest images.",
+              );
+            return;
+          }
           if (
             !foreground.current &&
             selectedCollection.current === task.collection
           ) {
             void loadVirtuals(task.collection)
-              .then((values) =>
-                browse(
+              .then((values) => {
+                if (task.origin === "automatic" && !automaticBrowse.current)
+                  return;
+                return browse(
                   task.collection,
                   0,
                   values.find(
                     (group) => group.id === virtualScope.current?.id,
                   ) || null,
-                ),
-              )
+                );
+              })
               .catch((e) => setError(String(e)));
           }
         })
         .catch((e) => setError(String(e)));
-      setImporting(false);
+      if (task.origin !== "automatic") setImporting(false);
     }
     if (foreground.current !== task.id) return;
     setLoading(false);
@@ -552,6 +574,7 @@ function App() {
           );
       }
       setTasks(pending);
+      pending.forEach((task) => seenTasks.current.set(task.id, task.revision));
       if (previous && restore) {
         foreground.current = previous.id;
         sessionStorage.setItem("lens-task", previous.id);
@@ -567,6 +590,50 @@ function App() {
       disposed = true;
       streams.current.forEach((s) => s.close());
       streams.current.clear();
+    };
+  }, []);
+  useEffect(() => {
+    let disposed = false;
+    let pending = false;
+    const timer = window.setInterval(() => {
+      if (pending) return;
+      pending = true;
+      void (async () => {
+        const values = await api<Task[]>("/tasks?summary=true");
+        if (disposed) return;
+        const folders = await api<Collection[]>("/collections");
+        if (disposed) return;
+        setCollections(folders);
+        const changed = values.filter(
+          (task) =>
+            !seenTasks.current.has(task.id) ||
+            task.revision > (seenTasks.current.get(task.id) ?? -1),
+        );
+        for (const task of changed) {
+          // A job may finish between discovery polls; retrieve its result once.
+          const value = terminal(task)
+            ? await api<Task>(`/tasks/${task.id}`)
+            : task;
+          if (disposed) return;
+          watch(value);
+        }
+        for (const id of seenTasks.current.keys())
+          if (
+            !values.some((task) => task.id === id) &&
+            !streams.current.has(id)
+          )
+            seenTasks.current.delete(id);
+      })()
+        .catch(() => {
+          /* Existing SSE connections retain live task progress. */
+        })
+        .finally(() => {
+          pending = false;
+        });
+    }, 5000);
+    return () => {
+      disposed = true;
+      window.clearInterval(timer);
     };
   }, []);
   useEffect(() => {
@@ -1039,7 +1106,10 @@ function App() {
               tasks.map((task) => (
                 <article className="activity-row" key={task.id}>
                   <strong>
-                    {task.kind.replaceAll("_", " ")} · {task.collection}
+                    {task.origin === "automatic"
+                      ? "automatic refresh"
+                      : task.kind.replaceAll("_", " ")}{" "}
+                    · {task.collection}
                   </strong>
                   <span>
                     {task.status.replaceAll("_", " ")} ·{" "}
@@ -1288,7 +1358,9 @@ function App() {
               <div className="task-description">
                 <strong>
                   {latest.kind === "index"
-                    ? "Indexing"
+                    ? latest.origin === "automatic"
+                      ? "Refreshing automatically"
+                      : "Indexing"
                     : latest.kind === "setup"
                       ? "Checking device setup"
                       : latest.kind === "search"
