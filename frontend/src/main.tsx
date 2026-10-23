@@ -1518,7 +1518,9 @@ function App() {
                     ? ` · query ${latest.progress.query}/${latest.progress.queries}`
                     : ""}
                   {latest.progress.unique_images
-                    ? ` · ${latest.progress.phase_completed_images || 0}/${latest.progress.unique_images} images`
+                    ? latest.progress.phase_cached_images !== undefined
+                      ? ` · ${latest.progress.phase_processed_images || 0} processed · ${latest.progress.phase_cached_images} cached · ${latest.progress.unique_images} total`
+                      : ` · ${latest.progress.phase_completed_images || 0}/${latest.progress.unique_images} images`
                     : latest.progress.files
                       ? ` · ${latest.progress.files} files found`
                       : ""}
@@ -1529,6 +1531,19 @@ function App() {
                     ? latest.kind === "duplicates"
                       ? ` · ${latest.result?.errors?.length || 0} fingerprint errors`
                       : ` · ${latest.result?.failed_files || 0} failed, ${latest.result?.degraded_files || 0} degraded files`
+                    : ""}
+                  {latest.progress.phase_failed_images
+                    ? ` · ${latest.progress.phase_failed_images} stage failures`
+                    : ""}
+                  {latest.progress.phase_skipped_images
+                    ? ` · ${latest.progress.phase_skipped_images} skipped`
+                    : ""}
+                  {terminal(latest) &&
+                  latest.kind === "index" &&
+                  latest.result?.reused_stages
+                    ? latest.result.processed_stages
+                      ? ` · OCR: ${latest.result.processed_stages.ocr ?? 0} processed, ${latest.result.reused_stages.ocr ?? 0} cached`
+                      : ` · OCR: ${latest.result.reused_stages.ocr ?? 0} cached`
                     : ""}
                   {latest.error ? ` · ${latest.error}` : ""}
                 </span>
