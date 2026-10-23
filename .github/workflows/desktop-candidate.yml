@@ -7,50 +7,13 @@ permissions:
   contents: read
 
 jobs:
+  windows:
+    uses: ./.github/workflows/desktop-windows.yml
+    with:
+      retention-days: 30
+
   macos:
-    runs-on: macos-15
-    timeout-minutes: 35
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
-        with:
-          version: "0.8.5"
-          enable-cache: true
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - run: uv python install 3.12
-      - run: uv sync --locked --python 3.12 --extra web --group packaging --no-editable
-      - run: npm --prefix frontend ci
-      - name: Build ad-hoc signed development candidate
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: "1"
-        shell: bash
-        run: |
-          mkdir -p build
-          set -o pipefail
-          brew list tesseract >/dev/null 2>&1 || brew install tesseract
-          uv run --no-sync python packaging/build_macos.py 2>&1 | tee build/candidate-build.log
-      - name: Validate the exact archive
-        run: uv run --no-sync python packaging/acceptance.py dist/RealOpenLens-macos-arm64.zip --output build/candidate-acceptance
-      - name: Retain candidate and checksum
-        uses: actions/upload-artifact@v4
-        with:
-          name: desktop-candidate-macos-arm64-${{ github.sha }}
-          path: |
-            dist/RealOpenLens-macos-arm64.zip
-            dist/RealOpenLens-macos-arm64.zip.sha256
-          if-no-files-found: error
-          retention-days: 30
-      - name: Retain validation evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: desktop-candidate-evidence-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            build/candidate-build.log
-            build/candidate-acceptance/
-          if-no-files-found: ignore
-          retention-days: 30
+    uses: ./.github/workflows/desktop-macos.yml
+    with:
+      retention-days: 30
+      candidate: true

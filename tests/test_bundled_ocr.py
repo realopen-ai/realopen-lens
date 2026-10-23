@@ -21,11 +21,15 @@ def packaging_module():
     return result
 
 
-@pytest.fixture
-def private_runtime(tmp_path, monkeypatch):
+@pytest.fixture(params=["macos", "windows"])
+def private_runtime(tmp_path, monkeypatch, request):
     app = tmp_path / "Lens.app"
-    engine = app / "Contents/Frameworks/lens-ocr/bin/tesseract"
-    resources = app / "Contents/Resources/lens-ocr"
+    if request.param == "windows":
+        resources = app / "_internal/lens-ocr"
+        engine = resources / "bin/tesseract.exe"
+    else:
+        engine = app / "Contents/Frameworks/lens-ocr/bin/tesseract"
+        resources = app / "Contents/Resources/lens-ocr"
     engine.parent.mkdir(parents=True)
     engine.write_bytes(b"private engine")
     (resources / "tessdata/configs").mkdir(parents=True)

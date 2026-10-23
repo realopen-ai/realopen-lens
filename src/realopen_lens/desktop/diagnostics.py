@@ -1,10 +1,60 @@
-"""Offline packaging diagnostics: no model weights, GUI windows or application-data writes."""
+"""Offline package and GUI diagnostics without model weights or application-data writes."""
 
 from importlib import import_module
 from importlib.metadata import version
 import os
 from pathlib import Path
 import sys
+
+
+def inspect_gui() -> dict:
+    """Render the real launcher view in both themes without starting services."""
+    if not getattr(sys, "frozen", False):
+        raise ValueError("GUI diagnostics must run from the frozen executable")
+    import tkinter as tk
+    from realopen_lens.desktop.view import LauncherView
+
+    window = tk.Tk()
+    try:
+        window.title("RealOpen Lens packaging check")
+        view = LauncherView(
+            window,
+            workspace="Packaging check",
+            models="Models are downloaded separately",
+            status=tk.StringVar(value="Packaging check"),
+            theme="light",
+            on_theme=lambda *a: None,
+            actions={
+                key: lambda: None
+                for key in (
+                    "open",
+                    "stop",
+                    "check",
+                    "download",
+                    "ocr_help",
+                    "models",
+                    "logs",
+                    "quit",
+                )
+            },
+            precision=tk.StringVar(value="int8"),
+            total_memory=None,
+            recommendation="int8",
+            on_precision=lambda *a: None,
+            languages=tk.StringVar(value="eng+fra+ara"),
+            setup_status=tk.StringVar(value="Ready"),
+            setup_details=tk.StringVar(value="Private bundled OCR"),
+            setup_progress=tk.DoubleVar(value=100),
+        )
+        window.update()
+        view.toggle_theme()
+        view.set_setup_expanded(True)
+        window.update()
+        view.set_setup_expanded(False)
+        window.update()
+        return {"rendered": True, "themes": ["light", "dark"], "setup_collapsible": True}
+    finally:
+        window.destroy()
 
 
 def inspect_bundle() -> dict:

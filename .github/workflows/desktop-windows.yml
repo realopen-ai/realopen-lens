@@ -1,0 +1,97 @@
+name: Windows desktop package
+
+on:
+  workflow_call:
+    inputs:
+      retention-days:
+        type: number
+        default: 7
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Build and test Windows x64 ZIP
+    runs-on: windows-2022
+    timeout-minutes: 90
+    env:
+      VCPKG_DISABLE_METRICS: "1"
+      VCPKG_MAX_CONCURRENCY: "2"
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read pinned vcpkg baseline
+        id: baseline
+        shell: pwsh
+        run: |
+          $baseline = (Get-Content packaging/windows-ocr/vcpkg.json -Raw | ConvertFrom-Json).'builtin-baseline'
+          "revision=$baseline" >> $env:GITHUB_OUTPUT
+      - name: Checkout Windows OCR build toolchain
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/vcpkg
+          ref: ${{ steps.baseline.outputs.revision }}
+          path: build/vcpkg
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.5"
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: uv python install 3.12
+      - run: uv sync --locked --python 3.12 --extra web --group packaging --no-editable
+      - run: npm --prefix frontend ci --prefer-offline --no-audit --no-fund
+      - name: Restore compiled OCR dependencies
+        id: ocr-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: build/vcpkg-cache
+          key: windows-2022-x64-static-ocr-v1-${{ hashFiles('packaging/windows-ocr/**') }}
+      - name: Configure private binary cache
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force build/vcpkg-cache | Out-Null
+          "VCPKG_BINARY_SOURCES=clear;files,$((Resolve-Path build/vcpkg-cache).Path),readwrite" >> $env:GITHUB_ENV
+      - name: Bootstrap pinned vcpkg
+        shell: cmd
+        run: build\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+      - name: Build portable archive with private OCR
+        shell: pwsh
+        run: |
+          uv run --no-sync python packaging/build_windows.py --vcpkg-root build/vcpkg 2>&1 | Tee-Object build/desktop-windows-build.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Save compiled OCR dependencies even if packaging failed
+        if: ${{ !cancelled() && steps.ocr-cache.outputs.cache-hit != 'true' && hashFiles('build/vcpkg-cache/**/*.zip') != '' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: build/vcpkg-cache
+          key: windows-2022-x64-static-ocr-v1-${{ hashFiles('packaging/windows-ocr/**') }}
+      - name: Test the extracted ZIP without host OCR or model weights
+        run: uv run --no-sync python packaging/ci_smoke.py dist/RealOpenLens-windows-x64.zip --report build/desktop-windows-report.json
+      - name: Retain portable archive and checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-windows-x64-${{ github.sha }}
+          path: |
+            dist/RealOpenLens-windows-x64.zip
+            dist/RealOpenLens-windows-x64.zip.sha256
+          if-no-files-found: error
+          retention-days: ${{ inputs.retention-days }}
+      - name: Retain validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-windows-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/desktop-windows-build.log
+            build/desktop-windows-report.json
+            build/desktop-ci-server.log
+            build/windows-ocr-installed/vcpkg/status
+            build/vcpkg/buildtrees/**/*.log
+          if-no-files-found: ignore
+          retention-days: ${{ inputs.retention-days }}

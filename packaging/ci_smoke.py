@@ -1,4 +1,4 @@
-"""Extracted macOS archive checks without SigLIP2/E5 weights or host OCR."""
+"""Native extracted-archive checks without SigLIP2/E5 weights or host OCR."""
 
 import argparse
 from http.cookiejar import CookieJar
@@ -8,19 +8,22 @@ from pathlib import Path
 import platform
 import plistlib
 import re
-import signal
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 import urllib.error
 import urllib.request
+import zipfile
+import hashlib
 
 from PIL import Image, ImageDraw
 
 
 def validate(archive: Path, report_path: Path):
     report = {"archive": archive.name, "host": platform.platform(), "checks": []}
+    windows = sys.platform == "win32"
     environment = {
         key: value
         for key, value in os.environ.items()
@@ -55,6 +58,7 @@ def validate(archive: Path, report_path: Path):
             input=data,
             capture_output=True,
             text=True,
+            encoding="utf-8",
             timeout=60,
         )
         if result.returncode != expected:
@@ -65,38 +69,64 @@ def validate(archive: Path, report_path: Path):
         return result
 
     try:
+        if archive.is_file():
+            with archive.open("rb") as stream:
+                report["archive_sha256"] = hashlib.file_digest(stream, "sha256").hexdigest()
         with tempfile.TemporaryDirectory(prefix="lens-ci-smoke-") as directory:
             base = Path(directory)
-            check(
-                "extract archive",
-                lambda: run(["/usr/bin/ditto", "-x", "-k", str(archive), str(base)], cwd=base),
-            )
-            bundle = base / "RealOpen Lens.app"
-            executable = bundle / "Contents/MacOS/RealOpenLens"
-            check(
-                "bundle signature",
-                lambda: run(
-                    ["/usr/bin/codesign", "--verify", "--deep", "--strict", str(bundle)], cwd=base
-                ),
-            )
+            if windows:
+
+                def extract():
+                    with zipfile.ZipFile(archive) as zipped:
+                        for item in zipped.infolist():
+                            if not (base / item.filename).resolve().is_relative_to(base.resolve()):
+                                raise ValueError("Archive member escapes extraction directory")
+                        zipped.extractall(base)
+
+                check("extract archive", extract)
+                bundle = base / "RealOpenLens"
+                executable = bundle / "RealOpenLens.exe"
+            else:
+                check(
+                    "extract archive",
+                    lambda: run(["/usr/bin/ditto", "-x", "-k", str(archive), str(base)], cwd=base),
+                )
+                bundle = base / "RealOpen Lens.app"
+                executable = bundle / "Contents/MacOS/RealOpenLens"
+                check(
+                    "bundle signature",
+                    lambda: run(
+                        ["/usr/bin/codesign", "--verify", "--deep", "--strict", str(bundle)],
+                        cwd=base,
+                    ),
+                )
 
             def icon():
-                contents = bundle / "Contents"
-                info = plistlib.loads((contents / "Info.plist").read_bytes())
-                assert info["CFBundleIdentifier"] == "org.realopen.lens"
-                assert info["CFBundleVersion"] == info["CFBundleShortVersionString"]
-                license_text = (contents / "Resources/licenses/realopen-lens/LICENSE").read_text(
+                resources = bundle / "_internal" if windows else bundle / "Contents/Resources"
+                if not windows:
+                    info = plistlib.loads((bundle / "Contents/Info.plist").read_bytes())
+                    assert info["CFBundleIdentifier"] == "org.realopen.lens"
+                    assert info["CFBundleVersion"] == info["CFBundleShortVersionString"]
+                else:
+                    assert executable.read_bytes()[:2] == b"MZ"
+                    assert (bundle / "README.txt").is_file()
+                license_text = (resources / "licenses/realopen-lens/LICENSE").read_text(
                     encoding="utf-8"
                 )
                 assert "Apache License" in license_text and "Version 2.0" in license_text
-                notices = (
-                    contents / "Resources/licenses/realopen-lens/THIRD_PARTY_NOTICES.md"
-                ).read_text(encoding="utf-8")
+                notices = (resources / "licenses/realopen-lens/THIRD_PARTY_NOTICES.md").read_text(
+                    encoding="utf-8"
+                )
                 assert notices.startswith("# Third-party notices")
                 assert all(
                     name in notices for name in ("CPython", "onnxruntime", "Tcl", "Tk", "react")
                 )
-                with Image.open(contents / "Resources" / info["CFBundleIconFile"]) as image:
+                artwork = (
+                    resources / "realopen_lens/desktop/assets/Lens.png"
+                    if windows
+                    else resources / info["CFBundleIconFile"]
+                )
+                with Image.open(artwork) as image:
                     image = image.convert("RGBA")
                     assert image.size == (1024, 1024)
                     bounds = image.getbbox()
@@ -113,10 +143,24 @@ def validate(archive: Path, report_path: Path):
                 ),
             )
             report["bundle"] = diagnostics
+            if windows:
+                check(
+                    "native launcher render in both themes",
+                    lambda: json.loads(run([str(executable), "--check-gui"], cwd=base).stdout),
+                    verify=lambda value: require(value["rendered"], "Launcher did not render"),
+                )
 
             def private_ocr():
-                engine = bundle / "Contents/Frameworks/lens-ocr/bin/tesseract"
-                data = bundle / "Contents/Resources/lens-ocr/tessdata"
+                engine = bundle / (
+                    "_internal/lens-ocr/bin/tesseract.exe"
+                    if windows
+                    else "Contents/Frameworks/lens-ocr/bin/tesseract"
+                )
+                data = bundle / (
+                    "_internal/lens-ocr/tessdata"
+                    if windows
+                    else "Contents/Resources/lens-ocr/tessdata"
+                )
                 target = base / "ocr.png"
                 sample = Image.new("RGB", (1000, 1000), "white")
                 draw = ImageDraw.Draw(sample)
@@ -135,6 +179,7 @@ def validate(archive: Path, report_path: Path):
                     env=env,
                     capture_output=True,
                     text=True,
+                    encoding="utf-8",
                     check=True,
                     timeout=30,
                 )
@@ -144,6 +189,7 @@ def validate(archive: Path, report_path: Path):
                     env=env,
                     capture_output=True,
                     text=True,
+                    encoding="utf-8",
                     check=True,
                     timeout=30,
                 )
@@ -189,7 +235,7 @@ def validate(archive: Path, report_path: Path):
                     "Unrecognized worker was not explicitly refused",
                 ),
             )
-            index = base / "index"
+            index = base / "index Français العربية"
             check(
                 "frozen CLI workspace info",
                 lambda: json.loads(
@@ -205,7 +251,7 @@ def validate(archive: Path, report_path: Path):
             )
 
             def server():
-                images = base / "images"
+                images = base / "images Français العربية"
                 images.mkdir()
                 with socket.socket() as reserved:
                     reserved.bind(("127.0.0.1", 0))
@@ -234,6 +280,7 @@ def validate(archive: Path, report_path: Path):
                         env={**environment, "PATH": str(base / "no-external-tools")},
                         stdout=log,
                         stderr=log,
+                        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if windows else 0,
                     )
                     try:
                         url = f"http://127.0.0.1:{port}"
@@ -298,15 +345,40 @@ def validate(archive: Path, report_path: Path):
                             "ara",
                         }
                     finally:
-                        process.terminate()
+                        if windows:
+                            # A service-hosted Windows runner may have no console;
+                            # attach in a helper instead of disturbing our terminal.
+                            try:
+                                subprocess.run(
+                                    [
+                                        sys.executable,
+                                        str(Path(__file__).with_name("windows_signal.py")),
+                                        str(process.pid),
+                                    ],
+                                    check=True,
+                                    timeout=10,
+                                    capture_output=True,
+                                )
+                            except Exception:
+                                process.kill()
+                                process.wait(timeout=5)
+                                raise
+                        else:
+                            process.terminate()
                         try:
                             process.wait(timeout=20)
                         except subprocess.TimeoutExpired:
                             process.kill()
                             process.wait(timeout=5)
-                # Uvicorn restores and re-raises SIGTERM after successful cleanup.
-                assert process.returncode in (0, -signal.SIGTERM), process.returncode
-                assert "Application shutdown complete." in log_path.read_text(encoding="utf-8")
+                            raise TimeoutError("Frozen gallery required forced shutdown")
+                from shutdown_check import verify_shutdown
+
+                report["shutdown"] = {"returncode": process.returncode}
+                verify_shutdown(
+                    process.returncode,
+                    log_path.read_text(encoding="utf-8"),
+                    windows=windows,
+                )
 
             check("loopback gallery, authenticated API, assets and clean shutdown", server)
         report["status"] = "passed"

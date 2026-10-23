@@ -1,6 +1,7 @@
 # RealOpen Lens
 
 Experimental native launcher/build instructions: [Desktop packaging](docs/desktop.md).
+Windows x64 ZIP build and CI instructions: [Windows desktop](docs/desktop-windows.md).
 
 Private, offline image search for your own collection.
 
@@ -152,7 +153,9 @@ inventory, copyright notices and license texts.
 - [x] Package an experimental macOS desktop launcher with device setup guidance.
 - [ ] Expand independent multilingual OCR/relevance review before promoting learned ranking.
 - [ ] Compare a small neural reranker against hybrid and logistic baselines.
-- [ ] Build and validate native desktop packages on Windows and Linux.
+- [x] Add native Windows x64 packaging and extracted-package CI checks.
+- [ ] Validate and publish the Windows desktop candidate from native CI.
+- [ ] Build and validate the Linux desktop package.
 
 See [the collection guide](docs/collections.md) for installation and CLI usage, and
 [the benchmark guide](docs/benchmark.md) for offline setup, query judgments, and

@@ -33,6 +33,40 @@ def test_bundle_diagnostics_refuse_source_environment():
         inspect_bundle()
 
 
+def test_gui_diagnostics_dispatch_without_starting_services(monkeypatch, capsys):
+    from realopen_lens.desktop import diagnostics
+
+    monkeypatch.setattr(sys, "argv", ["Lens", "--check-gui"])
+    monkeypatch.setattr(diagnostics, "inspect_gui", lambda: {"rendered": True})
+    entry.main()
+    assert capsys.readouterr().out.strip() == '{"rendered": true}'
+
+
+def test_gui_diagnostics_refuse_source_environment():
+    from realopen_lens.desktop.diagnostics import inspect_gui
+
+    with pytest.raises(ValueError, match="frozen executable"):
+        inspect_gui()
+
+
+def test_windows_entry_uses_utf8_before_reading_worker_requests(monkeypatch):
+    from types import SimpleNamespace
+
+    streams = []
+    with monkeypatch.context() as patch:
+        patch.setattr(sys, "platform", "win32")
+        for name in ("stdin", "stdout", "stderr"):
+            patch.setattr(
+                sys,
+                name,
+                SimpleNamespace(reconfigure=lambda **kwargs: streams.append(kwargs)),
+            )
+        patch.setattr(sys, "argv", ["Lens", "-m", "realopen_lens.runtime.query_server"])
+        patch.setattr(entry.runpy, "run_module", lambda *a, **kw: None)
+        entry.main()
+    assert streams == [{"encoding": "utf-8"}] * 3
+
+
 @pytest.mark.parametrize("arguments", [["-m"], ["-m", "http.server"]])
 def test_worker_dispatch_rejects_other_modules(monkeypatch, arguments):
     monkeypatch.setattr(sys, "argv", ["Lens", *arguments])

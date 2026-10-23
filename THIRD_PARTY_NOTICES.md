@@ -21,6 +21,14 @@ license notices and the native OCR dependency inventory appear in the bundled OC
 section below. Source installations may continue to use externally installed OCR.
 Upstream aggregate notices identify additional native and vendored components.
 
+Windows builds compile Tesseract 5.5.3 and its dependencies using the pinned vcpkg
+baseline and static triplet in `packaging/windows-ocr/`. Each Windows artifact
+preserves the build's package/version inventory and copyright files under
+`_internal/lens-ocr/`. Those full native dependency notices are also appended to
+the copy of this file shipped inside that artifact. The inventory below remains
+the macOS build snapshot; the Windows package diagnostics record its Python
+distribution versions. The same pinned language data is used on both platforms.
+
 For source availability under the tqdm Mozilla Public License portions, see
 [tqdm v4.70.1 source](https://github.com/tqdm/tqdm/tree/v4.70.1). Lens does not
 modify those upstream source files. The full MPL-2.0 text appears below.
