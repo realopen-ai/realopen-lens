@@ -175,7 +175,10 @@ workflow changes. Python lint/type/test jobs run for Python files, source/tests,
 benchmarks, packaging, scripts/configs, dependency/license inputs or Python check
 configuration changes. A PR changing only root `README.md` or documentation text
 under `docs/` skips all three workloads; only change detection runs. The manually dispatched candidate
-workflow remains unconditional.
+workflow remains unconditional. Both callers use reusable per-platform workflows:
+`desktop-macos.yml` and `desktop-windows.yml`. The macOS candidate caller enables
+archive acceptance and 30-day retention; ordinary checks use package smoke tests
+and seven-day retention. Shared setup/build steps stay in the platform workflow.
 Push filtering uses the pre-push branch revision; PR filtering uses the full PR
 diff, so a PR that includes application changes still runs the desktop job even
 when its newest commit only updates documentation.
