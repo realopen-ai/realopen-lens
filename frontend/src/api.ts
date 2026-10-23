@@ -18,6 +18,14 @@ export interface ImageResult {
   status: string;
   issues: { stage: string; error: string }[];
 }
+export interface AutoRefresh {
+  enabled: boolean;
+  interval_seconds: number;
+  state: string;
+  error: string | null;
+  last_checked_at: number | null;
+  task_id: string | null;
+}
 export interface Collection {
   id: string;
   name: string;
@@ -25,6 +33,7 @@ export interface Collection {
   generation: string | null;
   siglip_precision: string;
   languages?: string;
+  auto_refresh?: AutoRefresh;
 }
 export interface SetupReport {
   ready: boolean;
@@ -42,6 +51,7 @@ export interface SetupReport {
   ocr_guide: string;
 }
 export interface Task {
+  origin?: "manual" | "automatic";
   id: string;
   kind: string;
   collection: string;

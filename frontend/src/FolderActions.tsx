@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { post, type Collection, type Task } from "./api";
+import { post, type AutoRefresh, type Collection, type Task } from "./api";
 
 export function FolderActions({
   folder,
@@ -17,6 +17,39 @@ export function FolderActions({
   const [name, setName] = useState(folder.name);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const [automatic, setAutomatic] = useState(folder.auto_refresh);
+  useEffect(() => setAutomatic(folder.auto_refresh), [folder.auto_refresh]);
+  async function configureAutomatic(
+    enabled: boolean,
+    interval = automatic?.interval_seconds || 60,
+  ) {
+    setPending(true);
+    setError("");
+    const previous = automatic;
+    setAutomatic({
+      enabled,
+      interval_seconds: interval,
+      state: enabled ? "waiting" : "off",
+      error: null,
+      last_checked_at: null,
+      task_id: null,
+    });
+    try {
+      setAutomatic(
+        await post<AutoRefresh>("/collections/auto-refresh", {
+          collection: folder.name,
+          collection_id: folder.id,
+          enabled,
+          interval_seconds: interval,
+        }),
+      );
+    } catch (e) {
+      setAutomatic(previous);
+      setError(String(e));
+    } finally {
+      setPending(false);
+    }
+  }
   const container = useRef<HTMLDivElement>(null);
   const dialog = useRef<HTMLElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -124,6 +157,64 @@ export function FolderActions({
           >
             Refresh index
           </button>
+          <div className="folder-automatic">
+            <label className="inline">
+              <input
+                type="checkbox"
+                checked={automatic?.enabled || false}
+                disabled={pending}
+                onChange={(event) =>
+                  void configureAutomatic(event.target.checked)
+                }
+              />
+              Automatic refresh
+            </label>
+            {automatic?.enabled && (
+              <label>
+                Check for changes
+                <select
+                  aria-label={`Refresh interval for ${folder.name}`}
+                  disabled={pending}
+                  value={automatic.interval_seconds}
+                  onChange={(event) =>
+                    void configureAutomatic(true, Number(event.target.value))
+                  }
+                >
+                  {![60, 300, 900].includes(automatic.interval_seconds) && (
+                    <option value={automatic.interval_seconds}>
+                      Every {automatic.interval_seconds} seconds
+                    </option>
+                  )}
+                  <option value={60}>Every minute</option>
+                  <option value={300}>Every 5 minutes</option>
+                  <option value={900}>Every 15 minutes</option>
+                </select>
+              </label>
+            )}
+            <p className="muted small">
+              While Lens is running. Waits for copies to settle.
+            </p>
+            {automatic?.enabled && (
+              <p className="small" role="status">
+                {automatic.state === "settling"
+                  ? "Waiting for files to settle…"
+                  : automatic.state === "checking"
+                    ? "Checking for changes…"
+                    : automatic.state === "queued"
+                      ? "Refresh queued"
+                      : automatic.state === "running"
+                        ? "Refreshing index…"
+                        : automatic.state === "unavailable"
+                          ? "Folder check needs attention"
+                          : "Watching for changes"}
+              </p>
+            )}
+            {automatic?.error && (
+              <p className="small" role="status">
+                {automatic.error}
+              </p>
+            )}
+          </div>
           <button disabled={busy || pending} onClick={() => choose("rename")}>
             Rename
           </button>

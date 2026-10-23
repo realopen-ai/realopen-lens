@@ -52,6 +52,10 @@ For a new library:
 4. Open the library, select **Add folder**, choose its source directory and start
    indexing. Progress remains visible while indexing runs.
 
+Folders can optionally [refresh automatically](automatic-refresh.md) while Lens
+is running. Enable it in the folder's **⋯** menu; the launcher need not stay in
+front, and indexing keeps the usual live progress and cancellation.
+
 The gallery exposes the same offline check in **Workspace settings** and inside
 **Add folder → Device setup**. The empty-library page links
 to setup directly. Checks run as background tasks with SSE progress and cancellation;

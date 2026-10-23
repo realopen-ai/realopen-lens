@@ -1,5 +1,8 @@
 """Bounded application jobs, persisted operational state and reconnectable progress."""
 
+from __future__ import annotations
+
+from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
 import json
@@ -51,10 +54,15 @@ class TaskManager:
                         status="interrupted",
                         phase="Server stopped; submit again",
                         finished_at=time(),
+                        revision=state["revision"] + 1,
                     )
                 state["result"] = None
                 self.tasks[state["id"]] = state
                 self._persist(state)
+
+        from realopen_lens.api.refresh import FolderRefresh
+
+        self.auto_refresh = FolderRefresh(self)
 
     def _persist(self, state: dict):
         payload = {k: v for k, v in state.items() if k != "result"}
@@ -73,9 +81,13 @@ class TaskManager:
             )
             return state
 
-    def list(self) -> list[dict]:
+    def list(self, *, summary: bool = False) -> list[dict]:
         with self.lock:
-            return [self.snapshot(key) for key in reversed(self.tasks)]
+            states = [self.snapshot(key) for key in reversed(self.tasks)]
+            if summary:
+                for state in states:
+                    state["result"] = None
+            return states
 
     def update(self, task_id: str, **values):
         with self.lock:
@@ -105,6 +117,8 @@ class TaskManager:
                 "virtual_collection": request.get("virtual_collection"),
                 "virtual_revision": request.get("virtual_revision"),
                 "collection": request["collection"],
+                "collection_id": request.get("collection_id"),
+                "origin": request.get("origin", "manual"),
                 "status": "queued",
                 "phase": "queued",
                 "created_at": time(),
@@ -123,6 +137,7 @@ class TaskManager:
             state = self.snapshot(task_id)
             if state["status"] not in TERMINAL:
                 self.cancelled.add(task_id)
+                self.auto_refresh.cancelled(state)
                 self.update(task_id, phase="cancellation_requested")
 
     def manage_folder(self, name: str, collection_id: str, new_name: str | None) -> dict:
@@ -133,9 +148,19 @@ class TaskManager:
             if self.closed or any(s["status"] not in TERMINAL for s in self.tasks.values()):
                 raise CollectionConflict("Wait for active tasks to finish before changing folders")
             self._release_session()
-            return change(self.root, name, collection_id, new_name)
+            result = change(self.root, name, collection_id, new_name)
+            if new_name is None:
+                self.auto_refresh.forget(collection_id)
+            return result
 
-    def refresh_folder(self, name: str, collection_id: str) -> dict:
+    def refresh_folder(
+        self,
+        name: str,
+        collection_id: str,
+        *,
+        automatic: bool = False,
+        source_identity: Sequence[int] | None = None,
+    ) -> dict:
         from realopen_lens.organization.folders import refresh_options
         from realopen_lens.storage.organization import CollectionConflict
 
@@ -146,7 +171,13 @@ class TaskManager:
                 raise CollectionConflict(
                     "This folder already has an active task; wait for it to finish"
                 )
-            return self.submit("index", refresh_options(self.root, name, collection_id))
+            request = refresh_options(self.root, name, collection_id)
+            request.update(
+                collection_id=collection_id, origin="automatic" if automatic else "manual"
+            )
+            if automatic:
+                request["source_identity"] = source_identity
+            return self.submit("index", request)
 
     def _release_session(self):
         if self.session is not None:
@@ -239,6 +270,11 @@ class TaskManager:
                 status = payload["status"]
             elif kind == "index":
                 self._release_session()
+                if request.get("origin") == "automatic":
+                    options.update(
+                        expected_source_identity=request["source_identity"],
+                        expected_collection_id=request["collection_id"],
+                    )
                 result = index_collection(
                     Path(request["root"]),
                     collection=collection,
@@ -342,10 +378,12 @@ class TaskManager:
                 Path(request["upload"]).unlink(missing_ok=True)
             with self.lock:
                 self.cancelled.discard(task_id)
+                self.auto_refresh.finished(self.tasks[task_id])
 
     def close(self):
         with self.lock:
             self.closed = True
             self.cancelled.update(k for k, s in self.tasks.items() if s["status"] not in TERMINAL)
+        self.auto_refresh.close()
         self.executor.shutdown(wait=True)
         self._release_session()

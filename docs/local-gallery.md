@@ -80,7 +80,11 @@ Each indexed folder has a **⋯** menu in the sidebar:
 - **Refresh index** scans its saved source path using its existing precision and OCR
   languages. New/changed files are processed, unchanged analyses are reused, and
   removed paths disappear from the new index. Progress, cancellation and reconnects
-  use the same live task display as initial indexing. Refresh is manual.
+  use the same live task display as initial indexing. Manual refresh remains available.
+- **Automatic refresh** opts this folder into metadata checks while Lens is running.
+  Choose a one-, five- or fifteen-minute interval; settled changes use the same
+  indexer and live progress. See [automatic refresh](automatic-refresh.md) for
+  cancellation, restart and disconnected-drive behavior.
 - **Rename** changes the name in Lens without renaming the source directory.
   Its stable collection ID, feedback, virtual collections, duplicate reviews and
   model activation remain attached. Saved search records retain their original
@@ -177,6 +181,7 @@ Do not expose the factory through an external listener or multiple API workers.
 | Browse local image folders (200 per page) | `GET /api/folders` |
 | Saved collections | `GET /api/collections` |
 | Refresh a saved folder with live indexing progress | `POST /api/collections/refresh` |
+| Configure automatic refresh for an existing folder | `POST /api/collections/auto-refresh` |
 | Rename/unregister an indexed folder | `POST /api/collections/rename`, `/remove` |
 | Browse a collection | `GET /api/collections/{collection}/images?offset=0&limit=60` |
 | Index status and detailed issues | `GET /api/collections/{collection}/status` |

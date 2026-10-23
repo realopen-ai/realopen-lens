@@ -157,6 +157,13 @@ def run_index(options: dict, *, stage_runner=supervise) -> IndexResult:
         job_id = None
         try:
             recover(catalog)
+            from realopen_lens.indexing.changes import check_source
+
+            check_source(root, options.get("expected_source_identity"))
+            if options.get("expected_collection_id"):
+                found = catalog.collection(options["collection"])
+                if found["id"] != options["expected_collection_id"]:
+                    raise ValueError("Source collection changed before automatic refresh")
             collection = catalog.ensure_collection(options["collection"], root)
             logger.info("Verifying local models and Tesseract language packs")
             config = pipeline_config(options)
@@ -284,6 +291,7 @@ def run_index(options: dict, *, stage_runner=supervise) -> IndexResult:
                     same = load_manifest(catalog, active)["pipeline"] == config["pipeline"]
                 except (OSError, ValueError):
                     same = False
+            check_source(root, options.get("expected_source_identity"))
             logger.info("Keeping published generation" if same else "Publishing search generation")
             generation = (
                 active["id"]
@@ -350,6 +358,8 @@ def index_collection(
     log: bool = False,
     siglip_precision: str = "int8",
     on_progress: Callable[[dict], None] | None = None,
+    expected_source_identity: list[int] | None = None,
+    expected_collection_id: str | None = None,
 ) -> IndexResult:
     if not 1 <= threads <= 8 or not collection.strip() or len(collection) > 128:
         raise ValueError("Use 1–8 threads and a collection name of 1–128 characters")
@@ -366,6 +376,8 @@ def index_collection(
         "rehash": rehash,
         "log": log,
         "siglip_precision": siglip_precision,
+        "expected_source_identity": expected_source_identity,
+        "expected_collection_id": expected_collection_id,
     }
     request = store / "requests" / (identifier() + ".json")
     atomic_bytes(request, json.dumps(options).encode())

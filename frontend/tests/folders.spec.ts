@@ -1,7 +1,9 @@
 import { test, expect, type Page } from "@playwright/test";
 
-async function setup(page: Page) {
-  let folders = [
+import type { Collection } from "../src/api";
+
+async function setup(page: Page, automaticTask: boolean | "completed" = false) {
+  let folders: Collection[] = [
     {
       id: "c".repeat(32),
       name: "personal",
@@ -24,9 +26,10 @@ async function setup(page: Page) {
   };
   const task = {
     id: "refresh",
+    origin: automaticTask ? "automatic" : "manual",
     kind: "index",
     collection: "personal",
-    status: "queued",
+    status: automaticTask === "completed" ? "completed" : "queued",
     phase: "queued",
     progress: {},
     revision: 0,
@@ -34,16 +37,24 @@ async function setup(page: Page) {
     error: null,
     result: null,
   };
+  let taskPolls = 0;
   await page.route("**/api/**", (route) => {
     const path = new URL(route.request().url()).pathname;
     if (path === "/api/session")
       return route.fulfill({ json: { allowed_roots: ["/photos"] } });
     if (path === "/api/collections") return route.fulfill({ json: folders });
-    if (path === "/api/virtual-collections" || path === "/api/tasks")
-      return route.fulfill({ json: [] });
+    if (path === "/api/virtual-collections") return route.fulfill({ json: [] });
+    if (path === "/api/tasks")
+      return route.fulfill({
+        json: automaticTask && taskPolls++ > 0 ? [task] : [],
+      });
     if (path.endsWith("/images"))
       return route.fulfill({
-        json: { results: [image], total: 1, generation: "g" },
+        json: {
+          results: [image],
+          total: automaticTask === "completed" && taskPolls > 1 ? 2 : 1,
+          generation: "g",
+        },
       });
     if (
       path.startsWith("/api/collections/") &&
@@ -51,6 +62,18 @@ async function setup(page: Page) {
     ) {
       const body = route.request().postDataJSON();
       requests.push({ path, body });
+      if (path.endsWith("/auto-refresh")) {
+        const settings = {
+          enabled: body.enabled,
+          interval_seconds: body.interval_seconds,
+          state: body.enabled ? "waiting" : "off",
+          error: null,
+          last_checked_at: null,
+          task_id: null,
+        };
+        folders = [{ ...folders[0], auto_refresh: settings }];
+        return route.fulfill({ json: settings });
+      }
       if (path.endsWith("/rename")) {
         if (body.name === "taken")
           return route.fulfill({
@@ -66,6 +89,7 @@ async function setup(page: Page) {
       }
       return route.fulfill({ status: 202, json: task });
     }
+    if (path === "/api/tasks/refresh") return route.fulfill({ json: task });
     if (path.endsWith("/events"))
       return route.fulfill({
         contentType: "text/event-stream",
@@ -161,4 +185,81 @@ test("refresh displays live indexing progress and disables conflicting actions",
     path: `../runs/folder-management-${info.project.name}.png`,
     fullPage: true,
   });
+});
+
+test("automatic refresh is opt-in, styled, configurable and retained after reload", async ({
+  page,
+}, info) => {
+  const requests = await setup(page);
+  await page.getByRole("button", { name: "Manage folder personal" }).click();
+  const checkbox = page.getByRole("checkbox", { name: "Automatic refresh" });
+  await expect(checkbox).not.toBeChecked();
+  await checkbox.check();
+  await expect(page.getByText("Watching for changes")).toBeVisible();
+  await page.getByLabel("Refresh interval for personal").selectOption("300");
+  await expect.poll(() => requests.at(-1)?.body.interval_seconds).toBe(300);
+  expect(requests.at(-1)?.body).toEqual({
+    collection: "personal",
+    collection_id: "c".repeat(32),
+    enabled: true,
+    interval_seconds: 300,
+  });
+  await page.screenshot({
+    path: `../runs/automatic-refresh-${info.project.name}.png`,
+    fullPage: true,
+  });
+  await page.reload();
+  await page.getByRole("button", { name: "Manage folder personal" }).click();
+  await expect(checkbox).toBeChecked();
+  await expect(page.getByLabel("Refresh interval for personal")).toHaveValue(
+    "300",
+  );
+  await checkbox.uncheck();
+  await expect(page.getByLabel("Refresh interval for personal")).toHaveCount(0);
+});
+
+test("new automatic jobs are discovered without reloading and stream progress", async ({
+  page,
+}) => {
+  await setup(page, true);
+  await expect(
+    page.getByRole("region", { name: "Task progress" }),
+  ).toContainText("Refreshing automatically", { timeout: 10000 });
+  await expect(
+    page.getByRole("region", { name: "Task progress" }),
+  ).toContainText("1/2 images");
+  await page.getByRole("button", { name: "Manage folder personal" }).click();
+  // Future automatic work can be disabled while the existing task is still running.
+  const checkbox = page.getByRole("checkbox", { name: "Automatic refresh" });
+  await expect(checkbox).toBeEnabled();
+  await checkbox.check();
+  await expect(
+    page.getByRole("button", { name: "Refresh index" }),
+  ).toBeDisabled();
+});
+
+test("an automatic refresh finishing between discovery polls updates the gallery", async ({
+  page,
+}) => {
+  await setup(page, "completed");
+  await expect(
+    page.getByText("1 images in this collection", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("2 images in this collection", { exact: true }),
+  ).toBeVisible({ timeout: 10000 });
+  await page.getByRole("button", { name: "Activity", exact: true }).click();
+  await expect(
+    page.getByRole("region", { name: "Task history" }),
+  ).toContainText("automatic refresh");
+});
+
+test("automatic completion keeps the current tool open", async ({ page }) => {
+  await setup(page, "completed");
+  await page.getByRole("button", { name: "Activity", exact: true }).click();
+  const history = page.getByRole("region", { name: "Task history" });
+  await expect(history).toContainText("automatic refresh", { timeout: 10000 });
+  await expect(
+    page.getByRole("heading", { name: "Activity", exact: true }),
+  ).toBeVisible();
 });

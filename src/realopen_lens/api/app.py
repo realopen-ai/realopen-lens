@@ -59,6 +59,11 @@ class FolderInput(Input):
     collection_id: str = Field(pattern=r"^[a-f0-9]{32}$")
 
 
+class FolderRefreshInput(FolderInput):
+    enabled: bool
+    interval_seconds: int = Field(default=60, ge=30, le=3600)
+
+
 class FolderRenameInput(FolderInput):
     name: str = Field(min_length=1, max_length=128)
 
@@ -163,6 +168,7 @@ def create_app(
         with writer_lock(root / "api-server"):
             manager = TaskManager(root, models.resolve(), threads, owns_server=True)
             app.state.manager = manager
+            manager.auto_refresh.start()
             try:
                 yield
             finally:
@@ -251,7 +257,16 @@ def create_app(
 
     @app.get("/api/collections")
     def collection_list():
-        return reading.collections(root)
+        return [
+            {**c, "auto_refresh": app.state.manager.auto_refresh.describe(c["id"])}
+            for c in reading.collections(root)
+        ]
+
+    @app.post("/api/collections/auto-refresh")
+    def configure_automatic_refresh(body: FolderRefreshInput):
+        return app.state.manager.auto_refresh.configure(
+            body.collection, body.collection_id, body.enabled, body.interval_seconds
+        )
 
     @app.post("/api/collections/refresh", status_code=202)
     def refresh_folder(body: FolderInput):
@@ -553,8 +568,8 @@ def create_app(
         return named_state(root)
 
     @app.get("/api/tasks")
-    def tasks():
-        return app.state.manager.list()
+    def tasks(summary: bool = False):
+        return app.state.manager.list(summary=summary)
 
     @app.get("/api/tasks/{task_id}")
     def task(task_id: str):
