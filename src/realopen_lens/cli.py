@@ -295,14 +295,7 @@ def find_images(
             from realopen_lens.retrieval.library import LibrarySession
             from realopen_lens.storage.catalog import default_directory
 
-            if (
-                virtual_collection
-                or virtual_revision
-                or reranker
-                or depths
-                or siglip_precision
-                or collection != "personal"
-            ):
+            if reranker or depths or siglip_precision or collection != "personal":
                 raise ValueError("Library search cannot use folder-specific overrides")
             session = LibrarySession(
                 index_dir=index_dir or default_directory(), models=models, threads=threads
@@ -310,7 +303,13 @@ def find_images(
             try:
                 while query.strip():
                     result = session.search(
-                        query, limit=limit, mode=mode, use_feedback=feedback, save_run=save_run
+                        query,
+                        limit=limit,
+                        mode=mode,
+                        use_feedback=feedback,
+                        save_run=save_run,
+                        virtual_collection=virtual_collection,
+                        virtual_revision=virtual_revision,
                     )
                     typer.echo(json.dumps(result, ensure_ascii=False, indent=2))
                     if not interactive:
@@ -428,7 +427,7 @@ def similar_images(
             from realopen_lens.retrieval.library import LibrarySession
             from realopen_lens.storage.catalog import default_directory
 
-            if virtual_collection or virtual_revision or siglip_precision:
+            if siglip_precision:
                 raise ValueError("Library similarity cannot use folder-specific overrides")
             session = LibrarySession(
                 index_dir=index_dir or default_directory(), models=models, threads=threads
@@ -441,6 +440,8 @@ def similar_images(
                     limit=limit,
                     include_self=include_self,
                     save_run=save_run,
+                    virtual_collection=virtual_collection,
+                    virtual_revision=virtual_revision,
                 )
                 typer.echo(json.dumps(result, ensure_ascii=False, indent=2))
             finally:

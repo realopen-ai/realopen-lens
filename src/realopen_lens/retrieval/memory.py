@@ -115,7 +115,11 @@ def aliases_for_run(root: Path, run: dict, image_id: str) -> tuple[str, ...]:
             pixels[image_id] = next(iter(pixels.values()))
             group = _content(root, image_id, pixels)
             with FeedbackStore(root, readonly=True) as store:
-                rows = store.memory(run["collection_id"], run["query"]["text"])
+                rows = store.memory(
+                    run["collection_id"],
+                    run["query"]["text"],
+                    (run.get("scope") or {}).get("id", ""),
+                )
             aliases.update(
                 row["image_id"] for row in rows if _content(root, row["image_id"], pixels) == group
             )

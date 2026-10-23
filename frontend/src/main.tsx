@@ -248,6 +248,8 @@ function App() {
     if (selectedCollection.current !== changed.name) return;
     if (name !== null) {
       await browse(name, 0, virtualScope.current);
+    } else if (virtualScope.current?.collection_id === "library-v1") {
+      await browse(values[0]?.name || "", 0, virtualScope.current);
     } else if (values.length) {
       await browse(values[0].name);
     } else {
@@ -274,12 +276,22 @@ function App() {
       setIsBrowse(true);
       setError("");
       setView("library");
+      setAllFolders(true);
+      await loadVirtuals("");
     }
   }
   async function loadVirtuals(source: string) {
-    const values = await api<VirtualCollection[]>(
-      `/virtual-collections?collection=${encodeURIComponent(source)}`,
-    );
+    const [local, library] = await Promise.all([
+      source
+        ? api<VirtualCollection[]>(
+            `/virtual-collections?collection=${encodeURIComponent(source)}`,
+          )
+        : Promise.resolve([]),
+      api<VirtualCollection[]>("/virtual-collections?all_folders=true"),
+    ]);
+    const values = [
+      ...new Map([...local, ...library].map((g) => [g.id, g])).values(),
+    ];
     if (selectedCollection.current === source) {
       setVirtuals(values);
       setTargetVirtual((current) =>
@@ -309,8 +321,12 @@ function App() {
     setLoading(false);
     setError("");
     setOrganizationNotice("");
+    setTargetVirtual("");
     setTitle("Search all folders");
     setIsBrowse(false);
+    void loadVirtuals(selectedCollection.current).catch((e) =>
+      setError(String(e)),
+    );
   }
   async function browse(
     value: string,
@@ -318,7 +334,16 @@ function App() {
     group: VirtualCollection | null = null,
   ) {
     setView("library");
-    setAllFolders(false);
+    const libraryGroup = group?.collection_id === "library-v1";
+    setAllFolders(libraryGroup);
+    if (libraryGroup)
+      setTargetVirtual((current) =>
+        virtuals.some(
+          (g) => g.id === current && g.collection_id === "library-v1",
+        )
+          ? current
+          : "",
+      );
     const version = ++requestVersion.current;
     foreground.current = null;
     setRepeatSearch(null);
@@ -344,7 +369,7 @@ function App() {
     }
     try {
       const url = group
-        ? `/virtual-collections/${group.id}/images?collection=${encodeURIComponent(value)}&revision=${group.revision}&offset=${offset}&limit=60${offset && generation ? `&generation=${generation}` : ""}`
+        ? `/virtual-collections/${group.id}/images?all_folders=${libraryGroup}&collection=${encodeURIComponent(value)}&revision=${group.revision}&offset=${offset}&limit=60${offset && generation ? `&generation=${generation}` : ""}`
         : `/collections/${encodeURIComponent(value)}/images?offset=${offset}&limit=60`;
       const data = await api<{
         results: ImageResult[];
@@ -411,8 +436,8 @@ function App() {
       (value) => value.id === (remove ? virtualId : targetVirtual),
     );
     if (!selected.size) return;
-    if (!group) {
-      setError("Choose an available virtual collection.");
+    if (!group || (allFolders && group.collection_id !== "library-v1")) {
+      setError("Choose an available virtual collection for this scope.");
       return;
     }
     setSelectionBusy(true);
@@ -422,7 +447,8 @@ function App() {
         method: remove ? "DELETE" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          collection: source,
+          collection: source || "personal",
+          all_folders: group.collection_id === "library-v1",
           revision: group.revision,
           image_ids: [...selected],
         }),
@@ -618,6 +644,10 @@ function App() {
             "The saved search's virtual collection is unavailable. Choose a collection and search again.",
           );
       }
+      if (!values.length) {
+        await loadVirtuals("");
+        setAllFolders(true);
+      }
       setTasks(pending);
       pending.forEach((task) => seenTasks.current.set(task.id, task.revision));
       if (previous && restore) {
@@ -725,7 +755,7 @@ function App() {
   ) {
     setView("library");
     const library = Boolean(body.all_folders);
-    const scope = library ? null : virtualScope.current;
+    const scope = virtualScope.current;
     if (kind === "similar" && !library) {
       const source = String(body.collection);
       const changed = selectedCollection.current !== source;
@@ -780,7 +810,7 @@ function App() {
   async function upload(file: File, record = saveRun) {
     setSelected(new Set());
     setOrganizationNotice("");
-    const scope = allFolders ? null : virtualScope.current;
+    const scope = virtualScope.current;
     setUndo(null);
     setMemoryEnabled(false);
     setRepeatSearch({ kind: "upload", file });
@@ -1027,10 +1057,15 @@ function App() {
             <p className="muted small">Your collections will appear here.</p>
           )}
         </div>
-        {!allFolders && (
+        {
           <VirtualCollections
-            collection={collection}
-            groups={virtuals}
+            collection={collection || "personal"}
+            allFolders={allFolders}
+            groups={
+              allFolders
+                ? virtuals.filter((g) => g.collection_id === "library-v1")
+                : virtuals
+            }
             activeId={virtualId}
             creating={creatingVirtual}
             setCreating={setCreatingVirtual}
@@ -1038,7 +1073,7 @@ function App() {
             onChanged={organizationChanged}
             onCreated={setTargetVirtual}
           />
-        )}
+        }
         <div className="workspace-label tools-label">TOOLS</div>
         <nav className="tools-nav" aria-label="Workspace tools">
           <button
@@ -1391,7 +1426,9 @@ function App() {
                 </button>
                 <button
                   className="text-button"
-                  onClick={() => void browse(collection)}
+                  onClick={() =>
+                    allFolders ? openLibrary() : void browse(collection)
+                  }
                 >
                   Search all images
                 </button>
@@ -1563,7 +1600,7 @@ function App() {
               <p className="scope-help">
                 {unavailable} saved{" "}
                 {unavailable === 1 ? "image is" : "images are"} unavailable in
-                the current source index. Membership is retained.
+                the indexed library. Membership is retained.
               </p>
             )}
             {organizationNotice && (
@@ -1571,7 +1608,7 @@ function App() {
                 {organizationNotice}
               </p>
             )}
-            {images.length > 0 && !loading && !allFolders && (
+            {images.length > 0 && !loading && (
               <div className="selection-controls">
                 <button
                   className="text-button"
@@ -1601,7 +1638,11 @@ function App() {
             )}
             <SelectionToolbar
               selected={selected.size}
-              groups={virtuals}
+              groups={
+                allFolders
+                  ? virtuals.filter((g) => g.collection_id === "library-v1")
+                  : virtuals
+              }
               target={targetVirtual}
               setTarget={setTargetVirtual}
               activeId={virtualId}
@@ -1623,7 +1664,10 @@ function App() {
                   <Icon name={collection ? "search" : "image"} size={35} />
                 </div>
                 <h2>
-                  {allFolders && !repeatSearch
+                  {allFolders &&
+                  collections.length > 0 &&
+                  !virtualId &&
+                  !repeatSearch
                     ? "Search across your folders"
                     : collection
                       ? virtualId
@@ -1638,7 +1682,10 @@ function App() {
                       : "Make room for a little discovery."}
                 </h2>
                 <p>
-                  {allFolders && !repeatSearch
+                  {allFolders &&
+                  collections.length > 0 &&
+                  !virtualId &&
+                  !repeatSearch
                     ? "Describe a photo, screenshot or document. Lens searches every indexed folder."
                     : collection
                       ? virtualId
@@ -1689,7 +1736,7 @@ function App() {
                         type="checkbox"
                         aria-label={`Select ${filename(image)}`}
                         checked={selected.has(image.image_id)}
-                        disabled={selectionBusy || loading || allFolders}
+                        disabled={selectionBusy || loading}
                         onChange={() => toggleImage(image)}
                       />
                     </label>

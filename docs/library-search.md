@@ -4,8 +4,9 @@ Choose **Image library**, or select **All folders** under **Search in**, then en
 a text query. This searches the indexed folders in the current workspace. Results include the source folder names. Open an image to see all
 available source paths; originals remain untouched.
 
-Selecting a folder restricts browsing and search to that folder. Virtual
-collections and bulk organization remain folder-scoped. **Similar** searches the
+Selecting a folder restricts browsing and search to that folder.
+[Library virtual collections](virtual-collections.md) can contain images from any
+indexed folder; select library results and choose **New collection** or **Add selected**. **Similar** searches the
 currently selected scope: all folders from library results, or the selected folder.
 The image-search button also accepts a local query image in either scope.
 
@@ -101,7 +102,7 @@ FP32 representative supplies its scores; other locations remain attached.
 
 **Save for feedback** records the library search and its source generations.
 For text searches, relevant/irrelevant judgments apply to that exact query across the library. They
-are separate from folder and virtual-collection judgments. **Show hidden images**
+are separate from folder and scoped virtual-collection judgments. **Show hidden images**
 lets you review and clear library judgments without model inference.
 
 Library feedback can be exported with its provenance. Existing reranker training
@@ -121,7 +122,8 @@ generations; subsequent refreshes take effect on the next search. Renaming or
 removing folders does not rewrite historical feedback.
 
 For API clients, submit `all_folders: true` to `POST /api/tasks/search`.
-Folder-specific virtual scope cannot be combined with this flag. Results include
+Combine this flag with `virtual_collection` and optional `virtual_revision` for a
+library collection. Folder-specific virtual scope cannot be combined with this flag. Results include
 `sources` with collection IDs, generation IDs, original image IDs and paths, so
 media requests can use the stable source collection ID and generation through
 `GET /api/sources/{collection_id}/images/{image_id}/{kind}`. These URLs continue

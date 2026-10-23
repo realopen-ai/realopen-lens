@@ -166,8 +166,17 @@ class OrganizationStore:
         revision: int,
         *,
         remove: bool = False,
+        resolved_values: list[str] | None = None,
     ) -> dict:
         values = image_ids(values)
+        if resolved_values is not None:
+            # An internal alias expansion may remove more stored IDs than the
+            # 500 logical images accepted by an adapter. Keep one transaction.
+            values = sorted(set(resolved_values))
+            if not values or len(values) > 100_000:
+                raise ValueError("Invalid resolved membership batch")
+            for start in range(0, len(values), 500):
+                image_ids(values[start : start + 500])
         with self.db:
             self.db.execute("BEGIN IMMEDIATE")
             self.get(virtual_id, collection_id, revision)

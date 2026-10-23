@@ -7,6 +7,8 @@ telemetry or model downloads.
 
 Search one folder or choose **All folders** for [library-wide text and image search](library-search.md),
 including source labels, cross-folder exact-content grouping and separately scoped feedback.
+Select results to save them in a [cross-folder virtual collection](virtual-collections.md);
+text and image searches stay within that collection until you change scope.
 
 Standalone serving uses the same [RAM-based precision default](siglip2-precision.md)
 as the desktop launcher. Existing folder profiles and manual overrides take priority.

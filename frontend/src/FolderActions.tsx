@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { post, type AutoRefresh, type Collection, type Task } from "./api";
 
 export function FolderActions({
@@ -51,12 +52,17 @@ export function FolderActions({
     }
   }
   const container = useRef<HTMLDivElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
   const dialog = useRef<HTMLElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (!open) return;
     const close = (event: PointerEvent) => {
-      if (!container.current?.contains(event.target as Node)) setOpen(false);
+      if (
+        !container.current?.contains(event.target as Node) &&
+        !menu.current?.contains(event.target as Node)
+      )
+        setOpen(false);
     };
     const escape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -70,6 +76,28 @@ export function FolderActions({
       document.removeEventListener("pointerdown", close);
       document.removeEventListener("keydown", escape);
     };
+  }, [open]);
+  useLayoutEffect(() => {
+    if (!open) return;
+    const position = () => {
+      if (!trigger.current || !menu.current) return;
+      const anchor = trigger.current.getBoundingClientRect();
+      const popup = menu.current;
+      popup.style.maxHeight = `${Math.max(80, window.innerHeight - 24)}px`;
+      const bounds = popup.getBoundingClientRect();
+      popup.style.left = `${Math.max(12, Math.min(anchor.right - bounds.width, window.innerWidth - bounds.width - 12))}px`;
+      popup.style.top = `${Math.max(12, Math.min(anchor.bottom + 6, window.innerHeight - bounds.height - 12))}px`;
+    };
+    position();
+    window.addEventListener("resize", position);
+    window.addEventListener("scroll", position, true);
+    return () => {
+      window.removeEventListener("resize", position);
+      window.removeEventListener("scroll", position, true);
+    };
+  }, [open, automatic?.enabled, error, busy]);
+  useEffect(() => {
+    if (open) menu.current?.querySelector<HTMLButtonElement>("button")?.focus();
   }, [open]);
   useEffect(() => {
     if (!action) return;
@@ -141,92 +169,116 @@ export function FolderActions({
         className="icon-button"
         aria-label={`Manage folder ${folder.name}`}
         aria-expanded={open}
-        aria-haspopup="true"
+        aria-haspopup="dialog"
         onClick={() => {
           setError("");
           setOpen(!open);
         }}
       >
-        ⋯
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <circle cx="5" cy="12" r="1.7" />
+          <circle cx="12" cy="12" r="1.7" />
+          <circle cx="19" cy="12" r="1.7" />
+        </svg>
       </button>
-      {open && (
-        <div className="folder-menu" aria-label={`Actions for ${folder.name}`}>
-          <button
-            disabled={busy || pending}
-            onClick={() => void run("refresh")}
+      {open &&
+        createPortal(
+          <div
+            ref={menu}
+            className="folder-menu"
+            role="dialog"
+            aria-label={`Actions for ${folder.name}`}
           >
-            Refresh index
-          </button>
-          <div className="folder-automatic">
-            <label className="inline">
-              <input
-                type="checkbox"
-                checked={automatic?.enabled || false}
-                disabled={pending}
-                onChange={(event) =>
-                  void configureAutomatic(event.target.checked)
-                }
-              />
-              Automatic refresh
-            </label>
-            {automatic?.enabled && (
-              <label>
-                Check for changes
-                <select
-                  aria-label={`Refresh interval for ${folder.name}`}
+            <button
+              disabled={busy || pending}
+              onClick={() => void run("refresh")}
+            >
+              <ActionIcon kind="refresh" />
+              Refresh index
+            </button>
+            <div className="folder-automatic">
+              <label className="inline">
+                <input
+                  type="checkbox"
+                  checked={automatic?.enabled || false}
                   disabled={pending}
-                  value={automatic.interval_seconds}
                   onChange={(event) =>
-                    void configureAutomatic(true, Number(event.target.value))
+                    void configureAutomatic(event.target.checked)
                   }
-                >
-                  {![60, 300, 900].includes(automatic.interval_seconds) && (
-                    <option value={automatic.interval_seconds}>
-                      Every {automatic.interval_seconds} seconds
-                    </option>
-                  )}
-                  <option value={60}>Every minute</option>
-                  <option value={300}>Every 5 minutes</option>
-                  <option value={900}>Every 15 minutes</option>
-                </select>
+                />
+                <span>Automatic refresh</span>
               </label>
-            )}
-            <p className="muted small">
-              While Lens is running. Waits for copies to settle.
-            </p>
-            {automatic?.enabled && (
-              <p className="small" role="status">
-                {automatic.state === "settling"
-                  ? "Waiting for files to settle…"
-                  : automatic.state === "checking"
-                    ? "Checking for changes…"
-                    : automatic.state === "queued"
-                      ? "Refresh queued"
-                      : automatic.state === "running"
-                        ? "Refreshing index…"
-                        : automatic.state === "unavailable"
-                          ? "Folder check needs attention"
-                          : "Watching for changes"}
+              {automatic?.enabled && (
+                <label>
+                  Check for changes
+                  <select
+                    aria-label={`Refresh interval for ${folder.name}`}
+                    disabled={pending}
+                    value={automatic.interval_seconds}
+                    onChange={(event) =>
+                      void configureAutomatic(true, Number(event.target.value))
+                    }
+                  >
+                    {![60, 300, 900].includes(automatic.interval_seconds) && (
+                      <option value={automatic.interval_seconds}>
+                        Every {automatic.interval_seconds} seconds
+                      </option>
+                    )}
+                    <option value={60}>Every minute</option>
+                    <option value={300}>Every 5 minutes</option>
+                    <option value={900}>Every 15 minutes</option>
+                  </select>
+                </label>
+              )}
+              <p className="muted small">
+                While Lens is running. Waits for copies to settle.
               </p>
+              {automatic?.enabled && (
+                <p className="small" role="status">
+                  {automatic.state === "settling"
+                    ? "Waiting for files to settle…"
+                    : automatic.state === "checking"
+                      ? "Checking for changes…"
+                      : automatic.state === "queued"
+                        ? "Refresh queued"
+                        : automatic.state === "running"
+                          ? "Refreshing index…"
+                          : automatic.state === "unavailable"
+                            ? "Folder check needs attention"
+                            : "Watching for changes"}
+                </p>
+              )}
+              {automatic?.error && (
+                <p className="small" role="status">
+                  {automatic.error}
+                </p>
+              )}
+            </div>
+            <button disabled={busy || pending} onClick={() => choose("rename")}>
+              <ActionIcon kind="rename" />
+              Rename
+            </button>
+            <button
+              className="folder-remove"
+              disabled={busy || pending}
+              onClick={() => choose("remove")}
+            >
+              <ActionIcon kind="remove" />
+              Remove from Lens
+            </button>
+            {busy && (
+              <p className="muted small">Wait for active tasks to finish.</p>
             )}
-            {automatic?.error && (
-              <p className="small" role="status">
-                {automatic.error}
-              </p>
-            )}
-          </div>
-          <button disabled={busy || pending} onClick={() => choose("rename")}>
-            Rename
-          </button>
-          <button disabled={busy || pending} onClick={() => choose("remove")}>
-            Remove from Lens
-          </button>
-          {busy && (
-            <p className="muted small">Wait for active tasks to finish.</p>
-          )}
-          {error && <p role="alert">{error}</p>}
-        </div>
-      )}
+            {error && <p role="alert">{error}</p>}
+          </div>,
+          document.body,
+        )}
       {action && (
         <div className="overlay" onClick={() => !pending && setAction(null)}>
           <section
@@ -311,5 +363,38 @@ export function FolderActions({
         </div>
       )}
     </div>
+  );
+}
+
+function ActionIcon({ kind }: { kind: "refresh" | "rename" | "remove" }) {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {kind === "refresh" ? (
+        <>
+          <path d="M20 7v5h-5" />
+          <path d="M4 17v-5h5" />
+          <path d="M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 18 17" />
+        </>
+      ) : kind === "rename" ? (
+        <>
+          <path d="m16 3 5 5-12 12-6 1 1-6Z" />
+          <path d="m13 6 5 5" />
+        </>
+      ) : (
+        <>
+          <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" />
+        </>
+      )}
+    </svg>
   );
 }

@@ -43,7 +43,11 @@ def ensure_scope(root: Path, collection_id: str, scope: dict) -> None:
         raise CollectionConflict("Virtual collection changed; refresh and retry")
 
 
-def list_collections(root: Path, collection: str) -> list[dict]:
+def list_collections(root: Path, collection: str, *, all_folders: bool = False) -> list[dict]:
+    if all_folders:
+        from realopen_lens.organization.library_collections import list_collections as library_list
+
+        return library_list(root)
     if not (root / "organization.sqlite3").is_file():
         return []
     from realopen_lens.retrieval.search import source_paths
@@ -71,20 +75,32 @@ def list_collections(root: Path, collection: str) -> list[dict]:
         catalog.close()
 
 
-def create(root: Path, collection: str, name: str) -> dict:
-    found = parent(root, collection)
+def create(root: Path, collection: str, name: str, *, all_folders: bool = False) -> dict:
+    if all_folders and not (root / "catalog.sqlite3").is_file():
+        Catalog(root).close()
+    found = {"id": "library-v1"} if all_folders else parent(root, collection)
     with OrganizationStore(root) as store:
         return store.create(found["id"], name)
 
 
-def rename(root: Path, collection: str, virtual_id: str, name: str, revision: int) -> dict:
-    found = parent(root, collection)
+def rename(
+    root: Path,
+    collection: str,
+    virtual_id: str,
+    name: str,
+    revision: int,
+    *,
+    all_folders: bool = False,
+) -> dict:
+    found = {"id": "library-v1"} if all_folders else parent(root, collection)
     with OrganizationStore(root) as store:
         return store.rename(virtual_id, found["id"], name, revision)
 
 
-def remove(root: Path, collection: str, virtual_id: str, revision: int) -> None:
-    found = parent(root, collection)
+def remove(
+    root: Path, collection: str, virtual_id: str, revision: int, *, all_folders: bool = False
+) -> None:
+    found = {"id": "library-v1"} if all_folders else parent(root, collection)
     with OrganizationStore(root) as store:
         store.remove(virtual_id, found["id"], revision)
 
@@ -97,7 +113,12 @@ def change_members(
     revision: int,
     *,
     remove: bool = False,
+    all_folders: bool = False,
 ) -> dict:
+    if all_folders:
+        from realopen_lens.organization.library_collections import change_members as library_change
+
+        return library_change(root, virtual_id, values, revision, remove=remove)
     from realopen_lens.retrieval.search import source_paths
 
     values = image_ids(values)
@@ -123,7 +144,23 @@ def browse(
     limit: int = 60,
     revision: int | None = None,
     generation: str | None = None,
+    *,
+    all_folders: bool = False,
 ) -> dict:
+    if all_folders:
+        from realopen_lens.retrieval.library import LibrarySession
+
+        session = LibrarySession(index_dir=root)
+        try:
+            return session.browse(
+                virtual_collection=virtual_id,
+                virtual_revision=revision,
+                offset=offset,
+                limit=limit,
+                generation=generation,
+            )
+        finally:
+            session.close()
     from realopen_lens.retrieval.search import source_paths, search_results
 
     if not 0 <= offset <= 1_000_000 or not 1 <= limit <= 100:

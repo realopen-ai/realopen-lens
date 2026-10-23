@@ -216,7 +216,11 @@ class TaskManager:
             if kind in {"search", "similar"} and request.get("virtual_collection"):
                 from realopen_lens.organization.collections import parent, resolve_scope
 
-                found = parent(self.root, collection)
+                found = (
+                    {"id": "library-v1"}
+                    if request.get("all_folders")
+                    else parent(self.root, collection)
+                )
                 _, scope = resolve_scope(
                     self.root,
                     found["id"],
@@ -305,6 +309,8 @@ class TaskManager:
                         limit=request["limit"],
                         save_run=request.get("save_run", False),
                         on_progress=progress,
+                        virtual_collection=request.get("virtual_collection"),
+                        virtual_revision=request.get("virtual_revision"),
                     )
                 else:
                     payload = self.library_session.search(
@@ -314,6 +320,8 @@ class TaskManager:
                         use_feedback=request.get("use_feedback", True),
                         save_run=request.get("save_run", False),
                         on_progress=progress,
+                        virtual_collection=request.get("virtual_collection"),
+                        virtual_revision=request.get("virtual_revision"),
                     )
                 status = "completed"
             elif kind == "search":
