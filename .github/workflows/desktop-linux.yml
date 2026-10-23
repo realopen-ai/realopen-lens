@@ -1,0 +1,82 @@
+name: Linux desktop package
+
+on:
+  workflow_call:
+    inputs:
+      retention-days:
+        type: number
+        default: 7
+      candidate:
+        description: Run archive acceptance and retain release-candidate evidence
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    name: Build and test Linux x64 tarball
+    runs-on: ubuntu-24.04
+    timeout-minutes: ${{ inputs.candidate && 35 || 30 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-desktop
+        id: setup
+      - name: Restore Ubuntu package downloads
+        id: apt-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: build/apt-cache
+          key: ubuntu-24.04-${{ runner.arch }}-desktop-apt-v1-${{ steps.setup.outputs.image-version }}-${{ hashFiles('packaging/linux-packages.txt') }}
+      - name: Install build and display dependencies
+        shell: bash
+        run: |
+          mkdir -p build/apt-cache/partial
+          cache="$PWD/build/apt-cache"
+          trap 'sudo chown -R "$(id -u):$(id -g)" "$cache"' EXIT
+          sudo apt-get update
+          mapfile -t packages < <(sed '/^#/d; /^$/d' packaging/linux-packages.txt)
+          sudo apt-get -o "Dir::Cache::archives=$cache" install --no-install-recommends -y "${packages[@]}"
+      - name: Save Ubuntu package downloads
+        if: ${{ !cancelled() && steps.apt-cache.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: build/apt-cache
+          key: ${{ steps.apt-cache.outputs.cache-primary-key }}
+      - name: Build portable archive with private OCR
+        env:
+          LENS_BUILD_LOG: ${{ inputs.candidate && 'build/candidate-build.log' || 'build/desktop-ci-build.log' }}
+        shell: bash
+        run: |
+          mkdir -p build
+          set -o pipefail
+          uv run --no-sync python packaging/build_linux.py --tessdata-dir build/tessdata 2>&1 | tee "$LENS_BUILD_LOG"
+      - name: Smoke test extracted package without model downloads
+        if: ${{ !inputs.candidate }}
+        run: xvfb-run -a uv run --no-sync python packaging/ci_smoke.py dist/RealOpenLens-linux-x64.tar.gz
+      - name: Validate the exact candidate archive
+        if: inputs.candidate
+        run: xvfb-run -a uv run --no-sync python packaging/acceptance.py dist/RealOpenLens-linux-x64.tar.gz --output build/candidate-acceptance
+      - name: Retain archive and checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.candidate && 'desktop-candidate-linux-x64' || 'desktop-linux-x64' }}-${{ github.sha }}
+          path: |
+            dist/RealOpenLens-linux-x64.tar.gz
+            dist/RealOpenLens-linux-x64.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: ${{ inputs.retention-days }}
+      - name: Retain validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.candidate && 'desktop-candidate-linux-evidence' || 'desktop-linux-evidence' }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/desktop-ci-*.log
+            build/desktop-ci-report.json
+            build/candidate-build.log
+            build/candidate-acceptance/
+          if-no-files-found: ignore
+          retention-days: ${{ inputs.retention-days }}

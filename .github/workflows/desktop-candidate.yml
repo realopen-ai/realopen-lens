@@ -18,3 +18,9 @@ jobs:
     with:
       retention-days: 30
       candidate: true
+
+  linux:
+    uses: ./.github/workflows/desktop-linux.yml
+    with:
+      retention-days: 30
+      candidate: true
