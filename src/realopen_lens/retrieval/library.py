@@ -4,6 +4,8 @@ from collections.abc import Callable
 from dataclasses import asdict, replace
 from importlib.metadata import version
 from importlib.util import find_spec
+import hashlib
+import json
 from pathlib import Path
 from time import perf_counter
 from threading import RLock
@@ -71,6 +73,16 @@ class LibrarySession:
         finally:
             self._operation_lock.release()
 
+    def browse(self, **options: Any) -> dict:
+        """Browse library collection membership without model inference."""
+        return self.search(
+            "",
+            mode="browse",
+            use_feedback=False,
+            expected_generation=options.pop("generation", None),
+            **options,
+        )
+
     def similar(
         self,
         image: Path | None = None,
@@ -116,19 +128,34 @@ class LibrarySession:
         image_id: str | None = None,
         image_collection: str = "personal",
         include_self: bool = False,
+        virtual_collection: str | None = None,
+        virtual_revision: int | None = None,
+        expected_generation: str | None = None,
     ) -> dict:
+        from realopen_lens.organization.collections import resolve_scope, ensure_scope
+        from realopen_lens.organization.library_collections import match_members
+        from realopen_lens.storage.organization import CollectionConflict
+
+        scope = None
+        members: set[str] = set()
+        if virtual_collection:
+            members, scope = resolve_scope(
+                self.root, LIBRARY_ID, virtual_collection, virtual_revision
+            )
+        elif virtual_revision is not None:
+            raise ValueError("A virtual revision requires a virtual collection")
         image_query = image is not None or image_id is not None
         if self.closed:
             raise RuntimeError("Library session is closed")
-        if hidden_only and (mode != "lexical" or save_run or not use_feedback):
+        if hidden_only and (mode not in {"lexical", "browse"} or save_run or not use_feedback):
             raise ValueError("Hidden browsing requires unrecorded lexical feedback mode")
-        if offset < 0:
+        if not 0 <= offset <= 1_000_000:
             raise ValueError("Offset must be nonnegative")
         if (
-            (not image_query and not query.strip())
+            (not image_query and mode != "browse" and not query.strip())
             or len(query) > 4096
             or not 1 <= limit <= 100
-            or mode not in {"hybrid", "visual", "lexical", "semantic"}
+            or mode not in {"hybrid", "visual", "lexical", "semantic", "browse"}
         ):
             raise ValueError("Use a valid query, search mode and 1–100 results")
         started = perf_counter()
@@ -145,7 +172,9 @@ class LibrarySession:
         encoder_source = find_spec("realopen_lens.encoders.onnx")
         if encoder_source is None or encoder_source.origin is None:
             raise ValueError("Query encoder source provenance is unavailable")
-        encoder_hash = digest(Path(encoder_source.origin)) if mode != "lexical" else None
+        encoder_hash = (
+            digest(Path(encoder_source.origin)) if mode not in {"lexical", "browse"} else None
+        )
         catalog = Catalog(self.root, readonly=True)
         try:
             # Capture all generation pointers in one short read transaction. Release
@@ -177,7 +206,7 @@ class LibrarySession:
                 precision = spec.get("siglip_precision", "int8")
                 if precision not in {"int8", "fp32"}:
                     raise ValueError(f"Unsupported precision in folder {folder['name']}")
-                if mode != "lexical":
+                if mode not in {"lexical", "browse"}:
                     if (
                         spec["model_registry"] != registry()
                         or spec["inference_sha256"] != encoder_hash
@@ -254,6 +283,20 @@ class LibrarySession:
                         "pixels:" + pixels[key] if key in pixels else "bytes:" + key, set()
                     ).add(key)
             canonical = {key: min(ids) for ids in groups.values() for key in ids}
+            missing_members = 0
+            if scope is not None:
+                allowed, missing_members = match_members(self.root, members, canonical, pixels)
+                paths = {
+                    folder: {k: v for k, v in valid.items() if canonical[k] in allowed}
+                    for folder, valid in paths.items()
+                }
+            snapshot_token = hashlib.sha256(
+                json.dumps(
+                    [(f["id"], g["id"], sorted(paths[f["id"]])) for f, g, m, p in snapshots]
+                ).encode()
+            ).hexdigest()
+            if expected_generation is not None and expected_generation != snapshot_token:
+                raise CollectionConflict("Library index changed; refresh the virtual collection")
             selected: dict[str, tuple[tuple, dict, dict, str]] = {}
             sources: dict[str, list[dict]] = {}
             records = {}
@@ -286,7 +329,7 @@ class LibrarySession:
             semantic_query = None
             ordered = sorted(snapshots, key=lambda s: (s[3] != self.precision, s[3], s[0]["id"]))
             visual_queries = {}
-            if mode != "lexical":
+            if mode not in {"lexical", "browse"}:
                 for position, (folder, generation, manifest, precision) in enumerate(ordered):
                     valid = paths[folder["id"]]
                     if not valid:
@@ -373,7 +416,9 @@ class LibrarySession:
             index = ranking.lexical_index(ocr)
             try:
                 lexical = ranking.rank_lexical(index, query, max(len(selected), 1))
-                if mode == "hybrid":
+                if mode == "browse":
+                    ranked = sorted(selected)
+                elif mode == "hybrid":
                     ranked = ranking.hybrid_scores(
                         visual,
                         semantic,
@@ -412,7 +457,13 @@ class LibrarySession:
             feedback: dict = {"enabled": False, "applied": False}
             if use_feedback:
                 decisions, feedback = memory.resolve(
-                    self.root, LIBRARY_ID, query, "", synthetic, canonical, content_pixels=pixels
+                    self.root,
+                    LIBRARY_ID,
+                    query,
+                    (scope or {}).get("id", ""),
+                    synthetic,
+                    {key: group for key, group in canonical.items() if group in selected},
+                    content_pixels=pixels,
                 )
                 latest: dict[str, dict] = {}
                 for key, decision in decisions.items():
@@ -473,6 +524,8 @@ class LibrarySession:
                 reused_image_precisions=sorted(query_vectors),
                 merge_policy="global-cosine-hybrid-v1",
             )
+            if scope is not None:
+                ensure_scope(self.root, LIBRARY_ID, scope)
             run_id = None
             if save_run:
                 from realopen_lens.storage.feedback import FeedbackStore
@@ -491,6 +544,7 @@ class LibrarySession:
                     pipeline=LIBRARY_ID,
                     encoder_spec={},
                     library_sources=provenance,
+                    scope=scope,
                     ranking={
                         "mixed_precision_experimental": experimental,
                         "mode": mode,
@@ -530,7 +584,10 @@ class LibrarySession:
                 "pending_folders": pending,
                 "total": len(ranked),
                 "offset": offset,
-                "generation": None,
+                "generation": snapshot_token if mode == "browse" else None,
+                "scope": scope,
+                "member_count": len(members) if scope is not None else len(selected),
+                "unavailable_count": missing_members,
             }
         finally:
             catalog.close()
