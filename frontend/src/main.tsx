@@ -724,9 +724,9 @@ function App() {
     heading: string,
   ) {
     setView("library");
-    const library = kind === "search" && Boolean(body.all_folders);
+    const library = Boolean(body.all_folders);
     const scope = library ? null : virtualScope.current;
-    if (kind === "similar") {
+    if (kind === "similar" && !library) {
       const source = String(body.collection);
       const changed = selectedCollection.current !== source;
       setAllFolders(false);
@@ -780,7 +780,7 @@ function App() {
   async function upload(file: File, record = saveRun) {
     setSelected(new Set());
     setOrganizationNotice("");
-    const scope = virtualScope.current;
+    const scope = allFolders ? null : virtualScope.current;
     setUndo(null);
     setMemoryEnabled(false);
     setRepeatSearch({ kind: "upload", file });
@@ -801,7 +801,7 @@ function App() {
     setTitle(`Similar to ${file.name}`);
     try {
       const task = await uploadImage(
-        `/tasks/upload?collection=${encodeURIComponent(collection)}&save_run=${record}${scope ? `&virtual_collection=${scope.id}&virtual_revision=${scope.revision}` : ""}`,
+        `/tasks/upload?collection=${encodeURIComponent(collection)}&save_run=${record}&all_folders=${allFolders}${scope ? `&virtual_collection=${scope.id}&virtual_revision=${scope.revision}` : ""}`,
         file,
         (loaded, total) => setUploadBytes({ loaded, total }),
       );
@@ -1266,12 +1266,8 @@ function App() {
                 type="button"
                 className="image-search"
                 aria-label="Search by image"
-                title={
-                  allFolders
-                    ? "Choose a folder for image similarity search"
-                    : "Search by image"
-                }
-                disabled={!collection || allFolders}
+                title="Search by image"
+                disabled={!collection}
                 onClick={() => fileInput.current?.click()}
               >
                 <Icon name="image" />
@@ -1747,6 +1743,7 @@ function App() {
                             "similar",
                             {
                               collection: imageCollection(image),
+                              all_folders: allFolders,
                               image_id:
                                 image.sources?.[0]?.image_id || image.image_id,
                               save_run: saveRun,
@@ -2009,6 +2006,7 @@ function App() {
                     "similar",
                     {
                       collection: imageCollection(detail),
+                      all_folders: allFolders,
                       image_id:
                         detail.sources?.[0]?.image_id || detail.image_id,
                       save_run: saveRun,

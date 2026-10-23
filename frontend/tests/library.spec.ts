@@ -55,10 +55,20 @@ test("library search preserves source media and feedback scope", async ({
       return route.fulfill({
         json: { results: [], total: 0, generation: "g1" },
       });
-    if (path === "/api/tasks/search" || path === "/api/tasks/similar") {
-      const body = route.request().postDataJSON();
+    if (
+      path === "/api/tasks/search" ||
+      path === "/api/tasks/similar" ||
+      path === "/api/tasks/upload"
+    ) {
+      const params = new URL(route.request().url()).searchParams;
+      const body = path.endsWith("upload")
+        ? {
+            all_folders: params.get("all_folders") === "true",
+            collection: params.get("collection"),
+          }
+        : route.request().postDataJSON();
       bodies.push(body);
-      const kind = path.endsWith("similar") ? "similar" : "search";
+      const kind = path.endsWith("search") ? "search" : "similar";
       task = {
         id: kind + "-job",
         kind,
@@ -113,7 +123,7 @@ test("library search preserves source media and feedback scope", async ({
   await expect(page.getByLabel("Search in", { exact: true })).toHaveValue("");
   await expect(
     page.getByRole("button", { name: "Search by image", exact: true }),
-  ).toBeDisabled();
+  ).toBeEnabled();
   await page.getByLabel("Search images", { exact: true }).fill("pizza");
   await page.getByLabel("Save for feedback", { exact: true }).check();
   await page.getByRole("button", { name: "Search", exact: true }).click();
@@ -144,18 +154,27 @@ test("library search preserves source media and feedback scope", async ({
   ).toBeVisible();
   expect(hidden).toBe(true);
   await page.getByRole("button", { name: "Similar", exact: true }).click();
-  await expect(page.getByLabel("Search in", { exact: true })).toHaveValue(
-    "screens",
-  );
+  await expect(page.getByLabel("Search in", { exact: true })).toHaveValue("");
   await expect(
     page.getByRole("button", { name: "View pizza.png", exact: true }),
   ).toBeVisible();
+  expect(bodies[1].all_folders).toBe(true);
   expect(bodies[1].collection).toBe("screens");
   expect(bodies[1].image_id).toBe("d".repeat(64));
   expect(bodies[1].virtual_collection).toBeUndefined();
-  await expect(page.locator(".ranking-caption")).not.toContainText(
+  await expect(page.locator(".ranking-caption")).toContainText(
     "mixed precision",
   );
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "query.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("mock image"),
+  });
+  await expect.poll(() => bodies.length).toBe(3);
+  expect(bodies[2].all_folders).toBe(true);
+  await expect(
+    page.getByRole("button", { name: "View pizza.png", exact: true }),
+  ).toBeVisible();
   await page.getByLabel("Search in", { exact: true }).selectOption("photos");
   await expect(page.getByLabel("Search in", { exact: true })).toHaveValue(
     "photos",
