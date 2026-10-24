@@ -15,6 +15,7 @@ from realopen_lens.storage.catalog import Catalog, default_directory, local_path
 from realopen_lens.storage.artifacts import load_manifest, matrices
 from realopen_lens.runtime.jobs import environment
 from realopen_lens.runtime.resident import ResidentQueryEncoder
+from realopen_lens.indexing.stage_cache import implementation
 from realopen_lens.models.manager import digest, registry, verify
 from realopen_lens.retrieval.candidates import CandidateDepths
 from realopen_lens.retrieval.ranking import (
@@ -295,9 +296,10 @@ def search_collection(
             from importlib.metadata import version
 
             spec = manifest["config"]["spec"]
-            if spec["model_registry"] != registry() or spec["inference_sha256"] != digest(
-                Path(inference.__file__)
-            ):
+            if spec["model_registry"] != registry() or spec["inference_sha256"] not in {
+                implementation(Path(inference.__file__)),
+                digest(Path(inference.__file__)),
+            }:
                 raise ValueError(
                     "Index model/preprocessing version differs; run 'lens index' again"
                 )

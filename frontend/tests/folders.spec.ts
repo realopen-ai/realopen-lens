@@ -328,3 +328,26 @@ for (const theme of ["light", "dark"] as const) {
     await expect(menu).toHaveCount(0);
   });
 }
+
+test("indexing progress distinguishes cached images from newly processed work", async ({
+  page,
+}) => {
+  await setup(page);
+  await page.route("**/api/tasks/refresh/events", (route) =>
+    route.fulfill({
+      contentType: "text/event-stream",
+      body: `event: progress\ndata: ${JSON.stringify({ id: "refresh", kind: "index", collection: "personal", status: "running", phase: "ocr", elapsed_seconds: 1, revision: 1, error: null, result: null, progress: { unique_images: 105, phase_completed_images: 104, phase_cached_images: 104, phase_processed_images: 0 } })}\n\n`,
+    }),
+  );
+  await page
+    .getByRole("button", { name: "Manage folder personal", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Refresh index", exact: true })
+    .click();
+  const progress = page.getByRole("region", { name: "Task progress" });
+  await expect(progress).toContainText("0 processed · 104 cached · 105 total");
+  await expect(
+    page.getByRole("progressbar", { name: "Stage progress" }),
+  ).toHaveAttribute("value", "104");
+});

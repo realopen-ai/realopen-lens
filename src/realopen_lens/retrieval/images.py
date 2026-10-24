@@ -9,6 +9,7 @@ import sys
 
 import numpy as np
 
+from realopen_lens.indexing.stage_cache import implementation
 from realopen_lens.models.manager import artifact_path, digest, registry
 from realopen_lens.retrieval.ranking import vector_scores
 from realopen_lens.retrieval.search import SearchResult, search_results, source_paths
@@ -21,9 +22,10 @@ def verify_image_encoder(spec: dict, models: Path, precision: str) -> None:
     """Check preprocessing compatibility and only the required vision graph."""
     from realopen_lens.encoders import onnx as inference
 
-    if spec["model_registry"] != registry() or spec["inference_sha256"] != digest(
-        Path(inference.__file__)
-    ):
+    if spec["model_registry"] != registry() or spec["inference_sha256"] not in {
+        implementation(Path(inference.__file__)),
+        digest(Path(inference.__file__)),
+    }:
         raise ValueError("Index model/preprocessing version differs; run 'lens index' again")
     for name in ("numpy", "Pillow", "onnxruntime"):
         if spec["packages"][name] != version(name):

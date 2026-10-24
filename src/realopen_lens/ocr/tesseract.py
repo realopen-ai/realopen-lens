@@ -50,13 +50,22 @@ def _environment(executable: str, languages: str) -> dict[str, Any]:
             path = Path(match[1]) / f"{code}.traineddata"
             if path.is_file():
                 hashes[code] = digest(path)
+    orientation = None
+    if match and "osd" in result.stdout.splitlines()[1:]:
+        osd = Path(match[1]) / "osd.traineddata"
+        if osd.is_file():
+            orientation = digest(osd)
     provenance: dict[str, Any] = {
+        "orientation_pack_sha256": orientation,
         "version": version.stdout.splitlines()[0],
+        "engine_build": version.stdout.splitlines(),
         "language_pack_sha256": hashes,
     }
     bundled = runtime.fingerprint(executable)
     if bundled:
         provenance["bundled_runtime_sha256"] = bundled
+    elif Path(executable).is_file():
+        provenance["engine_sha256"] = digest(Path(executable))
     return provenance
 
 

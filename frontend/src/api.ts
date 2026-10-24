@@ -79,6 +79,10 @@ export interface Task {
     queries?: number;
     files?: number;
     phase_completed_images?: number;
+    phase_cached_images?: number;
+    phase_processed_images?: number;
+    phase_failed_images?: number;
+    phase_skipped_images?: number;
     unique_images?: number;
     current_image?: string;
   };
@@ -106,6 +110,8 @@ export interface Task {
     results?: ImageResult[];
     run_id?: string | null;
     images?: number;
+    reused_stages?: Record<string, number>;
+    processed_stages?: Record<string, number>;
     fingerprinted?: number;
     errors?: unknown[];
     unsupported?: unknown[];

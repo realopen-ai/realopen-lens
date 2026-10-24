@@ -144,6 +144,7 @@ inventory, copyright notices and license texts.
 ## Roadmap
 
 - [x] Build the Python package, CLI, and resumable ingestion pipeline.
+- [x] Reuse [dependency-scoped stage caches](docs/stage-cache.md) with explicit live progress.
 - [x] Implement visual, lexical, and semantic OCR retrieval with hybrid fusion.
 - [x] Publish reproducible baseline evaluations by language and image category.
 - [x] Train and evaluate an experimental logistic reranker against hybrid fusion.

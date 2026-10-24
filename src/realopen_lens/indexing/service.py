@@ -14,6 +14,7 @@ from time import perf_counter
 
 from realopen_lens.storage.catalog import Catalog, STAGES, default_directory, identifier
 from realopen_lens.indexing.scanner import EXTENSIONS
+from realopen_lens.indexing import stage_cache
 from realopen_lens.storage.artifacts import (
     atomic_bytes,
     attempted,
@@ -43,6 +44,7 @@ class IndexResult:
     degraded_files: int = 0
     degraded_images: int = 0
     reused_stages: dict[str, int] = field(default_factory=dict)
+    processed_stages: dict[str, int] = field(default_factory=dict)
 
 
 def signature(path: Path) -> dict:
@@ -73,9 +75,9 @@ def pipeline_config(options: dict) -> dict:
         "version": 1,
         "siglip_precision": precision,
         "model_registry": registry(),
-        "inference_sha256": digest(Path(inference.__file__)),
-        "ocr_sha256": digest(Path(ocr.__file__)),
-        "processing_sha256": digest(Path(processing.__file__)),
+        "inference_sha256": stage_cache.implementation(Path(inference.__file__)),
+        "ocr_sha256": stage_cache.implementation(Path(ocr.__file__)),
+        "processing_sha256": stage_cache.implementation(Path(processing.__file__)),
         "packages": {
             name: version(name) for name in ["numpy", "Pillow", "onnxruntime", "tokenizers"]
         },
@@ -185,6 +187,7 @@ def run_index(options: dict, *, stage_runner=supervise) -> IndexResult:
             for row in initial:
                 if row["status"] == "error":
                     logger.warning("Scan failed for %r: %s", row["path"], row["error"])
+            stage_cache.prime(catalog, job_id, config)
             reused = {
                 r["image_id"]
                 for r in initial
@@ -204,8 +207,11 @@ def run_index(options: dict, *, stage_runner=supervise) -> IndexResult:
                 len(reused),
             )
             reused_stages = {}
+            processed_stages = {}
             processed = False
             for stage in STAGES:
+                catalog.heartbeat(job_id, stage, None, None)
+                stage_cache.restore(catalog, job_id, config, stage)
                 records = {
                     r["image_id"]: catalog.analysis(config["pipeline"], r["image_id"], stage)
                     for r in catalog.files(job_id)
@@ -217,6 +223,7 @@ def run_index(options: dict, *, stage_runner=supervise) -> IndexResult:
                     if valid_analysis(catalog, record)
                 }
                 reused_stages[stage] = len(cached)
+                processed_stages[stage] = 0
                 pending = {
                     image_id
                     for image_id, record in records.items()
@@ -224,6 +231,7 @@ def run_index(options: dict, *, stage_runner=supervise) -> IndexResult:
                 }
                 if not pending:
                     logger.info("[%s] No pending images (%d cached)", stage, len(cached))
+                    stage_cache.remember(catalog, job_id, config, stage)
                     continue
                 logger.info(
                     "[%s] Starting %d unique images (%d cached)", stage, len(pending), len(cached)
@@ -241,6 +249,8 @@ def run_index(options: dict, *, stage_runner=supervise) -> IndexResult:
                 ]
                 processed = True
                 stage_runner(catalog, job_id, stage, command, threads=config["threads"])
+                stage_cache.remember(catalog, job_id, config, stage)
+                processed_stages[stage] = len(pending)
                 logger.info("[%s] Stage finished", stage)
             from realopen_lens.indexing.processing import source_path
 
@@ -314,6 +324,7 @@ def run_index(options: dict, *, stage_runner=supervise) -> IndexResult:
                 degraded_files=len(degraded),
                 degraded_images=len({r["image_id"] for r in degraded}),
                 reused_stages=reused_stages,
+                processed_stages=processed_stages,
             )
             catalog.finish(job_id, result.status, result=asdict(result))
             logger.info(
@@ -489,12 +500,18 @@ def collection_status(collection: str, index_dir: Path | None = None) -> dict:
         if job:
             files = catalog.files(job["id"])
             config = json.loads(job["config"])
-            completed = catalog.db.execute(
-                "SELECT COUNT(DISTINCT f.image_id) FROM files f JOIN analyses a "
-                "ON f.image_id=a.image_id WHERE f.job_id=? AND a.pipeline=? "
-                "AND a.stage=? AND a.status='ok' AND f.status!='error'",
-                (job["id"], config["pipeline"], job["phase"]),
-            ).fetchone()[0]
+            stages = catalog.db.execute(
+                "SELECT DISTINCT a.image_id,a.status,a.job_id FROM files f JOIN analyses a "
+                "ON f.image_id=a.image_id WHERE f.job_id=? AND a.pipeline=? AND a.stage=? "
+                "AND (f.status!='error' OR a.job_id=?)",
+                (job["id"], config["pipeline"], job["phase"], job["id"]),
+            ).fetchall()
+            cached = sum(r["status"] == "ok" and r["job_id"] != job["id"] for r in stages)
+            processed = sum(
+                r["job_id"] == job["id"] and r["status"] in {"ok", "error", "skipped"}
+                for r in stages
+            )
+            completed = cached + processed
             result["job"] = {
                 "id": job["id"],
                 "status": job["status"],
@@ -511,8 +528,17 @@ def collection_status(collection: str, index_dir: Path | None = None) -> dict:
                     if job["current_image"] is not None and r["image_id"] == job["current_image"]
                 ],
                 "phase_completed_images": completed,
+                "phase_cached_images": cached,
+                "phase_processed_images": processed,
+                "phase_failed_images": sum(
+                    r["status"] == "error" and r["job_id"] == job["id"] for r in stages
+                ),
+                "phase_skipped_images": sum(
+                    r["status"] == "skipped" and r["job_id"] == job["id"] for r in stages
+                ),
                 "unique_images": len(
                     {r["image_id"] for r in files if r["image_id"] and r["status"] != "error"}
+                    | {r["image_id"] for r in stages}
                 ),
                 "failures": [
                     {"path": r["path"], "error": r["error"]}
