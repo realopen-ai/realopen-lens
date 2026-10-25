@@ -146,7 +146,11 @@ def browse(
     generation: str | None = None,
     *,
     all_folders: bool = False,
+    order: str = "newest",
+    expected_snapshot: str | None = None,
 ) -> dict:
+    from realopen_lens.metadata import timeline
+
     if all_folders:
         from realopen_lens.retrieval.library import LibrarySession
 
@@ -158,6 +162,8 @@ def browse(
                 offset=offset,
                 limit=limit,
                 generation=generation,
+                browse_order=order,
+                expected_snapshot=expected_snapshot,
             )
         finally:
             session.close()
@@ -173,11 +179,19 @@ def browse(
         ids, scope = resolve_scope(root, found["id"], virtual_id, revision)
         manifest = load_manifest(catalog, active)
         paths = source_paths(Path(found["root"]), manifest)
-        available = sorted(ids & paths.keys())
+        dates = {
+            row["image_id"]: timeline.image_date(row, paths[row["image_id"]], Path(found["root"]))
+            for row in manifest["images"]
+            if row["image_id"] in ids & paths.keys()
+        }
+        available = timeline.ordered(dates, order)
+        token = timeline.snapshot([active["id"], scope], dates, order, expected_snapshot)
         records = search_results(catalog, manifest, paths, available[offset : offset + limit], {})
         ensure_scope(root, found["id"], scope)
         return {
-            "results": [asdict(r) for r in records],
+            **timeline.page([asdict(r) for r in records], dates, offset, len(available)),
+            "snapshot": token,
+            "order": order,
             "total": len(available),
             "member_count": len(ids),
             "unavailable_count": len(ids) - len(available),

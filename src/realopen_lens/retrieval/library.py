@@ -133,11 +133,17 @@ class LibrarySession:
         virtual_collection: str | None = None,
         virtual_revision: int | None = None,
         expected_generation: str | None = None,
+        browse_order: str = "newest",
+        expected_snapshot: str | None = None,
     ) -> dict:
         from realopen_lens.organization.collections import resolve_scope, ensure_scope
         from realopen_lens.organization.library_collections import match_members
         from realopen_lens.storage.organization import CollectionConflict
 
+        from realopen_lens.metadata import timeline
+
+        if mode == "browse" and browse_order not in timeline.ORDERS:
+            raise ValueError("Use newest or oldest timeline order")
         scope = None
         members: set[str] = set()
         if virtual_collection:
@@ -332,6 +338,7 @@ class LibrarySession:
             selected: dict[str, tuple[tuple, dict, dict, str]] = {}
             sources: dict[str, list[dict]] = {}
             marker_lookup: dict[str, dict] = {}
+            date_options: dict[str, list[dict]] = {}
             records = {}
             for folder, generation, manifest, precision in snapshots:
                 valid = paths[folder["id"]]
@@ -341,6 +348,10 @@ class LibrarySession:
                     if key not in valid:
                         continue
                     group = canonical[key]
+                    if mode == "browse":
+                        date_options.setdefault(group, []).append(
+                            timeline.image_date(row, valid[key], Path(folder["root"]))
+                        )
                     from realopen_lens.retrieval.metadata import marked_screenshot
 
                     if group not in marker_lookup or marked_screenshot(row):
@@ -361,6 +372,12 @@ class LibrarySession:
                     if group not in selected or preference < selected[group][0]:
                         selected[group] = (preference, folder, manifest, key)
                         records[group] = {**texts[key], "image_id": group}
+            dates = {key: timeline.preferred_date(values) for key, values in date_options.items()}
+            timeline_token = (
+                timeline.snapshot([snapshot_token, scope], dates, browse_order, expected_snapshot)
+                if mode == "browse"
+                else None
+            )
             visual = {}
             semantic = {}
             semantic_query = None
@@ -450,12 +467,21 @@ class LibrarySession:
             progress("library_fusion")
             ocr = list(records.values())
             depths = CandidateDepths(visual=max(50, limit))
-            index = ranking.lexical_index(ocr)
+            index = ranking.lexical_index(ocr) if retrieval_mode != "browse" else None
             try:
-                lexical = ranking.rank_lexical(index, search_query, max(len(selected), 1))
+                lexical = (
+                    ranking.rank_lexical(index, search_query, max(len(selected), 1))
+                    if index is not None
+                    else []
+                )
                 if retrieval_mode == "browse":
-                    ranked = sorted(selected)
+                    ranked = (
+                        timeline.ordered(dates, browse_order)
+                        if mode == "browse"
+                        else sorted(selected)
+                    )
                 elif retrieval_mode == "hybrid":
+                    assert index is not None
                     ranked = ranking.hybrid_scores(
                         visual,
                         semantic,
@@ -473,7 +499,8 @@ class LibrarySession:
                     scores = visual if retrieval_mode == "visual" else semantic
                     ranked = sorted(scores, key=lambda k: (-scores[k], k))
             finally:
-                index.close()
+                if index is not None:
+                    index.close()
             if image_query:
                 assert query_path is not None
                 if digest(query_path) != image_id:
@@ -613,7 +640,15 @@ class LibrarySession:
                     folders=len(snapshots),
                 )
             return {
-                "results": [asdict(r) for r in results],
+                **(
+                    {
+                        **timeline.page([asdict(r) for r in results], dates, offset, len(ranked)),
+                        "snapshot": timeline_token,
+                        "order": browse_order,
+                    }
+                    if mode == "browse"
+                    else {"results": [asdict(r) for r in results]}
+                ),
                 "run_id": run_id,
                 "interpretation": interpretation,
                 "ranking": {

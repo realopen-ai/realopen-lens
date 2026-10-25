@@ -338,10 +338,25 @@ def create_app(
         return {"opened": True, "action": body.action}
 
     @app.get("/api/collections/{collection:path}/images")
-    def browse(collection: str, offset: int = 0, limit: int = 60):
+    def browse(
+        collection: str,
+        offset: int = 0,
+        limit: int = 60,
+        order: Literal["newest", "oldest"] = "newest",
+        generation: str | None = None,
+        snapshot: str | None = None,
+    ):
         if not 0 <= offset <= 1_000_000 or not 1 <= limit <= 100:
             raise ValueError("Invalid page range")
-        return reading.browse(root, collection, offset, limit)
+        return reading.browse(
+            root,
+            collection,
+            offset,
+            limit,
+            order=order,
+            generation=generation,
+            expected_snapshot=snapshot,
+        )
 
     @app.get("/api/collections/{collection:path}/status")
     def status(collection: str):
@@ -471,6 +486,8 @@ def create_app(
         revision: int | None = None,
         generation: str | None = None,
         all_folders: bool = False,
+        order: Literal["newest", "oldest"] = "newest",
+        snapshot: str | None = None,
     ):
         return organizing.browse(
             root,
@@ -481,7 +498,31 @@ def create_app(
             revision,
             generation,
             all_folders=all_folders,
+            order=order,
+            expected_snapshot=snapshot,
         )
+
+    @app.get("/api/library/images")
+    def library_images(
+        offset: int = 0,
+        limit: int = 60,
+        order: Literal["newest", "oldest"] = "newest",
+        generation: str | None = None,
+        snapshot: str | None = None,
+    ):
+        from realopen_lens.retrieval.library import LibrarySession
+
+        session = LibrarySession(index_dir=root)
+        try:
+            return session.browse(
+                offset=offset,
+                limit=limit,
+                browse_order=order,
+                generation=generation,
+                expected_snapshot=snapshot,
+            )
+        finally:
+            session.close()
 
     def library_scope(virtual_id: str | None, revision: int | None):
         if virtual_id:

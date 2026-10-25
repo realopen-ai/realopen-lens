@@ -80,15 +80,39 @@ def snapshot(catalog: Catalog, collection: str, generation: str | None = None) -
     return found, _manifest(catalog, active)
 
 
-def browse(root: Path, collection: str, offset: int, limit: int) -> dict:
+def browse(
+    root: Path,
+    collection: str,
+    offset: int,
+    limit: int,
+    *,
+    order: str = "newest",
+    generation: str | None = None,
+    expected_snapshot: str | None = None,
+) -> dict:
+    from realopen_lens.metadata import timeline
+    from realopen_lens.storage.organization import CollectionConflict
+
+    if not 0 <= offset <= 1_000_000 or not 1 <= limit <= 100:
+        raise ValueError("Invalid page range")
     catalog = Catalog(root, readonly=True)
     try:
         found, manifest = snapshot(catalog, collection)
+        if generation is not None and generation != found["active_generation"]:
+            raise CollectionConflict("Folder index changed; reload images to continue")
         paths = source_paths(Path(found["root"]), manifest)
-        ids = [r["image_id"] for r in manifest["images"] if r["image_id"] in paths]
+        dates = {
+            row["image_id"]: timeline.image_date(row, paths[row["image_id"]], Path(found["root"]))
+            for row in manifest["images"]
+            if row["image_id"] in paths
+        }
+        ids = timeline.ordered(dates, order)
+        token = timeline.snapshot(found["active_generation"], dates, order, expected_snapshot)
         records = search_results(catalog, manifest, paths, ids[offset : offset + limit], {})
         return {
-            "results": [asdict(r) for r in records],
+            **timeline.page([asdict(r) for r in records], dates, offset, len(ids)),
+            "snapshot": token,
+            "order": order,
             "total": len(ids),
             "generation": found["active_generation"],
         }
