@@ -26,7 +26,7 @@ def image_rgb(path: Path, max_pixels: int = 24_000_000) -> Image.Image:
     if path.stat().st_size > 64 * 1024 * 1024:
         raise ValueError(f"Image exceeds 64 MiB encoded size: {path.name}")
     with Image.open(path) as source:
-        if source.format not in {"JPEG", "MPO", "PNG", "WEBP", "TIFF", "BMP"}:
+        if source.format not in {"JPEG", "MPO", "PNG", "WEBP", "TIFF", "BMP", "HEIF"}:
             raise ValueError(f"Unsupported image content format: {source.format}")
         if source.width * source.height > max_pixels:
             raise ValueError(f"Image exceeds {max_pixels} decoded pixels: {path.name}")

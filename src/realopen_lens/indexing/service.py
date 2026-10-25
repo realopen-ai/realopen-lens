@@ -62,6 +62,7 @@ def pipeline_config(options: dict) -> dict:
     from realopen_lens.encoders import onnx as inference
     from realopen_lens.ocr import tesseract as ocr
     from realopen_lens.indexing import processing
+    from realopen_lens.metadata import exif
     import shutil
 
     precision = options.get("siglip_precision", "int8")
@@ -75,9 +76,12 @@ def pipeline_config(options: dict) -> dict:
         "version": 1,
         "siglip_precision": precision,
         "model_registry": registry(),
-        "inference_sha256": stage_cache.implementation(Path(inference.__file__)),
+        "inference_sha256": stage_cache.encoder_identity(Path(inference.__file__)),
         "ocr_sha256": stage_cache.implementation(Path(ocr.__file__)),
         "processing_sha256": stage_cache.implementation(Path(processing.__file__)),
+        "processing_identity": stage_cache.worker_identity(Path(processing.__file__)),
+        "metadata_sha256": stage_cache.implementation(Path(exif.__file__)),
+        "heif_decoder": version("pi-heif"),
         "packages": {
             name: version(name) for name in ["numpy", "Pillow", "onnxruntime", "tokenizers"]
         },

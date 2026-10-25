@@ -16,16 +16,17 @@ icons = root / "build/desktop-icons"
 if not (icons / "Lens.icns").is_file():
     raise RuntimeError("Run packaging/icons.py before freezing the desktop app")
 datas += [(str(icons / "Lens.png"), "realopen_lens/desktop/assets")]
-for distribution in ("realopen-lens", "Pillow", "numpy", "onnxruntime", "tokenizers",
+for distribution in ("realopen-lens", "Pillow", "pi-heif", "numpy", "onnxruntime", "tokenizers",
                      "psutil", "fastapi", "uvicorn"):
     datas += copy_metadata(distribution)
 # Follow ONNX Runtime's inference imports normally. PyInstaller's onnxruntime
 # hook collects native provider libraries; collect_all would also import optional
 # backend/conversion tools that require `onnx`, which inference does not need.
-data, binary, hidden = collect_all("tokenizers")
-datas += data
-binaries += binary
-hiddenimports += hidden
+for package in ("tokenizers", "pi_heif"):
+    data, binary, hidden = collect_all(package)
+    datas += data
+    binaries += binary
+    hiddenimports += hidden
 if not (root / "src/realopen_lens/api/static/index.html").is_file():
     raise RuntimeError("Build the gallery before freezing the desktop app")
 a = Analysis(

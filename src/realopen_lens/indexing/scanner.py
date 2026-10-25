@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"}
+EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff", ".heic", ".heif"}
 
 
 def scan(root: Path, limit: int) -> list[str]:
