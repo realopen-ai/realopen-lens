@@ -44,6 +44,8 @@ and search tasks stream live progress through SSE. The [image viewer](docs/image
 provides zoom, keyboard navigation, full indexed OCR text and collection controls.
 [Natural-language metadata search](docs/metadata-search.md) adds camera/date/file
 constraints and offline GPS place lookup, including HEIC/HEIF photo support.
+The [timeline gallery](docs/timeline-gallery.md) groups images by month and day,
+with date sorting and scrolling across folders and virtual collections.
 
 ```sh
 cd frontend

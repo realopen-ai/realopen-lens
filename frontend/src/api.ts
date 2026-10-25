@@ -14,6 +14,13 @@ export interface ImageSource {
 }
 export interface ImageResult {
   sources?: ImageSource[];
+  timeline?: {
+    date: string | null;
+    day: string | null;
+    month: string | null;
+    source: "capture" | "modified" | "unknown";
+    timezone_known?: boolean;
+  };
   rank: number;
   image_id: string;
   duplicate_ids?: string[];

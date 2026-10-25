@@ -336,6 +336,8 @@ test("search receives SSE completion and supports explicit feedback", async ({
   await expect(
     page.getByRole("button", { name: "Mark green.png relevant", exact: true }),
   ).toBeVisible();
+  await expect(page.getByLabel("Sort images", { exact: true })).toHaveCount(0);
+  await expect(page.locator(".timeline-heading")).toHaveCount(0);
   await page
     .getByRole("button", { name: "Mark green.png relevant", exact: true })
     .click();

@@ -874,3 +874,45 @@ def test_metadata_search_tasks_interpret_natural_language_and_record_filter_cont
     ).json()
     assert details["metadata"]["exif"]["camera_model"] == "iPhone 11 Pro Max"
     assert details["metadata"]["exif"]["gps"]["latitude"] == pytest.approx(48.8566667)
+
+
+def test_timeline_api_orders_and_pins_folder_library_and_virtual_pages(web):
+    client, root, store, run = web
+    base = "/api/collections/personal/images"
+    first = client.get(base, params={"limit": 1}).json()
+    assert first["next_offset"] == 1 and first["results"][0]["timeline"]["source"] == "modified"
+    params = {
+        "offset": 1,
+        "limit": 1,
+        "generation": first["generation"],
+        "snapshot": first["snapshot"],
+    }
+    last = client.get(base, params=params).json()
+    assert last["next_offset"] is None and last["results"][0]["rank"] == 2
+    assert first["results"][0]["image_id"] != last["results"][0]["image_id"]
+    assert client.get(base, params={**params, "order": "oldest"}).status_code == 409
+    assert client.get(base, params={"order": "arbitrary"}).status_code == 422
+    assert client.get("/api/library/images?offset=-1").status_code == 400
+    library = client.get("/api/library/images?limit=1").json()
+    assert library["total"] == 2 and library["results"][0]["sources"][0]["collection"] == "personal"
+    assert (
+        client.get("/api/library/images", params={"offset": 1, "snapshot": "stale"}).status_code
+        == 409
+    )
+    group = client.post("/api/virtual-collections", json={"name": "Timeline"}).json()
+    group = client.post(
+        f"/api/virtual-collections/{group['id']}/members",
+        json={
+            "image_ids": [first["results"][0]["image_id"]],
+            "revision": group["revision"],
+        },
+    ).json()
+    result = client.get(f"/api/virtual-collections/{group['id']}/images?order=oldest").json()
+    assert result["order"] == "oldest" and result["next_offset"] is None and result["total"] == 1
+    assert result["results"][0]["image_id"] == first["results"][0]["image_id"]
+    Path(first["results"][0]["paths"][0]).unlink()
+    assert client.get(base, params=params).status_code == 409
+    assert (
+        client.get("/api/library/images", params={"generation": library["generation"]}).status_code
+        == 409
+    )
