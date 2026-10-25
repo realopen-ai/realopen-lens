@@ -67,6 +67,8 @@ identity and a stable launch/update workflow.
 
 - Select a saved collection and browse thumbnails, with bounded pagination.
 - Search by visual meaning, exact OCR terms, OCR meaning, or default hybrid search.
+  [Natural-language metadata requests](metadata-search.md) can also use camera, dates,
+  image properties and offline GPS city/radius constraints.
 - Open a result in the [image viewer](image-viewer.md) for zoom, navigation, full indexed OCR text, source actions, feedback and virtual collection controls.
 - Use **Similar**, or the image button in the search bar, for image-to-image search.
 - Every search result shows labeled **Relevant** and **Irrelevant** controls.
