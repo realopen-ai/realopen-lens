@@ -6,6 +6,7 @@ async function setupViewer(
     failOriginal?: boolean;
     failDetails?: boolean;
     librarySource?: boolean;
+    metadata?: boolean;
   } = {},
 ) {
   const a = "a".repeat(64),
@@ -77,7 +78,29 @@ async function setupViewer(
         generation: "e".repeat(32),
         paths: records.find((row) => row.image_id === id)!.paths,
         available_paths: ["/photos/red.png"],
-        metadata: { format: "PNG" },
+        metadata: {
+          format: "PNG",
+          ...(options.metadata
+            ? {
+                exif: {
+                  screenshot: {
+                    state: "marked",
+                    evidence: [
+                      { source: "EXIF.UserComment", value: "Screenshot" },
+                    ],
+                  },
+                  camera_make: "Apple",
+                  camera_model: "iPhone 11 Pro Max",
+                  captured_at: "2024-06-15T19:30:00",
+                  capture_timezone_known: false,
+                  gps: { latitude: 48.8566, longitude: 2.3522, altitude_m: 35 },
+                  iso: 100,
+                  exposure_seconds: 0.008,
+                  aperture: 1.8,
+                },
+              }
+            : {}),
+        },
         text:
           `Full OCR for ${id === a ? "red" : "green"}. ` +
           "Texte français مرحبا ".repeat(40),
@@ -260,4 +283,21 @@ test("stale membership requires explicit retry with the refreshed revision", asy
     dialog.getByRole("checkbox", { name: "Saved images" }),
   ).not.toBeChecked();
   expect(attempts).toBe(1);
+});
+
+test("viewer displays retained camera, capture timezone and GPS locally", async ({
+  page,
+}, info) => {
+  const { dialog } = await setupViewer(page, { metadata: true });
+  const metadata = dialog.getByRole("region", { name: "Photo metadata" });
+  await expect(metadata).toContainText("iPhone 11 Pro Max");
+  await expect(metadata).toContainText("timezone not recorded");
+  await expect(metadata).toContainText("48.856600, 2.352200");
+  await expect(metadata).toContainText("1/125 s");
+  await expect(metadata).toContainText("Screenshot marker");
+  await expect(metadata).toContainText("EXIF.UserComment");
+  await page.screenshot({
+    path: `../runs/metadata-search-v1/viewer-${info.project.name}.png`,
+    animations: "disabled",
+  });
 });

@@ -11,6 +11,7 @@ import {
   type ImageResult,
   type Task,
   type MemoryDecision,
+  type QueryInterpretation,
 } from "./api";
 import "./style.css";
 import { ImageViewer } from "./ImageViewer";
@@ -141,6 +142,8 @@ function App() {
     loaded: number;
     total: number;
   } | null>(null);
+  const [interpretation, setInterpretation] =
+    useState<QueryInterpretation | null>(null);
   const [detail, setDetail] = useState<ImageResult | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [importing, setImporting] = useState(false);
@@ -262,6 +265,7 @@ function App() {
       setVirtualId(null);
       setVirtuals([]);
       setTargetVirtual("");
+      setInterpretation(null);
       setImages([]);
       setTotal(0);
       setSelected(new Set());
@@ -309,6 +313,7 @@ function App() {
     setVirtualId(null);
     setAllFolders(true);
     setView("library");
+    setInterpretation(null);
     setImages([]);
     setTotal(0);
     setSelected(new Set());
@@ -519,6 +524,7 @@ function App() {
     if (foreground.current !== task.id) return;
     setLoading(false);
     if (task.status === "completed" && !task.result?.results) {
+      setInterpretation(null);
       setImages([]);
       setTotal(0);
       setRunId(null);
@@ -545,6 +551,7 @@ function App() {
           ].join(" · "),
         );
 
+      setInterpretation(task.result.interpretation || null);
       setResultRanking(
         task.result.ranking
           ? `${task.result.ranking.kind}${task.result.ranking.sha256 ? ` · ${task.result.ranking.sha256.slice(0, 8)}` : ""}${task.result.ranking.mixed_precision_experimental ? " · mixed precision (experimental)" : ""}`
@@ -784,6 +791,7 @@ function App() {
     setOrganizationNotice("");
     const version = ++requestVersion.current;
     foreground.current = "submitting";
+    setInterpretation(null);
     setImages([]);
     setTotal(0);
     setRunId(null);
@@ -822,6 +830,7 @@ function App() {
     setUploadBytes({ loaded: 0, total: file.size });
     const version = ++requestVersion.current;
     foreground.current = "submitting";
+    setInterpretation(null);
     setImages([]);
     setTotal(0);
     setRunId(null);
@@ -1295,7 +1304,7 @@ function App() {
                 type="file"
                 ref={fileInput}
                 hidden
-                accept="image/jpeg,image/png,image/webp,image/tiff,image/bmp"
+                accept="image/jpeg,image/png,image/webp,image/tiff,image/bmp,image/heic,image/heif,.heic,.heif"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) void upload(file);
@@ -1384,6 +1393,11 @@ function App() {
                     : "Baseline results · query feedback disabled"}
                 </summary>
                 <QueryMemory
+                  interpretMetadata={
+                    repeatSearch?.kind === "search"
+                      ? repeatSearch.body.interpret_metadata !== false
+                      : true
+                  }
                   enabled={memoryEnabled}
                   allFolders={Boolean(repeatSearch.body.all_folders)}
                   key={JSON.stringify(repeatSearch.body)}
@@ -1654,6 +1668,44 @@ function App() {
                   Select visible images
                 </button>
                 <span>Select up to 500 images per action</span>
+              </div>
+            )}
+            {interpretation && !isBrowse && (
+              <div
+                className="query-interpretation"
+                aria-label="Interpreted search"
+              >
+                <div className="metadata-chips">
+                  {interpretation.constraints.map((rule, index) => (
+                    <span className="pill" key={index}>
+                      {rule.label}
+                    </span>
+                  ))}
+                </div>
+                <p>
+                  {interpretation.visual_query
+                    ? `Searching for “${interpretation.visual_query}” within these matches.`
+                    : "Showing images matching these details."}
+                </p>
+                {interpretation.notices.map((notice, index) => (
+                  <p className="muted" key={index}>
+                    {notice}
+                  </p>
+                ))}
+                {repeatSearch?.kind === "search" && (
+                  <button
+                    className="text-button"
+                    onClick={() =>
+                      void start(
+                        "search",
+                        { ...repeatSearch.body, interpret_metadata: false },
+                        repeatSearch.heading,
+                      )
+                    }
+                  >
+                    Use entire query as search text
+                  </button>
+                )}
               </div>
             )}
             <SelectionToolbar
