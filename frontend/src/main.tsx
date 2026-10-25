@@ -15,6 +15,7 @@ import {
 } from "./api";
 import "./style.css";
 import { ImageViewer } from "./ImageViewer";
+import { TimelineHeading, TimelineDate } from "./Timeline";
 import { ThemeSwitch } from "./ThemeSwitch";
 import { Duplicates } from "./Duplicates";
 import { Workspace } from "./Workspace";
@@ -121,6 +122,13 @@ function App() {
   const [generation, setGeneration] = useState<string | null>(null);
   const [resultRanking, setResultRanking] = useState("");
   const [isBrowse, setIsBrowse] = useState(true);
+  const [browseOrder, setBrowseOrder] = useState<"newest" | "oldest">("newest");
+  const [browseSnapshot, setBrowseSnapshot] = useState<string | null>(null);
+  const [nextOffset, setNextOffset] = useState<number | null>(null);
+  const pageSentinel = useRef<HTMLDivElement>(null);
+  const pageBusy = useRef(false);
+  const browsePreference = useRef({ library: false, order: browseOrder });
+  browsePreference.current = { library: allFolders, order: browseOrder };
   const [loading, setLoading] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
   const [error, setError] = useState("");
@@ -249,6 +257,15 @@ function App() {
   async function folderChanged(changed: Collection, name: string | null) {
     sessionStorage.removeItem("lens-task");
     const values = await loadCollections();
+    if (browsePreference.current.library) {
+      const source =
+        values.find((value) => value.name === selectedCollection.current)
+          ?.name ||
+        values[0]?.name ||
+        "";
+      await browse(source, 0, virtualScope.current, true);
+      return;
+    }
     if (selectedCollection.current !== changed.name) return;
     if (name !== null) {
       await browse(name, 0, virtualScope.current);
@@ -306,41 +323,19 @@ function App() {
     return values;
   }
   function openLibrary() {
-    ++requestVersion.current;
-    foreground.current = null;
-    sessionStorage.removeItem("lens-task");
-    virtualScope.current = null;
-    setVirtualId(null);
-    setAllFolders(true);
-    setView("library");
-    setInterpretation(null);
-    setImages([]);
-    setTotal(0);
-    setSelected(new Set());
-    setDetail(null);
-    setRunId(null);
-    setLabels({});
-    setUndo(null);
-    setRepeatSearch(null);
-    setMemoryEnabled(false);
-    setGeneration(null);
-    setLoading(false);
-    setError("");
-    setOrganizationNotice("");
-    setTargetVirtual("");
-    setTitle("Search all folders");
-    setIsBrowse(false);
-    void loadVirtuals(selectedCollection.current).catch((e) =>
-      setError(String(e)),
-    );
+    void browse(selectedCollection.current, 0, null, true);
   }
   async function browse(
     value: string,
     offset = 0,
     group: VirtualCollection | null = null,
+    library = false,
+    order = browsePreference.current.order,
   ) {
+    if (offset && pageBusy.current) return;
+    pageBusy.current = true;
     setView("library");
-    const libraryGroup = group?.collection_id === "library-v1";
+    const libraryGroup = library || group?.collection_id === "library-v1";
     setAllFolders(libraryGroup);
     if (libraryGroup)
       setTargetVirtual((current) =>
@@ -366,26 +361,46 @@ function App() {
     setCollection(value);
     setLoading(true);
     setError("");
-    setDetail(null);
     setRunId(null);
     setLabels({});
     if (!offset) {
+      setIsBrowse(true);
+      setInterpretation(null);
+      setImages([]);
+      setNextOffset(null);
+      setBrowseSnapshot(null);
+      setDetail(null);
       setSelected(new Set());
       setOrganizationNotice("");
     }
     try {
-      const url = group
-        ? `/virtual-collections/${group.id}/images?all_folders=${libraryGroup}&collection=${encodeURIComponent(value)}&revision=${group.revision}&offset=${offset}&limit=60${offset && generation ? `&generation=${generation}` : ""}`
-        : `/collections/${encodeURIComponent(value)}/images?offset=${offset}&limit=60`;
+      const params = `&order=${order}${offset && browseSnapshot ? `&snapshot=${browseSnapshot}` : ""}${offset && generation ? `&generation=${generation}` : ""}`;
+      const url =
+        (group
+          ? `/virtual-collections/${group.id}/images?all_folders=${libraryGroup}&collection=${encodeURIComponent(value)}&revision=${group.revision}&offset=${offset}&limit=60`
+          : libraryGroup
+            ? `/library/images?offset=${offset}&limit=60`
+            : `/collections/${encodeURIComponent(value)}/images?offset=${offset}&limit=60`) +
+        params;
       const data = await api<{
         results: ImageResult[];
         total: number;
         generation: string;
         unavailable_count?: number;
+        snapshot?: string;
+        next_offset?: number | null;
       }>(url);
       if (version !== requestVersion.current) return;
       setImages((old) => (offset ? [...old, ...data.results] : data.results));
       setTotal(data.total);
+      setBrowseSnapshot(data.snapshot || null);
+      setNextOffset(
+        data.next_offset !== undefined
+          ? data.next_offset
+          : offset + data.results.length < data.total
+            ? offset + data.results.length
+            : null,
+      );
       setGeneration(data.generation);
       setUnavailable(data.unavailable_count || 0);
       setIsBrowse(true);
@@ -397,9 +412,51 @@ function App() {
         if (!offset) setImages([]);
       }
     } finally {
-      if (version === requestVersion.current) setLoading(false);
+      if (version === requestVersion.current) {
+        pageBusy.current = false;
+        setLoading(false);
+      }
     }
   }
+  useEffect(() => {
+    const target = pageSentinel.current;
+    if (
+      !target ||
+      !isBrowse ||
+      loading ||
+      error ||
+      view !== "library" ||
+      detail ||
+      importing ||
+      creatingVirtual ||
+      nextOffset === null
+    )
+      return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting))
+          void browse(collection, nextOffset, virtualScope.current, allFolders);
+      },
+      { rootMargin: "300px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [
+    isBrowse,
+    loading,
+    error,
+    view,
+    detail,
+    importing,
+    creatingVirtual,
+    nextOffset,
+    collection,
+    allFolders,
+    browseOrder,
+    browseSnapshot,
+    generation,
+  ]);
+
   async function organizationChanged(id: string, source = collection) {
     const values = await loadVirtuals(source);
     if (source !== selectedCollection.current) return;
@@ -493,7 +550,10 @@ function App() {
       void loadCollections()
         .then(() => {
           if (task.origin === "automatic" && !automaticBrowse.current) {
-            if (selectedCollection.current === task.collection)
+            if (
+              browsePreference.current.library ||
+              selectedCollection.current === task.collection
+            )
               setOrganizationNotice(
                 "Folder updated. Select it again to load the latest images.",
               );
@@ -501,18 +561,21 @@ function App() {
           }
           if (
             !foreground.current &&
-            selectedCollection.current === task.collection
+            (browsePreference.current.library ||
+              selectedCollection.current === task.collection)
           ) {
-            void loadVirtuals(task.collection)
+            const source = selectedCollection.current;
+            void loadVirtuals(source)
               .then((values) => {
                 if (task.origin === "automatic" && !automaticBrowse.current)
                   return;
                 return browse(
-                  task.collection,
+                  source,
                   0,
                   values.find(
                     (group) => group.id === virtualScope.current?.id,
                   ) || null,
+                  browsePreference.current.library,
                 );
               })
               .catch((e) => setError(String(e)));
@@ -1600,7 +1663,11 @@ function App() {
                 <h2>{title}</h2>
                 <span className="count">
                   {total.toLocaleString()}{" "}
-                  {isBrowse ? "images in this collection" : "results"}
+                  {isBrowse
+                    ? allFolders && !virtualId
+                      ? "images in your library"
+                      : "images in this collection"
+                    : "results"}
                 </span>
               </div>
               <div className="gallery-context">
@@ -1612,9 +1679,43 @@ function App() {
                 {!isBrowse && resultRanking && (
                   <span className="ranking-caption">{resultRanking}</span>
                 )}
+                {isBrowse && (
+                  <label className="timeline-sort">
+                    <span>Sort images</span>
+                    <select
+                      aria-label="Sort images"
+                      value={browseOrder}
+                      disabled={loading}
+                      onChange={(event) => {
+                        const order = event.target.value as "newest" | "oldest";
+                        setBrowseOrder(order);
+                        void browse(
+                          collection,
+                          0,
+                          virtualScope.current,
+                          allFolders,
+                          order,
+                        );
+                      }}
+                    >
+                      <option value="newest">Newest first</option>
+                      <option value="oldest">Oldest first</option>
+                    </select>
+                  </label>
+                )}
                 <Icon name="grid" size={18} />
               </div>
             </div>
+            {isBrowse && error && (
+              <button
+                className="secondary timeline-reload"
+                onClick={() =>
+                  void browse(collection, 0, virtualScope.current, allFolders)
+                }
+              >
+                Reload images
+              </button>
+            )}
             {!isBrowse && !loading && images.length > 0 && (
               <div className="feedback-caption" aria-label="Search feedback">
                 {runId ? (
@@ -1724,10 +1825,12 @@ function App() {
               onClear={() => setSelected(new Set())}
               onCreate={() => setCreatingVirtual(true)}
             />
-            {loading && (
+            {loading && (!isBrowse || !images.length) && (
               <div className="loading-label" role="status">
                 <span className="spinner" />
-                Working locally. Progress appears above.
+                {isBrowse
+                  ? "Loading images…"
+                  : "Working locally. Progress appears above."}
               </div>
             )}
             {!images.length && !loading ? (
@@ -1797,144 +1900,168 @@ function App() {
                 )}
               </section>
             ) : (
-              <div className={`gallery ${loading ? "working" : ""}`}>
-                {images.map((image) => (
-                  <article
-                    className={`image-card ${selected.has(image.image_id) ? "is-selected" : ""}`}
-                    key={image.image_id}
-                  >
-                    <label className="image-select">
-                      <input
-                        type="checkbox"
-                        aria-label={`Select ${filename(image)}`}
-                        checked={selected.has(image.image_id)}
-                        disabled={selectionBusy || loading}
-                        onChange={() => toggleImage(image)}
+              <div
+                className={`gallery ${loading && !isBrowse ? "working" : ""}`}
+              >
+                {images.map((image, index) => (
+                  <React.Fragment key={image.image_id}>
+                    {isBrowse && (
+                      <TimelineHeading
+                        image={image}
+                        previous={images[index - 1]}
                       />
-                    </label>
-                    <button
-                      className="image-frame"
-                      aria-label={`View ${filename(image)}`}
-                      onClick={() => setDetail(image)}
-                    >
-                      <img
-                        src={media(collection, image, "thumbnail", generation)}
-                        alt={filename(image)}
-                        loading="lazy"
-                        onLoad={(e) =>
-                          e.currentTarget.classList.remove("unavailable")
-                        }
-                        onError={(e) => {
-                          e.currentTarget.classList.add("unavailable");
-                        }}
-                      />
-                      <span className="rank-tag">{image.rank}</span>
-                      {image.status === "degraded" && (
-                        <span className="degraded">Partial text</span>
-                      )}
-                    </button>
-                    <div className="card-caption">
-                      <button
-                        onClick={() => setDetail(image)}
-                        title={filename(image)}
-                      >
-                        {filename(image)}
-                      </button>
-                      <span>
-                        {image.width} × {image.height}
-                        {image.paths.length > 1
-                          ? ` · ${image.paths.length} copies`
-                          : ""}
-                      </span>
-                    </div>
-                    {allFolders && image.sources && (
-                      <p className="source-caption">
-                        {[
-                          ...new Set(image.sources.map((s) => s.collection)),
-                        ].join(" · ")}
-                      </p>
                     )}
-                    <div className="card-actions">
+                    <article
+                      className={`image-card ${selected.has(image.image_id) ? "is-selected" : ""}`}
+                      key={image.image_id}
+                    >
+                      <label className="image-select">
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${filename(image)}`}
+                          checked={selected.has(image.image_id)}
+                          disabled={selectionBusy || loading}
+                          onChange={() => toggleImage(image)}
+                        />
+                      </label>
                       <button
-                        title="Find similar images"
-                        onClick={() =>
-                          void start(
-                            "similar",
-                            {
-                              collection: imageCollection(image),
-                              all_folders: allFolders,
-                              image_id:
-                                image.sources?.[0]?.image_id || image.image_id,
-                              save_run: saveRun,
-                              limit: 50,
-                            },
-                            `Similar to ${filename(image)}`,
-                          )
-                        }
+                        className="image-frame"
+                        aria-label={`View ${filename(image)}`}
+                        onClick={() => setDetail(image)}
                       >
-                        <Icon name="similar" size={15} />
-                        Similar
+                        <img
+                          src={media(
+                            collection,
+                            image,
+                            "thumbnail",
+                            generation,
+                          )}
+                          alt={filename(image)}
+                          loading="lazy"
+                          onLoad={(e) =>
+                            e.currentTarget.classList.remove("unavailable")
+                          }
+                          onError={(e) => {
+                            e.currentTarget.classList.add("unavailable");
+                          }}
+                        />
+                        <span className="rank-tag">{image.rank}</span>
+                        {image.status === "degraded" && (
+                          <span className="degraded">Partial text</span>
+                        )}
                       </button>
-                    </div>
-                    {!isBrowse && (
-                      <div
-                        className="feedback-actions"
-                        aria-label={`Feedback for ${filename(image)}`}
-                      >
+                      <div className="card-caption">
                         <button
-                          className={
-                            labels[image.image_id] === "relevant"
-                              ? "chosen"
-                              : ""
-                          }
-                          disabled={!runId || labelsLoading}
-                          aria-label={`Mark ${filename(image)} relevant`}
-                          aria-pressed={labels[image.image_id] === "relevant"}
-                          title={
-                            runId
-                              ? "Relevant (click again to remove)"
-                              : "Run this search with feedback enabled to label results"
-                          }
-                          onClick={() => void label(image, "relevant")}
+                          onClick={() => setDetail(image)}
+                          title={filename(image)}
                         >
-                          <Icon name="check" size={14} />
-                          <span>Relevant</span>
+                          {filename(image)}
                         </button>
+                        <span>
+                          {image.width} × {image.height}
+                          {image.paths.length > 1
+                            ? ` · ${image.paths.length} copies`
+                            : ""}
+                        </span>
+                      </div>
+                      {allFolders && image.sources && (
+                        <p className="source-caption">
+                          {[
+                            ...new Set(image.sources.map((s) => s.collection)),
+                          ].join(" · ")}
+                        </p>
+                      )}
+                      <div className="card-actions">
                         <button
-                          className={
-                            labels[image.image_id] === "irrelevant"
-                              ? "chosen"
-                              : ""
+                          title="Find similar images"
+                          onClick={() =>
+                            void start(
+                              "similar",
+                              {
+                                collection: imageCollection(image),
+                                all_folders: allFolders,
+                                image_id:
+                                  image.sources?.[0]?.image_id ||
+                                  image.image_id,
+                                save_run: saveRun,
+                                limit: 50,
+                              },
+                              `Similar to ${filename(image)}`,
+                            )
                           }
-                          disabled={!runId || labelsLoading}
-                          aria-label={`Mark ${filename(image)} irrelevant`}
-                          aria-pressed={labels[image.image_id] === "irrelevant"}
-                          title={
-                            runId
-                              ? "Irrelevant (click again to remove)"
-                              : "Run this search with feedback enabled to label results"
-                          }
-                          onClick={() => void label(image, "irrelevant")}
                         >
-                          <Icon name="close" size={14} />
-                          <span>Irrelevant</span>
+                          <Icon name="similar" size={15} />
+                          Similar
                         </button>
                       </div>
-                    )}
-                  </article>
+                      {isBrowse && <TimelineDate image={image} />}
+                      {!isBrowse && (
+                        <div
+                          className="feedback-actions"
+                          aria-label={`Feedback for ${filename(image)}`}
+                        >
+                          <button
+                            className={
+                              labels[image.image_id] === "relevant"
+                                ? "chosen"
+                                : ""
+                            }
+                            disabled={!runId || labelsLoading}
+                            aria-label={`Mark ${filename(image)} relevant`}
+                            aria-pressed={labels[image.image_id] === "relevant"}
+                            title={
+                              runId
+                                ? "Relevant (click again to remove)"
+                                : "Run this search with feedback enabled to label results"
+                            }
+                            onClick={() => void label(image, "relevant")}
+                          >
+                            <Icon name="check" size={14} />
+                            <span>Relevant</span>
+                          </button>
+                          <button
+                            className={
+                              labels[image.image_id] === "irrelevant"
+                                ? "chosen"
+                                : ""
+                            }
+                            disabled={!runId || labelsLoading}
+                            aria-label={`Mark ${filename(image)} irrelevant`}
+                            aria-pressed={
+                              labels[image.image_id] === "irrelevant"
+                            }
+                            title={
+                              runId
+                                ? "Irrelevant (click again to remove)"
+                                : "Run this search with feedback enabled to label results"
+                            }
+                            onClick={() => void label(image, "irrelevant")}
+                          >
+                            <Icon name="close" size={14} />
+                            <span>Irrelevant</span>
+                          </button>
+                        </div>
+                      )}
+                    </article>
+                  </React.Fragment>
                 ))}
               </div>
             )}
-            {isBrowse && images.length < total && (
-              <div className="load-more">
+            {isBrowse && nextOffset !== null && (
+              <div className="load-more" ref={pageSentinel}>
                 <button
                   className="secondary"
                   disabled={loading}
                   onClick={() =>
-                    void browse(collection, images.length, virtualScope.current)
+                    void browse(
+                      collection,
+                      nextOffset,
+                      virtualScope.current,
+                      allFolders,
+                    )
                   }
                 >
-                  Load more images
+                  {loading ? "Loading more images…" : "Load more images"}
                 </button>
               </div>
             )}

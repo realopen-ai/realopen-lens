@@ -2384,3 +2384,44 @@ footer > span:first-child {
   margin: 0;
   overflow-wrap: anywhere;
 }
+
+.timeline-sort {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.timeline-sort select {
+  width: auto;
+  padding: 0.45rem 1.6rem 0.45rem 0.65rem;
+  font-size: 0.8rem;
+}
+.timeline-heading {
+  grid-column: 1 / -1;
+  padding-top: 0.75rem;
+}
+.timeline-heading h3 {
+  font-size: 1.25rem;
+  margin: 0 0 0.6rem;
+}
+.timeline-heading h4 {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin: 0 0 0.15rem;
+}
+.timeline-date {
+  font-size: 0.7rem;
+  color: var(--muted);
+  padding: 0 0.85rem 0.65rem;
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .timeline-sort > span {
+    display: none;
+  }
+  .timeline-heading h3 {
+    font-size: 1.1rem;
+  }
+}
