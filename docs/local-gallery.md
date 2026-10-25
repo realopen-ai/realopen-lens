@@ -65,7 +65,9 @@ remain in Activity. See [everyday workspaces](workspace.md) for setup/import, bu
 identity and a stable launch/update workflow.
 
 
-- Select a saved collection and browse thumbnails, with bounded pagination.
+- Browse the image library, a folder, or a virtual collection by month and day.
+  Choose **Newest first** or **Oldest first**; scrolling loads another bounded page,
+  with **Load more images** as a manual alternative. See [Timeline browsing](timeline-gallery.md).
 - Search by visual meaning, exact OCR terms, OCR meaning, or default hybrid search.
   [Natural-language metadata requests](metadata-search.md) can also use camera, dates,
   image properties and offline GPS city/radius constraints.
@@ -193,7 +195,8 @@ Do not expose the factory through an external listener or multiple API workers.
 | Refresh a saved folder with live indexing progress | `POST /api/collections/refresh` |
 | Configure automatic refresh for an existing folder | `POST /api/collections/auto-refresh` |
 | Rename/unregister an indexed folder | `POST /api/collections/rename`, `/remove` |
-| Browse a collection | `GET /api/collections/{collection}/images?offset=0&limit=60` |
+| Browse a collection timeline | `GET /api/collections/{collection}/images?offset=0&limit=60&order=newest` |
+| Browse the library timeline | `GET /api/library/images?offset=0&limit=60&order=newest` |
 | Index status and detailed issues | `GET /api/collections/{collection}/status` |
 | Verified media | `GET /api/collections/{collection}/images/{image_id}/thumbnail` or `/original` |
 | Start text/image/indexing task | `POST /api/tasks/search`, `/similar`, `/index` |
