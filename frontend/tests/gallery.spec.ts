@@ -1372,3 +1372,88 @@ test("viewer shows feedback conflicts inside the dialog", async ({ page }) => {
     viewer.getByRole("alert").filter({ hasText: "Feedback changed" }),
   ).toBeVisible();
 });
+
+test("natural-language metadata search shows its interpretation and can rerun as literal text", async ({
+  page,
+}) => {
+  const requests = await setup(page);
+  const query = "sunset taken with iPhone 11 Pro Max in Paris, France";
+  await page.route("**/api/tasks/test/events", (route) => {
+    const last = requests
+      .filter((request) => request.url === "/api/tasks/search")
+      .at(-1);
+    const literal =
+      last && JSON.parse(String(last.body)).interpret_metadata === false;
+    const task = {
+      id: "test",
+      kind: "search",
+      collection: "personal",
+      status: "completed",
+      phase: "finished",
+      revision: literal ? 4 : 2,
+      elapsed_seconds: 0.5,
+      progress: {},
+      error: null,
+      result: {
+        results: [
+          {
+            rank: 1,
+            image_id: "b".repeat(64),
+            paths: ["/photos/green.png"],
+            width: 640,
+            height: 480,
+            text: "",
+            status: "ready",
+            issues: [],
+            visual_similarity: 0.8,
+          },
+        ],
+        run_id: null,
+        interpretation: literal
+          ? null
+          : {
+              version: 1,
+              original: query,
+              visual_query: "sunset",
+              constraints: [
+                { kind: "camera", label: "Camera: iPhone 11 Pro Max" },
+                { kind: "location", label: "Paris, France · within 25 km" },
+              ],
+              notices: [],
+            },
+      },
+    };
+    return route.fulfill({
+      contentType: "text/event-stream",
+      body: `event: progress\ndata: ${JSON.stringify(task)}\n\n`,
+    });
+  });
+  await page.getByRole("textbox", { name: "Search images" }).fill(query);
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  const interpretation = page.locator(".query-interpretation");
+  await expect(interpretation).toContainText("Camera: iPhone 11 Pro Max");
+  await expect(interpretation).toContainText("Paris, France");
+  await expect(interpretation).toContainText("Searching for “sunset”");
+  expect(
+    JSON.parse(
+      String(
+        requests
+          .filter((request) => request.url === "/api/tasks/search")
+          .at(-1)!.body,
+      ),
+    ).query,
+  ).toBe(query);
+  await page
+    .getByRole("button", { name: "Use entire query as search text" })
+    .click();
+  await expect(interpretation).toHaveCount(0);
+  expect(
+    JSON.parse(
+      String(
+        requests
+          .filter((request) => request.url === "/api/tasks/search")
+          .at(-1)!.body,
+      ),
+    ),
+  ).toMatchObject({ query, interpret_metadata: false });
+});

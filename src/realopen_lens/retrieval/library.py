@@ -13,7 +13,7 @@ from typing import Any
 
 import numpy as np
 
-from realopen_lens.indexing.stage_cache import implementation
+from realopen_lens.indexing.stage_cache import encoder_identity, normalize_encoder
 from realopen_lens.models.manager import digest, registry
 from realopen_lens.organization import duplicates
 from realopen_lens.retrieval import memory, ranking
@@ -119,6 +119,7 @@ class LibrarySession:
         limit: int = 50,
         mode: str = "hybrid",
         use_feedback: bool = True,
+        interpret_metadata: bool = True,
         save_run: bool = False,
         on_progress: Callable[[dict], None] | None = None,
         trace: dict | None = None,
@@ -174,7 +175,7 @@ class LibrarySession:
         if encoder_source is None or encoder_source.origin is None:
             raise ValueError("Query encoder source provenance is unavailable")
         encoder_hash = (
-            implementation(Path(encoder_source.origin))
+            encoder_identity(Path(encoder_source.origin))
             if mode not in {"lexical", "browse"}
             else None
         )
@@ -212,7 +213,7 @@ class LibrarySession:
                 if mode not in {"lexical", "browse"}:
                     if (
                         spec["model_registry"] != registry()
-                        or spec["inference_sha256"]
+                        or normalize_encoder(spec["inference_sha256"])
                         not in {encoder_hash, digest(Path(encoder_source.origin))}
                         or any(
                             spec["packages"][n] != version(n)
@@ -294,6 +295,33 @@ class LibrarySession:
                     folder: {k: v for k, v in valid.items() if canonical[k] in allowed}
                     for folder, valid in paths.items()
                 }
+            from realopen_lens.retrieval.metadata import compile_query, filter_paths, QueryPlan
+            from realopen_lens.storage.feedback import memory_scope
+
+            progress("interpreting_metadata")
+            plan = (
+                compile_query(
+                    query,
+                    [
+                        row
+                        for folder, gen, manifest, precision in snapshots
+                        for row in manifest["images"]
+                        if row["image_id"] in paths[folder["id"]]
+                    ],
+                )
+                if interpret_metadata and query
+                else QueryPlan(query, query)
+            )
+            interpretation = plan.report() if plan.constraints or plan.notices else None
+            search_query = plan.text
+            metadata_only = bool(plan.constraints) and not search_query
+            retrieval_mode = "browse" if metadata_only else mode
+            paths = {
+                folder["id"]: filter_paths(plan, manifest, paths[folder["id"]], folder["name"])
+                for folder, gen, manifest, precision in snapshots
+            }
+            if interpretation:
+                diagnostics["query_interpretation"] = interpretation
             snapshot_token = hashlib.sha256(
                 json.dumps(
                     [(f["id"], g["id"], sorted(paths[f["id"]])) for f, g, m, p in snapshots]
@@ -303,6 +331,7 @@ class LibrarySession:
                 raise CollectionConflict("Library index changed; refresh the virtual collection")
             selected: dict[str, tuple[tuple, dict, dict, str]] = {}
             sources: dict[str, list[dict]] = {}
+            marker_lookup: dict[str, dict] = {}
             records = {}
             for folder, generation, manifest, precision in snapshots:
                 valid = paths[folder["id"]]
@@ -312,6 +341,10 @@ class LibrarySession:
                     if key not in valid:
                         continue
                     group = canonical[key]
+                    from realopen_lens.retrieval.metadata import marked_screenshot
+
+                    if group not in marker_lookup or marked_screenshot(row):
+                        marker_lookup[group] = row
                     sources.setdefault(group, []).append(
                         {
                             "collection": folder["name"],
@@ -333,7 +366,7 @@ class LibrarySession:
             semantic_query = None
             ordered = sorted(snapshots, key=lambda s: (s[3] != self.precision, s[3], s[0]["id"]))
             visual_queries = {}
-            if mode not in {"lexical", "browse"}:
+            if retrieval_mode not in {"lexical", "browse"}:
                 for position, (folder, generation, manifest, precision) in enumerate(ordered):
                     valid = paths[folder["id"]]
                     if not valid:
@@ -346,9 +379,9 @@ class LibrarySession:
                         siglip_precision=precision,
                     )
                     if not image_query and (
-                        mode in {"hybrid", "visual"}
+                        retrieval_mode in {"hybrid", "visual"}
                         and precision not in visual_queries
-                        or mode in {"hybrid", "semantic"}
+                        or retrieval_mode in {"hybrid", "semantic"}
                         and semantic_query is None
                     ):
                         self._select(precision)
@@ -370,21 +403,21 @@ class LibrarySession:
                         visual_queries[precision] = vector / norm
                     if (
                         not image_query
-                        and mode in {"hybrid", "semantic"}
+                        and retrieval_mode in {"hybrid", "semantic"}
                         and semantic_query is None
                     ):
                         assert self.encoder is not None
                         semantic_query = self.encoder.encode(
-                            query, "e5", self.models, self.threads, precision
+                            search_query, "e5", self.models, self.threads, precision
                         )
                     if (
                         not image_query
-                        and mode in {"hybrid", "visual"}
+                        and retrieval_mode in {"hybrid", "visual"}
                         and precision not in visual_queries
                     ):
                         assert self.encoder is not None
                         visual_queries[precision] = self.encoder.encode(
-                            query, "siglip2", self.models, self.threads, precision
+                            search_query, "siglip2", self.models, self.threads, precision
                         )
                     progress(
                         "library_retrieval",
@@ -397,7 +430,7 @@ class LibrarySession:
                         ranking.vector_scores(
                             vision, visual_queries[precision], manifest["vision_ids"]
                         )
-                        if mode in {"hybrid", "visual"}
+                        if retrieval_mode in {"hybrid", "visual"}
                         else {}
                     )
                     ss = (
@@ -419,25 +452,25 @@ class LibrarySession:
             depths = CandidateDepths(visual=max(50, limit))
             index = ranking.lexical_index(ocr)
             try:
-                lexical = ranking.rank_lexical(index, query, max(len(selected), 1))
-                if mode == "browse":
+                lexical = ranking.rank_lexical(index, search_query, max(len(selected), 1))
+                if retrieval_mode == "browse":
                     ranked = sorted(selected)
-                elif mode == "hybrid":
+                elif retrieval_mode == "hybrid":
                     ranked = ranking.hybrid_scores(
                         visual,
                         semantic,
-                        query,
+                        search_query,
                         ocr,
                         limit=max(len(selected), 1),
                         lexical_candidates=lexical,
-                        lexical_statistics=ranking.lexical_frequencies(index, query),
+                        lexical_statistics=ranking.lexical_frequencies(index, search_query),
                         candidate_depths=depths,
                         trace=diagnostics,
                     )
-                elif mode == "lexical":
+                elif retrieval_mode == "lexical":
                     ranked = lexical
                 else:
-                    scores = visual if mode == "visual" else semantic
+                    scores = visual if retrieval_mode == "visual" else semantic
                     ranked = sorted(scores, key=lambda k: (-scores[k], k))
             finally:
                 index.close()
@@ -454,6 +487,9 @@ class LibrarySession:
                             if p == query_pixels and k in canonical
                         )
                     ranked = [k for k in ranked if k not in excluded]
+            from realopen_lens.retrieval.metadata import screenshot_ranking
+
+            ranked = screenshot_ranking(plan, ranked, marker_lookup, visual)
             # Library exact-query memory has its own namespace. A folder label
             # cannot hide copies elsewhere; library decisions cover the whole group.
             synthetic = {"pipeline": LIBRARY_ID, "images": []}
@@ -464,7 +500,7 @@ class LibrarySession:
                     self.root,
                     LIBRARY_ID,
                     query,
-                    (scope or {}).get("id", ""),
+                    memory_scope((scope or {}).get("id", ""), interpretation),
                     synthetic,
                     {key: group for key, group in canonical.items() if group in selected},
                     content_pixels=pixels,
@@ -552,6 +588,7 @@ class LibrarySession:
                     ranking={
                         "mixed_precision_experimental": experimental,
                         "mode": mode,
+                        "query_interpretation": interpretation,
                         "limit": limit,
                         "siglip_precision": (
                             next(iter(precisions)) if len(precisions) == 1 else "mixed"
@@ -578,8 +615,9 @@ class LibrarySession:
             return {
                 "results": [asdict(r) for r in results],
                 "run_id": run_id,
+                "interpretation": interpretation,
                 "ranking": {
-                    "kind": mode,
+                    "kind": "metadata" if metadata_only else mode,
                     "sha256": None,
                     "mixed_precision_experimental": experimental,
                 },

@@ -247,6 +247,9 @@ def show_status(
 @app.command("search")
 def find_images(
     query: Annotated[str, typer.Argument()],
+    literal: Annotated[
+        bool, typer.Option(help="Search the full text without metadata interpretation")
+    ] = False,
     all_folders: Annotated[bool, typer.Option(help="Search every indexed folder")] = False,
     collection: Annotated[str, typer.Option()] = "personal",
     virtual_collection: Annotated[
@@ -307,6 +310,7 @@ def find_images(
                         limit=limit,
                         mode=mode,
                         use_feedback=feedback,
+                        interpret_metadata=not literal,
                         save_run=save_run,
                         virtual_collection=virtual_collection,
                         virtual_revision=virtual_revision,
@@ -321,13 +325,16 @@ def find_images(
             finally:
                 session.close()
             return
+        interpretation: dict = {}
         options: dict[str, Any] = dict(
+            metadata_trace=interpretation,
             limit=limit,
             mode=mode,
             virtual_collection=virtual_collection,
             virtual_revision=virtual_revision,
             reranker=reranker,
             use_feedback=feedback,
+            interpret_metadata=not literal,
             candidate_depths=depths,
             siglip_precision=siglip_precision,
         )
@@ -354,6 +361,8 @@ def find_images(
                     threads=threads,
                     **options,
                 )
+            if interpretation:
+                typer.echo("Metadata: " + json.dumps(interpretation, ensure_ascii=False), err=True)
             typer.echo(json.dumps([asdict(r) for r in results], ensure_ascii=False, indent=2))
         else:
             import sys

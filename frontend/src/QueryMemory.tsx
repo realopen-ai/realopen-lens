@@ -14,6 +14,7 @@ export function QueryMemory({
   revision,
   enabled,
   allFolders = false,
+  interpretMetadata = true,
 }: {
   collection: string;
   query: string;
@@ -21,6 +22,7 @@ export function QueryMemory({
   revision?: number;
   enabled: boolean;
   allFolders?: boolean;
+  interpretMetadata?: boolean;
 }) {
   const [page, setPage] = useState<{
     results: ImageResult[];
@@ -39,6 +41,7 @@ export function QueryMemory({
       query,
       offset: String(start),
       limit: "12",
+      interpret_metadata: String(interpretMetadata),
     });
     if (scope) params.set("virtual_collection", scope);
     if (revision) params.set("virtual_revision", String(revision));

@@ -10,6 +10,7 @@ from uuid import uuid4
 from realopen_lens.models.manager import digest
 from realopen_lens.retrieval import images, search, ranking, identifiers
 from realopen_lens.retrieval import candidates as candidate_policy
+from realopen_lens.retrieval import metadata as metadata_policy
 from realopen_lens.learning import features, logistic
 from realopen_lens.storage.artifacts import load_manifest
 from realopen_lens.storage.catalog import Catalog, default_directory
@@ -69,6 +70,9 @@ def _record(
         "query_runtime": "resident" if options.get("query_encoder") is not None else "one-shot",
     }
     if query["kind"] == "text":
+        interpretation = options.get("metadata_trace") or trace.get("query_interpretation")
+        if interpretation:
+            config["query_interpretation"] = interpretation
         config["feedback_memory"] = options.get("feedback_trace", {})
     if query["kind"] == "image":
         config.update(
@@ -97,6 +101,7 @@ def _record(
         ranking,
         identifiers,
         candidate_policy,
+        metadata_policy,
         features,
         logistic,
         duplicates,
@@ -141,6 +146,7 @@ def search_and_record(
         raise ValueError("Recorded search owns its trace and profile")
     trace: dict = {}
     options.setdefault("feedback_trace", {})
+    options.setdefault("metadata_trace", {})
     kwargs: dict[str, Any] = {"trace": trace} if options.get("mode", "hybrid") == "hybrid" else {}
     return _record(
         lambda: search.search_collection(query, index_dir=index_dir, **kwargs, **options),

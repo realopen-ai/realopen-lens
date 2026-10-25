@@ -1,5 +1,6 @@
 """Dependency-scoped cache aliases over the existing durable analysis store."""
 
+import ast
 import hashlib
 import json
 from pathlib import Path
@@ -19,6 +20,69 @@ def implementation(path: Path) -> str:
     return digest(source)
 
 
+# Exact reviewed pre-EXIF worker source: only metadata() changed. Unknown older
+# workers retain their own identity and fail closed instead of assuming equivalence.
+_LEGACY_WORKER_SOURCE = "d7878c33d6343fdfd600f4c56311bdb7947f1bba5aaa64916e18329a337e14ce"
+_LEGACY_WORKER_SHARED = "364ec9d07fe83cd1c15bd341d1ad8a79812014e552d0edc6c9f3d7c54b94b1ae"
+_LEGACY_PROCESSING = {_LEGACY_WORKER_SOURCE: _LEGACY_WORKER_SHARED}
+
+
+def worker_identity(path: Path) -> dict:
+    source = path.with_suffix(".py") if path.suffix in {".pyc", ".pyo"} else path
+    tree = ast.parse(source.read_text(encoding="utf-8"))
+    metadata: list[ast.stmt] = [
+        node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "metadata"
+    ]
+    tree.body = [node for node in tree.body if node not in metadata]
+    return {
+        "source": implementation(path),
+        "shared": hashlib.sha256(ast.dump(tree, include_attributes=False).encode()).hexdigest(),
+        "metadata": hashlib.sha256(
+            ast.dump(ast.Module(body=metadata, type_ignores=[]), include_attributes=False).encode()
+        ).hexdigest(),
+    }
+
+
+def shared_worker(spec: dict) -> str:
+    identity = spec.get("processing_identity", {})
+    source = spec["processing_sha256"]
+    if identity.get("source") == source:
+        return identity["shared"]
+    return _LEGACY_PROCESSING.get(source, source)
+
+
+# HEIF is a newly accepted container; the pixel/embedding preprocessing of all
+# previously accepted formats is identical. Normalize only this reviewed guard.
+_LEGACY_ENCODER_SOURCE = "5de67f88fe86c68bb8f6b20194482d7be6046570e54463017340bd7c73045e6d"
+_LEGACY_ENCODER_SHARED = "8e936f42ff8ae683c5307618c11b8e1dfaef1277690da2354cac84f6abea1d69"
+_LEGACY_ENCODERS = {_LEGACY_ENCODER_SOURCE: _LEGACY_ENCODER_SHARED}
+
+
+def encoder_identity(path: Path) -> str:
+    source = path.with_suffix(".py") if path.suffix in {".pyc", ".pyo"} else path
+    tree = ast.parse(source.read_text(encoding="utf-8"))
+    for node in ast.walk(tree):
+        if (
+            isinstance(node, ast.Compare)
+            and isinstance(node.left, ast.Attribute)
+            and isinstance(node.left.value, ast.Name)
+            and node.left.value.id == "source"
+            and node.left.attr == "format"
+            and len(node.comparators) == 1
+            and isinstance(node.comparators[0], ast.Set)
+        ):
+            node.comparators[0].elts = [
+                item
+                for item in node.comparators[0].elts
+                if not (isinstance(item, ast.Constant) and item.value == "HEIF")
+            ]
+    return hashlib.sha256(ast.dump(tree, include_attributes=False).encode()).hexdigest()
+
+
+def normalize_encoder(value: str) -> str:
+    return _LEGACY_ENCODERS.get(value, value)
+
+
 def fingerprint(value: Any) -> str:
     return hashlib.sha256(
         json.dumps(value, sort_keys=True, ensure_ascii=False).encode()
@@ -27,12 +91,22 @@ def fingerprint(value: Any) -> str:
 
 def dependencies(spec: dict, stage: str) -> dict:
     """Shared processing/preprocessing changes invalidate conservatively."""
-    common = {k: spec[k] for k in ("processing_sha256", "inference_sha256")}
+    common = {
+        "processing": shared_worker(spec),
+        "inference_sha256": normalize_encoder(spec["inference_sha256"]),
+    }
     packages = spec["packages"]
     selected = spec.get("siglip_precision", "int8")
     models = spec["model_registry"]["models"]
     if stage == "metadata":
-        return {**common, "Pillow": packages["Pillow"], "thumbnail": spec["thumbnail_side"]}
+        return {
+            **common,
+            "Pillow": packages["Pillow"],
+            "thumbnail": spec["thumbnail_side"],
+            "metadata_implementation": spec.get("metadata_sha256"),
+            "metadata_worker": spec.get("processing_identity", {}).get("metadata"),
+            "heif_decoder": spec.get("heif_decoder"),
+        }
     if stage == "ocr":
         return {
             **common,
@@ -68,6 +142,15 @@ def key(catalog: Catalog, config: dict, stage: str, image_id: str) -> str | None
         "stage": stage,
         "dependencies": dependencies(config["spec"], stage),
     }
+    metadata = catalog.analysis(config["pipeline"], image_id, "metadata")
+    if stage != "metadata":
+        # Until metadata is restored/recomputed, the container decoder dependency
+        # is unknown. Wait for the required metadata stage before reusing analyses.
+        if not valid_analysis(catalog, metadata):
+            return None
+        assert metadata is not None
+        if json.loads(metadata["payload"]).get("format") in {"HEIF", "HEIC"}:
+            value["heif_decoder"] = config["spec"].get("heif_decoder")
     if stage == "semantic":
         ocr = catalog.analysis(config["pipeline"], image_id, "ocr")
         if not valid_analysis(catalog, ocr):
@@ -140,6 +223,20 @@ def restore(catalog: Catalog, job_id: str, config: dict, stage: str) -> None:
                 candidate = catalog.analysis(pipeline, image_id, stage)
                 if not valid_analysis(catalog, candidate):
                     continue
+                assert candidate is not None
+                metadata = catalog.analysis(config["pipeline"], image_id, "metadata")
+                if (
+                    stage != "metadata"
+                    and metadata
+                    and metadata["status"] == "ok"
+                    and json.loads(metadata["payload"]).get("format") in {"HEIF", "HEIC"}
+                ):
+                    producer = candidate.get("job_id")
+                    if not producer:
+                        continue
+                    previous = json.loads(catalog.job(producer)["config"])["spec"]
+                    if previous.get("heif_decoder") != config["spec"].get("heif_decoder"):
+                        continue
                 if stage == "semantic":
                     old_ocr = catalog.analysis(pipeline, image_id, "ocr")
                     new_ocr = catalog.analysis(config["pipeline"], image_id, "ocr")

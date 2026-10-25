@@ -1308,6 +1308,7 @@ def test_search_progress_reports_work_before_model_calls_without_changing_result
     assert results and phases == [
         "index_verification",
         "source_validation",
+        "interpreting_metadata",
         "model_verification",
         "encoding_visual_query",
         "encoding_semantic_query",

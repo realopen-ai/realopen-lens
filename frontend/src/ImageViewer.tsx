@@ -1,3 +1,4 @@
+import { ImageMetadata } from "./ImageMetadata";
 import { useEffect, useRef, useState } from "react";
 import { api, filename, media, post, type ImageResult } from "./api";
 
@@ -345,6 +346,7 @@ function ViewerContent(props: Props) {
         )}
         {notice && <p role="status">{notice}</p>}
         {!details && !error && <p role="status">Loading image details…</p>}
+        <ImageMetadata metadata={details?.metadata} />
         <section aria-label="Image feedback">
           <h3>Search feedback</h3>
           <div className="feedback-actions">

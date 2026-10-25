@@ -80,6 +80,10 @@ def _prepare(index_dir: Path, review: Path, output: Path, on_progress=None) -> d
                 )
             if run["query"]["kind"] != "text" or run["ranking"]["mode"] != "hybrid":
                 raise ValueError("Training supports text hybrid searches only")
+            if (run["ranking"].get("query_interpretation") or {}).get("constraints"):
+                raise ValueError(
+                    "Metadata-filtered feedback requires a filter-aware evaluation review"
+                )
             if run.get("scope") is not None:
                 raise ValueError(
                     "Scoped feedback requires a scope-aware evaluation review; "

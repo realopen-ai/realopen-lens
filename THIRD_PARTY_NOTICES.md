@@ -18245,3 +18245,93 @@ English (`eng`), French (`fra`), Arabic (`ara`) and orientation/script detection
 Their URLs, byte sizes and SHA256 checksums are pinned in `packaging/tessdata.json`.
 They are distributed under Apache-2.0; the full Apache-2.0 text is reproduced in the
 Tesseract notice above.
+
+
+## Metadata search dependencies (2026-10-25)
+
+GeoNames cities15000 and countryInfo: © GeoNames contributors, CC BY 4.0.
+Source: https://download.geonames.org/export/dump/ . License: https://creativecommons.org/licenses/by/4.0/ .
+Lens selects city fields, preserves alternate names and compresses the data for offline lookup.
+The data provenance, checksums and reproduction instructions are included under
+`realopen_lens/metadata/data/README.md`. No location service is contacted at runtime.
+
+pi-heif 1.4.0 provides decode-only HEIC support. Its Python code is BSD-3-Clause;
+the distributed binary wheels and bundled libheif/libde265 retain LGPLv3 terms.
+No HEIC encoder is included. The upstream source links and component versions
+appear in the wheel notices below. Lens does not modify these libraries.
+The shared native libraries remain separate files in the desktop bundle.
+
+### LICENSE.txt
+
+```text
+Copyright (c) 2021-2023, Pillow-Heif contributors.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+
+    * Redistributions in binary form must reproduce the above
+       copyright notice, this list of conditions and the following
+       disclaimer in the documentation and/or other materials provided
+       with the distribution.
+
+    * Neither the name of the Pillow-Heif nor the names of any
+       contributors may be used to endorse or promote products derived
+       from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+```
+
+### LICENSES_bundled.txt
+
+```text
+License for "pi-heif" binary wheels: LGPLv3, due to base library licenses.
+
+Binary wheels combine several license-compatible libraries. Here they are listed.
+
+Name: libheif
+License: LGPLv3
+Files: libheif.[dylib|so|dll]
+  For details, see https://github.com/strukturag/libheif/tree/v1.18.1/COPYING
+  Source code: https://github.com/strukturag/libheif/tree/v1.18.1
+
+Name: libde265
+License: LGPLv3
+Files: libde265.[dylib|so|dll]
+  For details, see https://github.com/strukturag/libde265/tree/v1.0.15/COPYING
+  Source code: https://github.com/strukturag/libde265/tree/v1.0.15
+
+```
+
+
+The complete LGPLv3 text is reproduced above in Notice 49 (`notice-49`);
+the incorporated GPLv3 text is also reproduced above. Native library source is
+available at the versioned upstream URLs in `LICENSES_bundled.txt` above.
+
+
+### Observed decoder versions in the macOS arm64 wheel
+
+The pi-heif 1.4.0 wheel used for this build reports libheif 1.23.0 and
+libde265 1.1.0 through `pi_heif.libheif_info()`. Its vendor notice above retains
+older versioned links verbatim; corresponding source for the observed binaries is:
+
+- https://github.com/strukturag/libheif/tree/v1.23.0
+- https://github.com/strukturag/libde265/tree/v1.1.0
+
+These are the native versions observed in this macOS build. Other platforms may
+use different wheel builds. Their upstream LGPLv3 terms remain applicable.

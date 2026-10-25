@@ -15,7 +15,7 @@ from realopen_lens.storage.catalog import Catalog, default_directory, local_path
 from realopen_lens.storage.artifacts import load_manifest, matrices
 from realopen_lens.runtime.jobs import environment
 from realopen_lens.runtime.resident import ResidentQueryEncoder
-from realopen_lens.indexing.stage_cache import implementation
+from realopen_lens.indexing.stage_cache import encoder_identity, normalize_encoder
 from realopen_lens.models.manager import digest, registry, verify
 from realopen_lens.retrieval.candidates import CandidateDepths
 from realopen_lens.retrieval.ranking import (
@@ -154,6 +154,8 @@ def search_collection(
     use_active_reranker: bool = True,
     use_feedback: bool = True,
     feedback_trace: dict | None = None,
+    metadata_trace: dict | None = None,
+    interpret_metadata: bool = True,
     candidate_depths: CandidateDepths | None = None,
     siglip_precision: str | None = None,
     query_encoder: ResidentQueryEncoder | None = None,
@@ -165,6 +167,9 @@ def search_collection(
     Tracing preserves scores and ordering. Raw BM25 is lower-is-better, cosine
     similarities are higher-is-better, and absent channel values remain None.
     """
+    explicit_reranker = reranker is not None
+    if metadata_trace is not None:
+        metadata_trace.clear()
     if feedback_trace is not None:
         feedback_trace.clear()
     started = checkpoint = perf_counter()
@@ -228,17 +233,6 @@ def search_collection(
             raise ValueError("Unsupported collection SigLIP2 precision")
         if siglip_precision is not None and siglip_precision != precision:
             raise ValueError("Requested SigLIP2 precision differs from this collection")
-        if learned is not None and precision != learned.compatibility.get(
-            "siglip_precision", "int8"
-        ):
-            if "siglip_precision" not in learned.compatibility:
-                raise ValueError("Existing reranker encoder compatibility requires INT8 SigLIP2")
-            raise ValueError("Reranker SigLIP2 precision differs from this collection")
-        if learned is not None and any(
-            manifest["config"]["spec"].get(key) != value
-            for key, value in learned.compatibility.items()
-        ):
-            raise ValueError("Reranker encoder compatibility differs from this collection")
         if trace is not None:
             trace.update(
                 generation=generation["id"],
@@ -260,6 +254,57 @@ def search_collection(
                 trace["scope"] = scope
         elif virtual_revision is not None:
             raise ValueError("Virtual revision requires a virtual collection")
+        from realopen_lens.retrieval.metadata import compile_query, filter_paths, QueryPlan
+        from realopen_lens.storage.feedback import memory_scope
+
+        if on_progress is not None:
+            on_progress({"phase": "interpreting_metadata"})
+        plan = (
+            compile_query(
+                query, [row for row in manifest["images"] if row["image_id"] in paths_by_id]
+            )
+            if interpret_metadata
+            else QueryPlan(query, query)
+        )
+        interpretation = plan.report() if plan.constraints or plan.notices else None
+        if metadata_trace is not None and interpretation:
+            metadata_trace.update(interpretation)
+        if trace is not None and interpretation:
+            trace["query_interpretation"] = interpretation
+        search_query = plan.text
+        metadata_only = bool(plan.constraints) and not search_query
+        paths_by_id = filter_paths(plan, manifest, paths_by_id, found["name"])
+        if (
+            any(
+                rule["kind"] != "screenshot"
+                or rule.get("policy") == "marked_only"
+                or rule.get("promote")
+                for rule in plan.constraints
+            )
+            and learned is not None
+        ):
+            if explicit_reranker:
+                raise ValueError(
+                    "Metadata-filtered queries require hybrid ranking until "
+                    "filtered reranker evaluation is supported"
+                )
+            learned = None
+        if learned is not None and precision != learned.compatibility.get(
+            "siglip_precision", "int8"
+        ):
+            if "siglip_precision" not in learned.compatibility:
+                raise ValueError("Existing reranker encoder compatibility requires INT8 SigLIP2")
+            raise ValueError("Reranker SigLIP2 precision differs from this collection")
+        if learned is not None and any(
+            (
+                normalize_encoder(manifest["config"]["spec"].get(key, ""))
+                != normalize_encoder(value)
+                if key == "inference_sha256"
+                else manifest["config"]["spec"].get(key) != value
+            )
+            for key, value in learned.compatibility.items()
+        ):
+            raise ValueError("Reranker encoder compatibility differs from this collection")
         lookup = {
             row["image_id"]: row for row in manifest["images"] if row["image_id"] in paths_by_id
         }
@@ -269,7 +314,12 @@ def search_collection(
         feedback_state = {"enabled": False, "policy": "exact-query-v1", "applied": False}
         if use_feedback:
             decisions, feedback_state = memory.resolve(
-                catalog.root, found["id"], query, virtual_collection or "", manifest, paths_by_id
+                catalog.root,
+                found["id"],
+                query,
+                memory_scope(virtual_collection or "", interpretation),
+                manifest,
+                paths_by_id,
             )
         if feedback_trace is not None:
             feedback_trace.update(feedback_state)
@@ -291,13 +341,15 @@ def search_collection(
                 ensure_scope(catalog.root, found["id"], scope)
             return []
         visual_query = semantic_query = None
-        if mode != "lexical":
+        if mode != "lexical" and not metadata_only:
             from realopen_lens.encoders import onnx as inference
             from importlib.metadata import version
 
             spec = manifest["config"]["spec"]
-            if spec["model_registry"] != registry() or spec["inference_sha256"] not in {
-                implementation(Path(inference.__file__)),
+            if spec["model_registry"] != registry() or normalize_encoder(
+                spec["inference_sha256"]
+            ) not in {
+                encoder_identity(Path(inference.__file__)),
                 digest(Path(inference.__file__)),
             }:
                 raise ValueError(
@@ -317,12 +369,12 @@ def search_collection(
                 if on_progress is not None:
                     on_progress({"phase": "encoding_visual_query"})
                 visual_query = (
-                    query_encoder.encode(query, "siglip2", models, threads, precision)
+                    query_encoder.encode(search_query, "siglip2", models, threads, precision)
                     if query_encoder is not None
                     else (
-                        query_vector(query, "siglip2", models, threads, precision)
+                        query_vector(search_query, "siglip2", models, threads, precision)
                         if precision != "int8"
-                        else query_vector(query, "siglip2", models, threads)
+                        else query_vector(search_query, "siglip2", models, threads)
                     )
                 )
                 stage("visual_encoder_seconds")
@@ -330,9 +382,9 @@ def search_collection(
                 if on_progress is not None:
                     on_progress({"phase": "encoding_semantic_query"})
                 semantic_query = (
-                    query_encoder.encode(query, "e5", models, threads, precision)
+                    query_encoder.encode(search_query, "e5", models, threads, precision)
                     if query_encoder is not None
-                    else query_vector(query, "e5", models, threads)
+                    else query_vector(search_query, "e5", models, threads)
                 )
                 stage("semantic_encoder_seconds")
         if on_progress is not None:
@@ -343,15 +395,23 @@ def search_collection(
             if len(lookup) == len(manifest["images"])
             else lexical_index(ocr_records)
         )
-        lexical = rank_lexical(index, query, limit=channel_limit)
+        lexical = (
+            rank_lexical(index, search_query, limit=channel_limit) if not metadata_only else []
+        )
         from realopen_lens.organization.duplicates import exact_groups, collapse
 
         duplicate_groups = exact_groups(catalog.root, manifest, paths_by_id)
         retrieval_limit = len(lookup) if duplicate_groups or feedback_state["applied"] else limit
         if (duplicate_groups or feedback_state["applied"]) and mode == "lexical":
-            lexical = rank_lexical(index, query, limit=len(lookup))
+            lexical = rank_lexical(index, search_query, limit=len(lookup))
         scores = {}
-        if mode == "lexical":
+        if metadata_only:
+            ranking = sorted(lookup)
+            if trace is not None:
+                trace.update(
+                    candidates=[], rankings={"metadata": ranking}, candidate_depths=depths.as_dict()
+                )
+        elif mode == "lexical":
             ranking = lexical[:retrieval_limit]
         else:
             visual, semantic = matrices(catalog, manifest)
@@ -382,16 +442,16 @@ def search_collection(
                     semantic,
                     semantic_query,
                     passage_ids,
-                    query,
+                    search_query,
                     ocr_records,
                     limit=50 if learned is not None else retrieval_limit,
                     lexical_candidates=lexical,
-                    lexical_statistics=lexical_frequencies(index, query),
+                    lexical_statistics=lexical_frequencies(index, search_query),
                     trace=trace,
                     candidate_depths=depths,
                 )
         if trace is not None:
-            bm25 = lexical_scores(index, query, limit=channel_limit)
+            bm25 = lexical_scores(index, search_query, limit=channel_limit)
             ranks = {
                 mode: {key: i for i, key in enumerate(ranking, 1)}
                 for mode, ranking in trace["rankings"].items()
@@ -417,6 +477,11 @@ def search_collection(
         stage("retrieval_seconds")
         if on_progress is not None:
             on_progress({"phase": "result_validation"})
+        from realopen_lens.retrieval.metadata import screenshot_ranking
+
+        ranking = screenshot_ranking(plan, ranking, lookup, scores)
+        if trace is not None and any(rule.get("promote") for rule in plan.constraints):
+            trace["rankings"]["screenshot_markers"] = ranking[:limit]
         if feedback_state["applied"]:
             ranking = memory.apply(ranking, decisions)
         ranking = collapse(ranking, duplicate_groups)[:limit]

@@ -318,6 +318,7 @@ class TaskManager:
                         limit=request["limit"],
                         mode=request["mode"],
                         use_feedback=request.get("use_feedback", True),
+                        interpret_metadata=request.get("interpret_metadata", True),
                         save_run=request.get("save_run", False),
                         on_progress=progress,
                         virtual_collection=request.get("virtual_collection"),
@@ -340,7 +341,10 @@ class TaskManager:
                     self.identity = identity
                 assert self.session is not None
                 feedback_state: dict = {}
+                interpretation: dict = {}
                 kwargs = {
+                    "interpret_metadata": request.get("interpret_metadata", True),
+                    "metadata_trace": interpretation,
                     "use_feedback": request.get("use_feedback", True),
                     "feedback_trace": feedback_state,
                     "limit": request["limit"],
@@ -367,11 +371,14 @@ class TaskManager:
                     ranking["sha256"] = trace.get("reranker_sha256")
                 if ranking["sha256"]:
                     ranking["kind"] = "logistic"
+                elif interpretation and not interpretation["visual_query"]:
+                    ranking["kind"] = "metadata"
                 payload = {
                     "results": [asdict(r) for r in results],
                     "run_id": run_id,
                     "ranking": ranking,
                     "feedback": feedback_state,
+                    "interpretation": interpretation or None,
                 }
                 status = "completed"
             else:

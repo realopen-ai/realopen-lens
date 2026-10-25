@@ -42,6 +42,8 @@ Browse collections, search by text or image, inspect results, and give explicit
 relevance feedback in the [local React gallery](docs/local-gallery.md). Indexing
 and search tasks stream live progress through SSE. The [image viewer](docs/image-viewer.md)
 provides zoom, keyboard navigation, full indexed OCR text and collection controls.
+[Natural-language metadata search](docs/metadata-search.md) adds camera/date/file
+constraints and offline GPS place lookup, including HEIC/HEIF photo support.
 
 ```sh
 cd frontend

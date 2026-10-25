@@ -49,12 +49,15 @@ def encoder(stage: str, config: dict):
 def metadata(path: Path) -> tuple[dict, bytes]:
     from realopen_lens.encoders.onnx import image_rgb
 
+    from realopen_lens.metadata.exif import extract
+
     with Image.open(path) as source:
         result: dict[str, Any] = {
             "format": source.format,
             "source_size": list(source.size),
             "frames": getattr(source, "n_frames", 1),
             "bytes": path.stat().st_size,
+            "exif": extract(source),
         }
     with image_rgb(path) as image:
         result.update(width=image.width, height=image.height)

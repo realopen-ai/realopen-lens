@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import json
+import hashlib
 import sqlite3
 import unicodedata
 
@@ -14,6 +15,26 @@ def normalize_query(query: str) -> str:
     return " ".join(unicodedata.normalize("NFKC", query).casefold().split())
 
 
+def memory_scope(scope: str, interpretation: dict | None) -> str:
+    rules = [
+        rule
+        for rule in (interpretation or {}).get("constraints", [])
+        if not (rule["kind"] == "screenshot" and rule.get("policy") == "markers_and_visual")
+    ]
+    if not rules:
+        return scope
+    values = []
+    for rule in rules:
+        value = {key: item for key, item in rule.items() if key != "label"}
+        if value["kind"] in {"camera", "folder"}:
+            value["value"] = normalize_query(value["value"])
+        values.append(value)
+    payload = json.dumps(
+        sorted(values, key=lambda item: json.dumps(item, sort_keys=True)), sort_keys=True
+    )
+    return scope + ":metadata-v1:" + hashlib.sha256(payload.encode()).hexdigest()
+
+
 def memory_key(payload: dict) -> tuple[str, str, str] | None:
     query = payload.get("query", {})
     if query.get("kind") != "text" or not isinstance(query.get("text"), str):
@@ -21,7 +42,10 @@ def memory_key(payload: dict) -> tuple[str, str, str] | None:
     return (
         payload["collection_id"],
         normalize_query(query["text"]),
-        (payload.get("scope") or {}).get("id", ""),
+        memory_scope(
+            (payload.get("scope") or {}).get("id", ""),
+            payload.get("ranking", {}).get("query_interpretation"),
+        ),
     )
 
 

@@ -36,6 +36,7 @@ class ScopedInput(Input):
 
 class SearchInput(ScopedInput):
     all_folders: bool = False
+    interpret_metadata: bool = True
     query: str = Field(min_length=1, max_length=4096)
     mode: Literal["hybrid", "visual", "lexical", "semantic"] = "hybrid"
     limit: int = Field(default=50, ge=1, le=100)
@@ -508,6 +509,7 @@ def create_app(
     @app.get("/api/library/hidden")
     def library_hidden(
         query: str,
+        interpret_metadata: bool = True,
         offset: int = 0,
         limit: int = 50,
         virtual_collection: str | None = None,
@@ -519,6 +521,7 @@ def create_app(
         try:
             return session.search(
                 query,
+                interpret_metadata=interpret_metadata,
                 mode="lexical",
                 hidden_only=True,
                 offset=offset,
@@ -772,6 +775,7 @@ def create_app(
     @app.get("/api/feedback/hidden")
     def hidden_feedback(
         query: str,
+        interpret_metadata: bool = True,
         collection: str = "personal",
         virtual_collection: str | None = None,
         virtual_revision: int | None = None,
@@ -783,6 +787,7 @@ def create_app(
         return hidden(
             root,
             query,
+            interpret_metadata=interpret_metadata,
             collection=collection,
             virtual_collection=virtual_collection,
             virtual_revision=virtual_revision,

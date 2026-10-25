@@ -59,6 +59,34 @@ export interface SetupReport {
   }[];
   ocr_guide: string;
 }
+export interface QueryInterpretation {
+  version: number;
+  original: string;
+  visual_query: string;
+  constraints: { kind: string; label: string }[];
+  notices: string[];
+}
+export interface ExifMetadata {
+  screenshot?: {
+    state: "marked" | "unknown";
+    evidence: { source: string; value: string }[];
+  };
+  camera_make?: string | null;
+  camera_model?: string | null;
+  lens_model?: string | null;
+  captured_at?: string | null;
+  capture_timezone_known?: boolean;
+  iso?: number | null;
+  exposure_seconds?: number | null;
+  aperture?: number | null;
+  focal_length_mm?: number | null;
+  gps?: {
+    latitude: number;
+    longitude: number;
+    altitude_m?: number | null;
+  } | null;
+  warnings?: string[];
+}
 export interface Task {
   all_folders?: boolean;
   origin?: "manual" | "automatic";
@@ -87,6 +115,7 @@ export interface Task {
     current_image?: string;
   };
   result: {
+    interpretation?: QueryInterpretation | null;
     unavailable?: { collection: string; images: number }[];
     pending_folders?: string[];
     ready?: boolean;
