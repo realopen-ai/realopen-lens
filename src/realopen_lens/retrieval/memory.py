@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from realopen_lens.organization.duplicates import snapshot
-from realopen_lens.storage.feedback import FeedbackStore, MEMORY_POLICY
+from realopen_lens.storage.feedback import FeedbackStore, MEMORY_POLICY, memory_scope
 
 
 def _pixels(root: Path, manifest: dict) -> dict[str, str]:
@@ -118,7 +118,10 @@ def aliases_for_run(root: Path, run: dict, image_id: str) -> tuple[str, ...]:
                 rows = store.memory(
                     run["collection_id"],
                     run["query"]["text"],
-                    (run.get("scope") or {}).get("id", ""),
+                    memory_scope(
+                        (run.get("scope") or {}).get("id", ""),
+                        run.get("ranking", {}).get("query_interpretation"),
+                    ),
                 )
             aliases.update(
                 row["image_id"] for row in rows if _content(root, row["image_id"], pixels) == group
@@ -149,7 +152,10 @@ def aliases_for_run(root: Path, run: dict, image_id: str) -> tuple[str, ...]:
                             for item in store.memory(
                                 run["collection_id"],
                                 run["query"]["text"],
-                                (run.get("scope") or {}).get("id", ""),
+                                memory_scope(
+                                    (run.get("scope") or {}).get("id", ""),
+                                    run.get("ranking", {}).get("query_interpretation"),
+                                ),
                             )
                         )
                 aliases.update(key for key in candidates if _content(root, key, pixels) == group)
@@ -167,6 +173,7 @@ def hidden(
     virtual_revision: int | None = None,
     offset: int = 0,
     limit: int = 50,
+    interpret_metadata: bool = True,
 ) -> dict:
     """Browse available hidden exact groups without encoder inference."""
     from realopen_lens.storage.catalog import Catalog
@@ -188,8 +195,22 @@ def hidden(
             paths = {key: value for key, value in paths.items() if key in allowed}
         elif virtual_revision is not None:
             raise ValueError("Virtual revision requires a virtual collection")
+        from realopen_lens.retrieval.metadata import compile_query, filter_paths, QueryPlan
+
+        plan = (
+            compile_query(query, [r for r in manifest["images"] if r["image_id"] in paths])
+            if interpret_metadata
+            else QueryPlan(query, query)
+        )
+        interpretation = plan.report() if plan.constraints or plan.notices else None
+        paths = filter_paths(plan, manifest, paths, found["name"])
         decisions, summary = resolve(
-            root, found["id"], query, virtual_collection or "", manifest, paths
+            root,
+            found["id"],
+            query,
+            memory_scope(virtual_collection or "", interpretation),
+            manifest,
+            paths,
         )
         ranking = sorted(
             (key for key in decisions if decisions[key]["label"] == "irrelevant"),

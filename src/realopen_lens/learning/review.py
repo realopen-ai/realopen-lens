@@ -94,6 +94,8 @@ def audit(index_dir: Path, collection: str = "personal") -> dict:
                 reasons.append("query memory applied; collect baseline feedback")
             if saved["query"]["kind"] != "text" or ranking["mode"] != "hybrid":
                 reasons.append("requires text hybrid search")
+            if (ranking.get("query_interpretation") or {}).get("constraints"):
+                reasons.append("metadata-filtered feedback requires filter-aware evaluation")
             if saved.get("scope"):
                 reasons.append("requires full-library scope")
             if ranking.get("reranker_sha256"):

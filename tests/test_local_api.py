@@ -841,3 +841,36 @@ def test_viewer_membership_tracks_exact_pixel_aliases(web):
         ]
         == []
     )
+
+
+@pytest.mark.parametrize("library", [False, True])
+def test_metadata_search_tasks_interpret_natural_language_and_record_filter_context(web, library):
+    import shutil
+    from realopen_lens.learning.feedback import saved_search
+
+    client, root, store, run = web
+    fixture = Path(__file__).parent / "fixtures/metadata/camera-gps.heic"
+    shutil.copyfile(fixture, root / "phone.heic")
+    run()
+    query = "photos taken with iPhone 11 Pro Max in June 2024 in Paris, France"
+    task = client.post(
+        "/api/tasks/search", json={"query": query, "all_folders": library, "save_run": True}
+    ).json()
+    result = completed(client, task["id"])
+    assert result["status"] == "completed", result
+    payload = result["result"]
+    assert len(payload["results"]) == 1 and payload["ranking"]["kind"] == "metadata"
+    assert payload["interpretation"]["visual_query"] == ""
+    assert {rule["kind"] for rule in payload["interpretation"]["constraints"]} == {
+        "camera",
+        "date",
+        "location",
+    }
+    saved = saved_search(payload["run_id"], index_dir=store)
+    assert saved["ranking"]["query_interpretation"] == payload["interpretation"]
+    details = client.get(
+        "/api/image-details",
+        params={"collection": "personal", "image_id": payload["results"][0]["image_id"]},
+    ).json()
+    assert details["metadata"]["exif"]["camera_model"] == "iPhone 11 Pro Max"
+    assert details["metadata"]["exif"]["gps"]["latitude"] == pytest.approx(48.8566667)
