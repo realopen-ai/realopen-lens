@@ -1313,3 +1313,62 @@ test("workspace previews before import and keeps progress visible outside settin
     ),
   ).toBeTruthy();
 });
+
+test("viewer feedback shares the saved search and exact-query hiding behavior", async ({
+  page,
+}) => {
+  const requests = await setup(page, true);
+  await page.getByLabel("Save for feedback").check();
+  await page
+    .getByRole("textbox", { name: "Search images" })
+    .fill("green image");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await page
+    .getByRole("button", { name: "View green.png", exact: true })
+    .click();
+  const viewer = page.getByRole("dialog");
+  await viewer.getByRole("button", { name: "Relevant", exact: true }).click();
+  await expect(
+    viewer.getByRole("button", { name: "Relevant", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await viewer.getByRole("button", { name: "Irrelevant", exact: true }).click();
+  await expect(viewer).toHaveCount(0);
+  const labels = requests.filter(
+    (request) => request.method === "PUT" && request.url.includes("/feedback/"),
+  );
+  expect(
+    labels.map((request) => JSON.parse(String(request.body)).expected_event_id),
+  ).toEqual([0, 1]);
+  await expect(
+    page.getByRole("button", { name: "View green.png", exact: true }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "Undo feedback", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "View green.png", exact: true }),
+  ).toBeVisible();
+});
+
+test("viewer shows feedback conflicts inside the dialog", async ({ page }) => {
+  await setup(page, true);
+  await page.getByLabel("Save for feedback").check();
+  await page
+    .getByRole("textbox", { name: "Search images" })
+    .fill("green image");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await page.route("**/api/feedback/runs/saved/*", (route) =>
+    route.fulfill({
+      status: 409,
+      json: { detail: "Feedback changed; refresh and retry" },
+    }),
+  );
+  await page
+    .getByRole("button", { name: "View green.png", exact: true })
+    .click();
+  const viewer = page.getByRole("dialog");
+  await viewer.getByRole("button", { name: "Relevant", exact: true }).click();
+  await expect(
+    viewer.getByRole("alert").filter({ hasText: "Feedback changed" }),
+  ).toBeVisible();
+});

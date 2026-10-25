@@ -13,6 +13,7 @@ import {
   type MemoryDecision,
 } from "./api";
 import "./style.css";
+import { ImageViewer } from "./ImageViewer";
 import { ThemeSwitch } from "./ThemeSwitch";
 import { Duplicates } from "./Duplicates";
 import { Workspace } from "./Workspace";
@@ -713,7 +714,7 @@ function App() {
     };
   }, []);
   useEffect(() => {
-    if (!detail && !importing) return;
+    if (!importing) return;
     const previous = document.activeElement as HTMLElement | null;
     const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
     const focusable = () =>
@@ -746,7 +747,7 @@ function App() {
       window.removeEventListener("keydown", listener);
       previous?.focus();
     };
-  }, [detail, importing]);
+  }, [importing]);
 
   async function start(
     kind: "search" | "similar",
@@ -868,6 +869,7 @@ function App() {
     if (!runId || labelsLoading) return;
     const taskId = foreground.current;
     setLabelsLoading(true);
+    setError("");
     try {
       const old = labels[image.image_id];
       const expected = memoryEnabled
@@ -896,6 +898,9 @@ function App() {
       if (memoryEnabled && result.memory) {
         const decision = result.memory;
         if (decision.label === "irrelevant") {
+          setDetail((current) =>
+            current?.image_id === image.image_id ? null : current,
+          );
           setImages((rows) =>
             rows.filter((row) => row.image_id !== image.image_id),
           );
@@ -2020,83 +2025,35 @@ function App() {
         </div>
       )}
       {detail && (
-        <div className="overlay" onClick={() => setDetail(null)}>
-          <section
-            className="dialog detail-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="detail-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="dialog-close icon-button"
-              aria-label="Close details"
-              onClick={() => setDetail(null)}
-            >
-              <Icon name="close" />
-            </button>
-            <div className="detail-preview">
-              <img
-                src={media(collection, detail, "original", generation)}
-                onError={(e) => {
-                  if (!e.currentTarget.dataset.fallback) {
-                    e.currentTarget.dataset.fallback = "true";
-                    e.currentTarget.src = media(
-                      collection,
-                      detail,
-                      "thumbnail",
-                      generation,
-                    );
-                  }
-                }}
-                alt={filename(detail)}
-              />
-            </div>
-            <div className="detail-info">
-              <span className="eyebrow">IMAGE DETAILS</span>
-              <h2 id="detail-title">{filename(detail)}</h2>
-              <p className="muted">
-                {detail.width} × {detail.height} · {detail.status}
-                {detail.visual_similarity !== null
-                  ? ` · similarity ${detail.visual_similarity.toFixed(3)}`
-                  : ""}
-              </p>
-              <button
-                className="secondary"
-                onClick={() =>
-                  void start(
-                    "similar",
-                    {
-                      collection: imageCollection(detail),
-                      all_folders: allFolders,
-                      image_id:
-                        detail.sources?.[0]?.image_id || detail.image_id,
-                      save_run: saveRun,
-                      limit: 50,
-                    },
-                    `Similar to ${filename(detail)}`,
-                  )
-                }
-              >
-                <Icon name="similar" size={17} />
-                Find similar images
-              </button>
-              <h3>Source paths</h3>
-              {detail.paths.map((p) => (
-                <code className="path" key={p}>
-                  {p}
-                </code>
-              ))}
-              <h3>Extracted text preview</h3>
-              <pre dir="auto">{detail.text || "No text extracted."}</pre>
-              {detail.issues.map((issue, i) => (
-                <p className="issue" key={i}>
-                  {issue.stage}: {issue.error}
-                </p>
-              ))}
-            </div>
-          </section>
-        </div>
+        <ImageViewer
+          image={
+            images.find((image) => image.image_id === detail.image_id) || detail
+          }
+          images={images}
+          collection={collection}
+          generation={generation}
+          onClose={() => setDetail(null)}
+          onNavigate={setDetail}
+          onSimilar={(image) =>
+            void start(
+              "similar",
+              {
+                collection: imageCollection(image),
+                all_folders: allFolders,
+                image_id: image.sources?.[0]?.image_id || image.image_id,
+                save_run: saveRun,
+                limit: 50,
+              },
+              `Similar to ${filename(image)}`,
+            )
+          }
+          onLabel={label}
+          label={labels[detail.image_id]}
+          feedbackEnabled={Boolean(runId) && !isBrowse}
+          feedbackBusy={labelsLoading}
+          feedbackError={error}
+          onCollectionsChanged={organizationChanged}
+        />
       )}
     </div>
   );
