@@ -672,3 +672,172 @@ def test_empty_active_workspace_can_initialize_without_restarting(web, tmp_path)
         task = completed(active, response.json()["id"])
         assert task["status"] == "completed", task
         assert len(active.get("/api/collections/personal/images").json()["results"]) == 2
+
+
+def test_viewer_details_full_ocr_membership_and_stable_source_identity(web, monkeypatch):
+    from realopen_lens.api import viewer
+    from realopen_lens.organization import collections
+    from realopen_lens.storage.catalog import Catalog
+
+    client, root, store, run = web
+    listed = client.get("/api/collections/personal/images").json()
+    image_id = listed["results"][0]["image_id"]
+    generation = listed["generation"]
+    catalog = Catalog(store, readonly=True)
+    try:
+        collection_id = catalog.snapshot("personal")[0]["id"]
+    finally:
+        catalog.close()
+    folder = collections.create(store, "personal", "Folder picks")
+    library = collections.create(store, "personal", "Library picks", all_folders=True)
+    collections.change_members(store, "personal", folder["id"], [image_id], 1)
+    response = client.get(
+        "/api/image-details",
+        params={
+            "collection_id": collection_id,
+            "collection": "old-name",
+            "image_id": image_id,
+            "generation": generation,
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["image_id"] == image_id and data["generation"] == generation
+    assert data["available_paths"] and data["metadata"]["width"] > 0
+    groups = {g["id"]: g for g in data["groups"]}
+    assert groups[folder["id"]]["member_image_ids"] == [image_id]
+    assert groups[library["id"]]["member_image_ids"] == []
+    # The detail response reads the frozen OCR record, not the 300-character result preview.
+    from realopen_lens.api import collections as reading
+
+    snapshot = reading.snapshot
+
+    def long_text(*args):
+        found, manifest = snapshot(*args)
+        manifest = {**manifest, "ocr": [{"image_id": image_id, "text": "مرحبا " * 100}]}
+        return found, manifest
+
+    monkeypatch.setattr(viewer, "snapshot", long_text)
+    assert len(client.get("/api/image-details", params={"image_id": image_id}).json()["text"]) > 300
+
+
+def test_viewer_native_actions_reject_changed_unindexed_and_untrusted_requests(web, monkeypatch):
+    from realopen_lens.api import viewer
+
+    client, root, store, run = web
+    record = client.get("/api/collections/personal/images").json()["results"][0]
+    called = []
+    monkeypatch.setattr(
+        viewer, "desktop_action", lambda path, action: called.append((path, action))
+    )
+    body = {"image_id": record["image_id"], "action": "reveal"}
+    assert client.post("/api/image-actions", json=body).status_code == 200
+    assert called == [(Path(record["paths"][0]), "reveal")]
+    assert (
+        client.post("/api/image-actions", json={**body, "path": "/etc/passwd"}).status_code == 422
+    )
+    assert client.post("/api/image-actions", json={**body, "image_id": "0" * 64}).status_code == 400
+    assert (
+        client.post(
+            "/api/image-actions", json=body, headers={"origin": "https://example.com"}
+        ).status_code
+        == 403
+    )
+    Path(record["paths"][0]).write_bytes(b"changed")
+    assert client.post("/api/image-actions", json=body).status_code == 400
+    assert len(called) == 1
+    client.cookies.clear()
+    assert client.post("/api/image-actions", json=body).status_code == 401
+
+
+@pytest.mark.parametrize(
+    "platform,action,command",
+    [
+        ("darwin", "open", ["/usr/bin/open", "/photos/a b.png"]),
+        ("darwin", "reveal", ["/usr/bin/open", "-R", "/photos/a b.png"]),
+        ("win32", "reveal", ["explorer.exe", "/select,", "/photos/a b.png"]),
+        ("linux", "open", ["xdg-open", "/photos/a b.png"]),
+        ("linux", "reveal", ["xdg-open", "/photos"]),
+    ],
+)
+def test_viewer_desktop_actions_use_bounded_argument_arrays(monkeypatch, platform, action, command):
+    from realopen_lens.api import viewer
+
+    calls = []
+    monkeypatch.setattr(viewer.sys, "platform", platform)
+    monkeypatch.setattr(viewer.subprocess, "run", lambda args, **kw: calls.append((args, kw)))
+    viewer.desktop_action(Path("/photos/a b.png"), action)
+    command = [*command[:-1], str(Path(command[-1]))]
+    assert calls == [(command, {"check": True, "timeout": 10, "capture_output": True})]
+
+
+def test_viewer_hash_verification_catches_preserved_signature_edits(web, monkeypatch):
+    import os
+    from realopen_lens.api import viewer
+
+    client, root, store, run = web
+    record = client.get("/api/collections/personal/images").json()["results"][0]
+    path = Path(record["paths"][0])
+    stat = path.stat()
+    data = path.read_bytes()
+    path.write_bytes(data[:-1] + bytes([data[-1] ^ 1]))
+    os.utime(path, ns=(stat.st_atime_ns, stat.st_mtime_ns))
+    monkeypatch.setattr(
+        viewer, "desktop_action", lambda *args: pytest.fail("Changed original opened")
+    )
+    assert (
+        client.post(
+            "/api/image-actions", json={"image_id": record["image_id"], "action": "open"}
+        ).status_code
+        == 400
+    )
+
+
+def test_viewer_desktop_action_errors_are_actionable(monkeypatch):
+    from realopen_lens.api import viewer
+
+    monkeypatch.setattr(viewer.sys, "platform", "linux")
+
+    def fail(*args, **kwargs):
+        raise viewer.subprocess.TimeoutExpired("xdg-open", 10)
+
+    monkeypatch.setattr(viewer.subprocess, "run", fail)
+    with pytest.raises(ValueError, match="desktop session"):
+        viewer.desktop_action(Path("/photos/image.png"), "open")
+
+
+def test_viewer_membership_tracks_exact_pixel_aliases(web):
+    from PIL import Image
+    from realopen_lens.organization import collections, duplicates
+
+    client, root, store, run = web
+    with Image.open(root / "red.png") as source:
+        source.save(root / "copy.bmp")
+    run()
+    duplicates.scan(store, "personal")
+    listed = client.get("/api/collections/personal/images").json()["results"]
+    by_name = {Path(row["paths"][0]).name: row["image_id"] for row in listed}
+    first, alias = by_name["red.png"], by_name["copy.bmp"]
+    group = collections.create(store, "personal", "Saved exact copy", all_folders=True)
+    collections.change_members(store, "personal", group["id"], [alias], 1, all_folders=True)
+    data = client.get("/api/image-details", params={"image_id": first}).json()
+    assert data["groups"][0]["member_image_ids"] == [alias]
+    assert (
+        client.request(
+            "DELETE",
+            f"/api/virtual-collections/{group['id']}/members",
+            json={
+                "collection": "personal",
+                "all_folders": True,
+                "revision": data["groups"][0]["revision"],
+                "image_ids": [alias],
+            },
+        ).status_code
+        == 200
+    )
+    assert (
+        client.get("/api/image-details", params={"image_id": first}).json()["groups"][0][
+            "member_image_ids"
+        ]
+        == []
+    )

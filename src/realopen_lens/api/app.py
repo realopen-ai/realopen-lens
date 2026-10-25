@@ -57,6 +57,13 @@ class IndexInput(Input):
     rehash: bool = False
 
 
+class ImageActionInput(Input):
+    collection_id: str | None = Field(default=None, pattern=r"^[a-f0-9]{32}$")
+    image_id: str = Field(pattern=r"^[a-f0-9]{64}$")
+    generation: str | None = Field(default=None, pattern=r"^[a-f0-9]{32}$")
+    action: Literal["open", "reveal"]
+
+
 class FolderInput(Input):
     collection_id: str = Field(pattern=r"^[a-f0-9]{32}$")
 
@@ -296,6 +303,38 @@ def create_app(
     @app.post("/api/collections/remove")
     def remove_folder(body: FolderInput):
         return app.state.manager.manage_folder(body.collection, body.collection_id, None)
+
+    def viewer_collection(collection: str, collection_id: str | None) -> str:
+        from realopen_lens.api import viewer
+        from realopen_lens.storage.catalog import Catalog
+
+        catalog = Catalog(root, readonly=True)
+        try:
+            return viewer.resolve(catalog, collection, collection_id)
+        finally:
+            catalog.close()
+
+    @app.get("/api/image-details")
+    def image_details(
+        image_id: str = Query(pattern=r"^[a-f0-9]{64}$"),
+        collection: str = "personal",
+        collection_id: str | None = Query(default=None, pattern=r"^[a-f0-9]{32}$"),
+        generation: str | None = Query(default=None, pattern=r"^[a-f0-9]{32}$"),
+    ):
+        from realopen_lens.api import viewer
+
+        return viewer.details(
+            root, viewer_collection(collection, collection_id), image_id, generation
+        )
+
+    @app.post("/api/image-actions")
+    def image_action(body: ImageActionInput):
+        from realopen_lens.api import viewer
+
+        collection = viewer_collection(body.collection, body.collection_id)
+        path = viewer.original(root, collection, body.image_id, body.generation)
+        viewer.desktop_action(path, body.action)
+        return {"opened": True, "action": body.action}
 
     @app.get("/api/collections/{collection:path}/images")
     def browse(collection: str, offset: int = 0, limit: int = 60):
