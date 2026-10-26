@@ -130,7 +130,7 @@ def main():
     total_memory = memory_bytes()
     initial_precision = selected_precision(config, total_memory)
     precision = tk.StringVar(value=initial_precision)
-    languages = tk.StringVar(value=config.get("ocr_languages", ""))
+    languages = tk.StringVar(value=config.get("ocr_languages") or "eng+fra+ara")
     setup_status = tk.StringVar(value="Checking this device…")
     setup_details = tk.StringVar(
         value="Models, text recognition and workspace access are checked offline."
@@ -447,6 +447,7 @@ def main():
             "models": choose_models,
             "download": download_models,
             "check": request_check,
+            "ocr_changed": save,
             "ocr_help": lambda: webbrowser.open(OCR_GUIDE),
             "logs": lambda: webbrowser.open(logs.as_uri()),
             "quit": quit_app,

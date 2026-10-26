@@ -49,10 +49,26 @@ def inspect_gui() -> dict:
         window.update()
         view.toggle_theme()
         view.set_setup_expanded(True)
+        picker = view.language_picker
+        picker.flags["jpn"].set(True)
+        picker.choose("jpn")
+        assert picker.variable.get() == "eng+fra+ara+jpn"
+        picker.mode.set("auto")
+        picker.select_mode()
+        assert picker.variable.get() == "auto"
+        picker.mode.set("manual")
+        picker.select_mode()
+        assert picker.variable.get() == "eng+fra+ara+jpn"
+        picker.toggle_choices()
         window.update()
         view.set_setup_expanded(False)
         window.update()
-        return {"rendered": True, "themes": ["light", "dark"], "setup_collapsible": True}
+        return {
+            "rendered": True,
+            "themes": ["light", "dark"],
+            "setup_collapsible": True,
+            "ocr_modes": True,
+        }
     finally:
         window.destroy()
 
