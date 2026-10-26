@@ -1,6 +1,11 @@
 import { test, expect, type Page } from "@playwright/test";
 
-async function device(page: Page, running = false, completion?: Promise<void>) {
+async function device(
+  page: Page,
+  running = false,
+  completion?: Promise<void>,
+  preference = "eng+ara",
+) {
   let request: Record<string, string> = {};
   const calls: string[] = [];
   await page.route("**/api/**", async (route) => {
@@ -29,7 +34,14 @@ async function device(page: Page, running = false, completion?: Promise<void>) {
         json: {
           allowed_roots: ["/photos"],
           default_siglip_precision: "fp32",
-          default_ocr_languages: "eng+ara",
+          default_ocr_languages: preference,
+          ocr_language_options: {
+            eng: "English",
+            fra: "French",
+            ara: "Arabic",
+            jpn: "Japanese",
+            deu: "German",
+          },
         },
       });
     if (
@@ -166,7 +178,7 @@ test("folder setup checks use current source, precision and language preferences
   await dialog
     .getByRole("button", { name: "Use installed languages (eng)" })
     .click();
-  await expect(dialog.getByLabel("Installed OCR languages")).toHaveValue("eng");
+  await expect(dialog.getByLabel("Language codes")).toHaveValue("eng");
 });
 
 test("setup verification shows live progress and offers task cancellation", async ({
@@ -212,4 +224,90 @@ test("missing prerequisites reopen a collapsed setup section and manual collapse
   await expect(
     setup.getByRole("button", { name: "Check setup", exact: true }),
   ).toBeHidden();
+});
+
+test("OCR mode controls preserve manual choices and submit automatic indexing", async ({
+  page,
+}, info) => {
+  const state = await device(page);
+  let indexed: Record<string, unknown> | null = null;
+  await page.route("**/api/tasks/index", (route) => {
+    indexed = route.request().postDataJSON();
+    return route.fulfill({
+      status: 202,
+      json: {
+        id: "index",
+        kind: "index",
+        status: "completed",
+        phase: "finished",
+        revision: 1,
+        collection: "personal",
+        result: {},
+        progress: {},
+        elapsed_seconds: 1,
+        error: null,
+      },
+    });
+  });
+  await page.getByRole("button", { name: "Add folder", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Add a folder to Lens" });
+  await dialog.getByText("Indexing options", { exact: true }).click();
+  await expect(
+    dialog.getByRole("radio", { name: "Choose languages", exact: true }),
+  ).toBeChecked();
+  await dialog.getByText("English, Arabic", { exact: true }).click();
+  await dialog.getByRole("checkbox", { name: "Japanese", exact: true }).check();
+  await expect(dialog.getByLabel("Language codes")).toHaveValue("eng+ara+jpn");
+  await page.screenshot({
+    path: `../runs/ocr-manual-${info.project.name}.png`,
+    fullPage: true,
+  });
+  await dialog
+    .getByRole("radio", { name: "Automatic script groups", exact: true })
+    .check();
+  await expect(dialog.getByLabel("Language codes")).toHaveCount(0);
+  await dialog.getByText("Device setup", { exact: true }).click();
+  await dialog
+    .getByRole("button", { name: "Check setup", exact: true })
+    .click();
+  await expect.poll(() => state.request().languages).toBe("auto");
+  await expect(
+    dialog.getByRole("button", { name: /Use installed languages/ }),
+  ).toHaveCount(0);
+  await dialog
+    .getByRole("radio", { name: "Choose languages", exact: true })
+    .check();
+  await expect(dialog.getByLabel("Language codes")).toHaveValue("eng+ara+jpn");
+  await dialog
+    .getByRole("radio", { name: "Automatic script groups", exact: true })
+    .check();
+  await page.screenshot({
+    path: `../runs/ocr-auto-${info.project.name}.png`,
+    fullPage: true,
+  });
+  await dialog
+    .getByRole("button", { name: "Start indexing", exact: true })
+    .click();
+  await expect.poll(() => indexed?.languages).toBe("auto");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+  ).toBe(false);
+});
+
+test("fresh OCR settings default to manual English French and Arabic", async ({
+  page,
+}) => {
+  await device(page, false, undefined, "");
+  await page.getByRole("button", { name: "Add folder", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Add a folder to Lens" });
+  await dialog.getByText("Indexing options", { exact: true }).click();
+  await expect(
+    dialog.getByRole("radio", { name: "Choose languages", exact: true }),
+  ).toBeChecked();
+  await expect(
+    dialog.getByRole("radio", { name: "Automatic script groups", exact: true }),
+  ).not.toBeChecked();
+  await expect(dialog.getByLabel("Language codes")).toHaveValue("eng+fra+ara");
 });

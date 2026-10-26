@@ -19,6 +19,11 @@ interface Details {
   available_paths: string[];
   text: string;
   groups: ViewerGroup[];
+  ocr_language_selection?: {
+    mode: string;
+    selected_languages: string | null;
+    script_detection?: { groups: string[]; fallback: string | null } | null;
+  };
 }
 interface Props {
   image: ImageResult;
@@ -347,6 +352,30 @@ function ViewerContent(props: Props) {
         {notice && <p role="status">{notice}</p>}
         {!details && !error && <p role="status">Loading image details…</p>}
         <ImageMetadata metadata={details?.metadata} />
+        {details?.ocr_language_selection && (
+          <section aria-label="OCR language selection">
+            <h3>Text recognition</h3>
+            <p>
+              {details.ocr_language_selection.mode === "auto"
+                ? "Automatic script groups"
+                : "Chosen languages"}
+              {details.ocr_language_selection.script_detection?.groups.length
+                ? ` · ${details.ocr_language_selection.script_detection.groups.join(", ")}`
+                : ""}
+            </p>
+            <p className="small muted">
+              Used:{" "}
+              {details.ocr_language_selection.selected_languages ||
+                "No recognition performed"}
+            </p>
+            {details.ocr_language_selection.script_detection?.fallback && (
+              <p className="small muted">
+                Detection was uncertain or unsupported. Used all installed
+                supported packs.
+              </p>
+            )}
+          </section>
+        )}
         <section aria-label="Image feedback">
           <h3>Search feedback</h3>
           <div className="feedback-actions">

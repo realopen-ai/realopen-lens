@@ -22,6 +22,7 @@ import { Workspace } from "./Workspace";
 import { FolderPicker } from "./FolderPicker";
 import { FolderActions } from "./FolderActions";
 import { Setup } from "./Setup";
+import { OcrLanguages, DEFAULT_OCR_OPTIONS } from "./OcrLanguages";
 import { QueryMemory } from "./QueryMemory";
 import { Training } from "./Training";
 import {
@@ -169,6 +170,8 @@ function App() {
   const [defaultPrecision, setDefaultPrecision] = useState("int8");
   const [precisionEdited, setPrecisionEdited] = useState(false);
   const [languagesEdited, setLanguagesEdited] = useState(false);
+  const [languageOptions, setLanguageOptions] =
+    useState<Record<string, string>>(DEFAULT_OCR_OPTIONS);
   const [defaultLanguages, setDefaultLanguages] = useState("");
   useEffect(() => {
     if (!importing) return;
@@ -176,9 +179,12 @@ function App() {
     void api<{
       default_siglip_precision?: string;
       default_ocr_languages?: string;
+      ocr_language_options?: Record<string, string>;
     }>("/session")
       .then((session) => {
         if (active) {
+          if (session.ocr_language_options)
+            setLanguageOptions(session.ocr_language_options);
           setDefaultPrecision(
             session.default_siglip_precision === "fp32" ? "fp32" : "int8",
           );
@@ -675,9 +681,12 @@ function App() {
         allowed_roots: string[];
         default_siglip_precision?: string;
         default_ocr_languages?: string;
+        ocr_language_options?: Record<string, string>;
       }>("/session");
       if (disposed) return;
       setRoots(session.allowed_roots);
+      if (session.ocr_language_options)
+        setLanguageOptions(session.ocr_language_options);
       if (session.default_siglip_precision) {
         setDefaultPrecision(session.default_siglip_precision);
         setPrecision(session.default_siglip_precision);
@@ -1257,16 +1266,6 @@ function App() {
             />
           </div>
           <div hidden={view !== "workspace"}>
-            <Setup
-              tasks={tasks}
-              watch={watch}
-              precision={precision}
-              languages={languages}
-              onLanguages={(value) => {
-                setLanguages(value);
-                setLanguagesEdited(true);
-              }}
-            />
             <Workspace
               active={view === "workspace"}
               onReady={() => {
@@ -1278,6 +1277,24 @@ function App() {
               }}
               tasks={tasks}
               watch={watch}
+            />
+            <OcrLanguages
+              value={languages}
+              options={languageOptions}
+              onChange={(value) => {
+                setLanguages(value);
+                setLanguagesEdited(true);
+              }}
+            />
+            <Setup
+              tasks={tasks}
+              watch={watch}
+              precision={precision}
+              languages={languages}
+              onLanguages={(value) => {
+                setLanguages(value);
+                setLanguagesEdited(true);
+              }}
             />
           </div>
           <section hidden={view !== "activity"} aria-label="Task history">
@@ -2160,21 +2177,18 @@ function App() {
                     <option value="fp32">FP32 · higher memory</option>
                   </select>
                 </label>
-                <label>
-                  Installed OCR languages
-                  <input
-                    required
-                    value={languages}
-                    onChange={(e) => {
-                      setLanguagesEdited(true);
-                      setLanguages(e.target.value);
-                    }}
-                  />
-                </label>
+                <OcrLanguages
+                  value={languages}
+                  options={languageOptions}
+                  disabled={indexSubmitting}
+                  onChange={(value) => {
+                    setLanguages(value);
+                    setLanguagesEdited(true);
+                  }}
+                />
                 <p className="field-help">
-                  New folders default to INT8 below 16 GB RAM and FP32 at 16 GB
-                  or above. Existing collections keep their current precision.
-                  Models and language packs must already be installed.
+                  Models and language packs must already be installed. Existing
+                  folders keep their current vision precision.
                 </p>
               </details>
               <div className="import-setup">
