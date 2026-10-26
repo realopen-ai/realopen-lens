@@ -162,6 +162,7 @@ class TaskManager:
         collection_id: str,
         *,
         automatic: bool = False,
+        languages: str | None = None,
         source_identity: Sequence[int] | None = None,
     ) -> dict:
         from realopen_lens.organization.folders import refresh_options
@@ -175,6 +176,10 @@ class TaskManager:
                     "This folder already has an active task; wait for it to finish"
                 )
             request = refresh_options(self.root, name, collection_id)
+            if languages is not None:
+                from realopen_lens.ocr.preferences import validate
+
+                request["languages"] = validate(languages)
             request.update(
                 collection_id=collection_id, origin="automatic" if automatic else "manual"
             )

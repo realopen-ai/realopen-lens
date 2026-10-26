@@ -940,3 +940,44 @@ def test_ocr_modes_catalog_and_automatic_collection_preference_are_preserved(web
         "ocr_language_selection"
     ]
     assert selection["mode"] == "auto" and selection["selected_languages"] is None
+
+
+def test_workspace_ocr_default_persists_without_changing_published_folder(web):
+    client, root, store, run = web
+    before = client.get("/api/collections").json()
+    response = client.post("/api/workspace/ocr", json={"languages": "auto"})
+    assert response.status_code == 200
+    assert client.get("/api/session").json()["default_ocr_languages"] == "auto"
+    assert client.get("/api/collections").json() == before
+    assert client.post("/api/workspace/ocr", json={"languages": "auto+eng"}).status_code == 400
+    from realopen_lens.ocr.preferences import read
+
+    assert read(store) == "auto"
+
+
+def test_saved_ocr_default_survives_server_restart(tmp_path):
+    store = tmp_path / "workspace"
+    with TestClient(create_app(index_dir=store), base_url="http://127.0.0.1:8765") as client:
+        client.get("/api/session")
+        assert client.post("/api/workspace/ocr", json={"languages": "auto"}).status_code == 200
+    with TestClient(create_app(index_dir=store), base_url="http://127.0.0.1:8765") as client:
+        assert client.get("/api/session").json()["default_ocr_languages"] == "auto"
+
+
+def test_explicit_ocr_refresh_overrides_languages_but_keeps_folder_identity(web, monkeypatch):
+    client, root, store, run = web
+    folder = client.get("/api/collections").json()[0]
+    captured = []
+    manager = client.app.state.manager
+    monkeypatch.setattr(
+        manager, "submit", lambda kind, request: captured.append(request) or {"id": "queued"}
+    )
+    body = {"collection": folder["name"], "collection_id": folder["id"]}
+    response = client.post("/api/collections/refresh", json={**body, "languages": "auto"})
+    assert response.status_code == 202
+    assert captured[-1]["languages"] == "auto"
+    assert captured[-1]["root"] == str(root)
+    assert captured[-1]["siglip_precision"] == folder["siglip_precision"]
+    assert captured[-1]["collection_id"] == folder["id"]
+    assert client.post("/api/collections/refresh", json=body).status_code == 202
+    assert captured[-1]["languages"] == folder["languages"]
