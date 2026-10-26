@@ -12,6 +12,7 @@ from types import SimpleNamespace
 import pytest
 
 from realopen_lens.ocr import runtime
+from realopen_lens.ocr.languages import BUNDLED_PACKS
 
 
 def script(name, monkeypatch):
@@ -123,7 +124,7 @@ def test_windows_bundle_manifest_notices_and_runtime_are_compatible(tmp_path, mo
     engine = resources / "bin/tesseract.exe"
     monkeypatch.setattr(runtime, "bundle_paths", lambda: (engine, resources))
     assert runtime.verify(str(engine)) == manifest
-    assert set(manifest["tessdata"]) == {"eng", "fra", "ara", "osd"}
+    assert set(manifest["tessdata"]) == BUNDLED_PACKS
     assert "License for leptonica" in public.read_text(encoding="utf-8")
     # Dependency notices are integrity protected along with the executable/data.
     (resources / "licenses/zlib.txt").write_bytes(b"tampered")

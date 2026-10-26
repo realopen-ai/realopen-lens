@@ -16,7 +16,7 @@ Tcl/Tk or packaging inputs, review and refresh this file against the resulting
 artifact. System-provided libraries retain their respective platform terms.
 
 Model weights are downloaded separately and retain their own licenses. The macOS
-ZIP now includes Tesseract and English, French, Arabic and orientation data; their
+ZIP now includes Tesseract, 19 OCR language packs and orientation data; their
 license notices and the native OCR dependency inventory appear in the bundled OCR
 section below. Source installations may continue to use externally installed OCR.
 Upstream aggregate notices identify additional native and vendored components.
@@ -16895,7 +16895,7 @@ files are modified; Mach-O loader paths are relocated and copied binaries re-sig
 | liblzma | 5.8.3 |
 | LZ4 | 1.10.0 |
 | libb2 | 0.98.1 |
-| tessdata_fast (eng, fra, ara, osd) | 4.1.0 |
+| tessdata_fast (19 languages plus osd) | 4.1.0 |
 
 ### OCR: Tesseract
 
@@ -18239,8 +18239,12 @@ For more information, please see
 
 ### OCR: tessdata_fast 4.1.0
 
-English (`eng`), French (`fra`), Arabic (`ara`) and orientation/script detection
-(`osd`) data are copied without modification from the official
+English (`eng`), French (`fra`), Arabic (`ara`), Spanish (`spa`), Portuguese (`por`),
+German (`deu`), Italian (`ita`), Indonesian (`ind`), Turkish (`tur`), Vietnamese (`vie`),
+Russian (`rus`), Hindi (`hin`), Bengali (`ben`), Urdu (`urd`), Persian (`fas`),
+Simplified Chinese (`chi_sim`), Traditional Chinese (`chi_tra`), Japanese (`jpn`),
+Korean (`kor`) and orientation/script detection (`osd`) data are copied without
+modification from the official
 [tessdata_fast 4.1.0 release](https://github.com/tesseract-ocr/tessdata_fast/tree/4.1.0).
 Their URLs, byte sizes and SHA256 checksums are pinned in `packaging/tessdata.json`.
 They are distributed under Apache-2.0; the full Apache-2.0 text is reproduced in the

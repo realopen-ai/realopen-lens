@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 import sys
 
+from realopen_lens.ocr.languages import BUNDLED_PACKS
+
 
 def bundle_paths() -> tuple[Path, Path] | None:
     if not getattr(sys, "frozen", False):
@@ -84,7 +86,7 @@ def verify(executable: str) -> dict | None:
     if (
         not isinstance(manifest, dict)
         or manifest.get("version") != 1
-        or set(manifest.get("tessdata", {})) != {"eng", "fra", "ara", "osd"}
+        or set(manifest.get("tessdata", {})) != BUNDLED_PACKS
         or not isinstance(manifest.get("files"), list)
         or not manifest["files"]
     ):

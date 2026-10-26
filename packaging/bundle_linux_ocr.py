@@ -170,5 +170,9 @@ def bundle_ocr(bundle: Path, executable: Path, source_data: Path):
     ).stdout
     if not set(registry).issubset(set(listed.splitlines()[1:])):
         raise ValueError("Private OCR cannot load all language/orientation packs")
-    print(f"Bundled {version}: {len(libraries)} libraries, eng/fra/ara/osd", flush=True)
+    print(
+        f"Bundled {version}: {len(libraries)} libraries, "
+        f"{len(registry) - 1} languages + orientation",
+        flush=True,
+    )
     return manifest
