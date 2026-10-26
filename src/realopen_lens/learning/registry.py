@@ -18,6 +18,7 @@ def runtime_identity() -> dict:
     files = (
         "retrieval/search.py",
         "retrieval/ranking.py",
+        "retrieval/text.py",
         "retrieval/candidates.py",
         "retrieval/identifiers.py",
         "learning/features.py",
