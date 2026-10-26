@@ -72,8 +72,12 @@ for automatic mode and setup reports it if missing.
 The selected packs and detector/fallback information are retained per image and
 shown under **Text recognition** in image details. Saved folder configuration
 retains the mode for refresh and automatic folder watching. Device preferences
-apply to new folders; change an existing folder's indexing options and re-index to
-apply a different mode. Switching modes retains the current manual choices in the
+apply to new folders. In gallery Workspace settings, click **Save OCR default**
+to persist the choice across reloads and server restarts. To update an existing
+folder, choose it under **Reprocess a folder with these languages** and click
+**Reprocess OCR**. This starts a task with live progress; the previous index stays
+searchable until publication. Ordinary **Refresh index** keeps that folder's saved
+mode. Selecting a radio option alone does not change previously recognized text. Switching modes retains the current manual choices in the
 picker. Manual selection remains the performance/accuracy default.
 
 Detector policy and candidate-pack hashes are part of automatic OCR cache identity.
