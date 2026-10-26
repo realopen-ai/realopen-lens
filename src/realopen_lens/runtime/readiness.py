@@ -55,6 +55,7 @@ def installed_ocr() -> dict:
         "executable": executable,
         "version": version.stdout.splitlines()[0],
         "installed_languages": languages,
+        "orientation_available": "osd" in listed.stdout.splitlines()[1:],
     }
 
 
@@ -158,6 +159,15 @@ def inspect(
         nonlocal ocr, languages
         ocr = installed_ocr()
         languages = languages or suggested_languages(ocr["installed_languages"])
+        if languages == "auto":
+            from realopen_lens.ocr.automatic import available
+
+            if not ocr.get("orientation_available"):
+                raise ValueError("Automatic OCR requires the osd orientation/script pack")
+            candidates = available(ocr["installed_languages"])
+            if not candidates:
+                raise ValueError("Automatic OCR requires a supported language pack")
+            return f"{ocr['version']} · automatic script groups · {len(candidates)} available packs"
         missing = set(languages.split("+")) - set(ocr["installed_languages"])
         if not languages:
             raise ValueError("No OCR language packs are installed")
@@ -169,7 +179,8 @@ def inspect(
         "ocr",
         "Text recognition",
         (
-            "Select the bundled eng/fra/ara languages. If bundled OCR is damaged, reinstall Lens."
+            "Select the document languages from the bundled OCR packs. "
+            "If bundled OCR is damaged, reinstall Lens."
             if ocr_runtime.bundle_paths()
             else "Install Tesseract 5 and the requested language packs, "
             "or select installed languages; then check again."

@@ -21,6 +21,7 @@ from realopen_lens.api.tasks import TaskManager, TERMINAL
 from realopen_lens.indexing.service import collection_status
 from realopen_lens.learning import feedback
 from realopen_lens.runtime.jobs import writer_lock
+from realopen_lens.ocr.languages import LANGUAGES
 from realopen_lens.storage.catalog import identifier
 
 
@@ -239,6 +240,7 @@ def create_app(
                 {
                     "allowed_roots": [str(p) for p in roots],
                     "default_siglip_precision": (precision_default()),
+                    "ocr_language_options": LANGUAGES,
                     "default_ocr_languages": (
                         preferred_ocr_languages() if preferred_ocr_languages else ""
                     ),

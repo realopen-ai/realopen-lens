@@ -12,6 +12,7 @@ import numpy as np
 from realopen_lens.storage.catalog import Catalog, REQUIRED_STAGES, identifier, local_path
 from realopen_lens.models.manager import digest
 from realopen_lens.retrieval.ranking import lexical_index
+from realopen_lens.ocr.languages import selection
 
 
 def atomic_bytes(path: Path, payload: bytes):
@@ -148,6 +149,7 @@ def publish(catalog: Catalog, job_id: str, config: dict, collection: dict) -> st
         )
         records.append(
             {
+                "language_selection": selection(ocr, config["spec"].get("languages")),
                 "image_id": image_id,
                 "text": ocr.get("text", ""),
                 "alternate_texts": ocr.get("alternate_texts", []),

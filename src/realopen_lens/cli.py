@@ -134,7 +134,9 @@ def doctor() -> None:
 def recognize_image(
     image: Annotated[Path, typer.Argument(exists=True, dir_okay=False)],
     engine: Annotated[str, typer.Option(help="tesseract (default) or glm-ocr")] = "tesseract",
-    languages: Annotated[str, typer.Option()] = "eng+fra+ara",
+    languages: Annotated[
+        str, typer.Option(help="OCR codes joined by +, or auto for local script groups")
+    ] = "eng+fra+ara",
     threads: Annotated[int, typer.Option(min=1, max=32)] = 2,
     model: Annotated[
         str, typer.Option(help="Explicitly installed local Ollama model")
@@ -193,7 +195,9 @@ def index_folder(
         Path | None, typer.Option(help="Private catalog and derived-data directory")
     ] = None,
     models: Annotated[Path, typer.Option()] = Path("models"),
-    languages: Annotated[str, typer.Option()] = "eng+fra+ara",
+    languages: Annotated[
+        str, typer.Option(help="OCR codes joined by +, or auto for local script groups")
+    ] = "eng+fra+ara",
     threads: Annotated[int, typer.Option(min=1, max=8)] = 2,
     rehash: Annotated[
         bool, typer.Option(help="Rehash even files with unchanged filesystem metadata")

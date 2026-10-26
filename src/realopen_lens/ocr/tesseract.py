@@ -37,7 +37,18 @@ def _environment(executable: str, languages: str) -> dict[str, Any]:
         timeout=10,
         env=runtime.environment(executable),
     )
-    requested = languages.split("+")
+    installed = result.stdout.splitlines()[1:]
+    automatic_mode = languages == "auto"
+    if automatic_mode:
+        from realopen_lens.ocr import automatic
+
+        if "osd" not in installed:
+            raise ValueError("Automatic OCR requires the osd orientation/script pack")
+        requested = automatic.available(installed)
+        if not requested:
+            raise ValueError("Automatic OCR needs a supported language pack")
+    else:
+        requested = languages.split("+")
     if not all(re.fullmatch(r"[A-Za-z0-9_]+", code) for code in requested):
         raise ValueError("Invalid Tesseract language codes")
     missing = set(requested) - set(result.stdout.splitlines()[1:])
@@ -61,6 +72,8 @@ def _environment(executable: str, languages: str) -> dict[str, Any]:
         "engine_build": version.stdout.splitlines(),
         "language_pack_sha256": hashes,
     }
+    if automatic_mode:
+        provenance["automatic_language_policy"] = automatic.policy()
     bundled = runtime.fingerprint(executable)
     if bundled:
         provenance["bundled_runtime_sha256"] = bundled
@@ -256,6 +269,12 @@ def extract(
     if executable is None:
         raise ValueError("Tesseract 5 is required for OCR")
     environment = _environment(executable, languages)
+    automatic_mode = languages == "auto"
+    environment = {
+        **environment,
+        "ocr_language_mode": "auto" if automatic_mode else "manual",
+        "selected_languages": None if automatic_mode else languages,
+    }
     start = monotonic()
     attempts: list[dict[str, Any]] = []
     failed_attempts: list[dict[str, Any]] = []
@@ -314,6 +333,23 @@ def extract(
                     from realopen_lens.ocr.regions import mask_regions
 
                     source = keep(mask_regions(source, detection))
+            if automatic_mode:
+                from realopen_lens.ocr.automatic import detect
+
+                selection = detect(
+                    source,
+                    executable,
+                    list(environment["language_pack_sha256"]),
+                    threads,
+                    min(3, timeout / 4),
+                )
+                languages = selection["selected_languages"]
+                environment.update(selected_languages=languages, script_detection=selection)
+                if selection["fallback"]:
+                    warnings.append(
+                        "Automatic script detection uncertain or unavailable; "
+                        "used all installed supported OCR packs"
+                    )
             region = _source_region(path, original_size)
             full_region = (0, 0, *original_size)
             rgb = keep(source.copy())

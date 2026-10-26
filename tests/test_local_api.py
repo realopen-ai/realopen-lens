@@ -916,3 +916,27 @@ def test_timeline_api_orders_and_pins_folder_library_and_virtual_pages(web):
         client.get("/api/library/images", params={"generation": library["generation"]}).status_code
         == 409
     )
+
+
+def test_ocr_modes_catalog_and_automatic_collection_preference_are_preserved(web, monkeypatch):
+    from realopen_lens.ocr.languages import LANGUAGES
+
+    client, root, store, run = web
+    assert client.get("/api/session").json()["ocr_language_options"] == LANGUAGES
+    monkeypatch.setattr(
+        jobs,
+        "index_collection",
+        lambda source, **kwargs: run(
+            languages=kwargs["languages"], siglip_precision=kwargs["siglip_precision"]
+        ),
+    )
+    response = client.post("/api/tasks/index", json={"root": str(root), "languages": "auto"})
+    assert response.status_code == 202
+    result = completed(client, response.json()["id"])
+    assert result["status"] == "completed"
+    assert client.get("/api/collections").json()[0]["languages"] == "auto"
+    key = client.get("/api/collections/personal/images").json()["results"][0]["image_id"]
+    selection = client.get("/api/image-details", params={"image_id": key}).json()[
+        "ocr_language_selection"
+    ]
+    assert selection["mode"] == "auto" and selection["selected_languages"] is None

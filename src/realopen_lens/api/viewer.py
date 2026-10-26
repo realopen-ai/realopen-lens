@@ -67,8 +67,14 @@ def details(root: Path, collection: str, image_id: str, generation: str | None =
         row = next((r for r in manifest["images"] if r["image_id"] == image_id), None)
         if row is None:
             raise ValueError("Image not found")
-        text = next((r["text"] for r in manifest["ocr"] if r["image_id"] == image_id), "")
+        from realopen_lens.ocr.languages import selection
+
+        ocr: dict = next((r for r in manifest["ocr"] if r["image_id"] == image_id), {})
+        text = ocr.get("text", "")
         paths = source_paths(Path(found["root"]), {"images": [row]}).get(image_id, ())
+        language_selection = ocr.get("language_selection") or selection(
+            {}, manifest["config"]["spec"].get("languages")
+        )
         return {
             "image_id": image_id,
             "collection": found["name"],
@@ -78,6 +84,7 @@ def details(root: Path, collection: str, image_id: str, generation: str | None =
             "paths": [str(Path(found["root"]) / path) for path in row["paths"]],
             "available_paths": list(paths),
             "text": text,
+            "ocr_language_selection": language_selection,
             "issues": row.get("issues", []),
             "groups": memberships(root, found["id"], image_id),
         }
