@@ -435,6 +435,15 @@ def extract(
         best = max(attempts, key=_quality)
         if (
             not initial_recovered
+            and "kor" in languages.split("+")
+            and re.search(r"[\uac00-\ud7af]", best["text"])
+        ):
+            # Auto/sparse layout can fragment Hangul into confident Latin-looking
+            # pieces. A bounded uniform-block pass is useful only with actual
+            # Korean evidence; selected packs alone do not trigger it on photos.
+            attempt(gray, 6, "korean-text-block", region)
+        if (
+            not initial_recovered
             and max(region[2] - region[0], region[3] - region[1]) > 3000
             and len(best["words"]) >= 8
         ):
@@ -496,6 +505,19 @@ def extract(
                     }
                 )
         selected = first if initial_recovered else max(attempts, key=_quality)
+        block = next((a for a in attempts if a["input"] == "korean-text-block"), None)
+        if (
+            not initial_recovered
+            and block is not None
+            and (
+                _quality(block) >= _quality(selected)
+                or (
+                    _quality(block) >= 0.85 * _quality(selected)
+                    and (block["confidence"] or 0) >= (selected["confidence"] or 0) + 5
+                )
+            )
+        ):
+            selected = block
         if not selected["words"]:
             warnings.append("Empty OCR output; text absence has not been established")
         elif (selected["confidence"] or 0) < 55:
