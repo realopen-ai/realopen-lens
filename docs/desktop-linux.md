@@ -78,7 +78,7 @@ logs and per-check timing/errors are retained even when validation fails.
 
 The build copies the installed Tesseract 5 executable and its transitive non-glibc
 ELF library dependencies, checks x86-64 architecture and patches private origin
-paths. The app uses this private engine with hash-verified English, French, Arabic
+paths. The app uses this private engine with hash-verified [19-language OCR](multilingual-ocr.md)
 and orientation data. Frozen Python loader overrides and host tessdata settings
 are removed for OCR subprocesses. Missing/corrupt bundled OCR reports an error;
 it does not silently fall back to a system installation.

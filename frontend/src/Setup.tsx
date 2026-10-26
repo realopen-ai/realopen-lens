@@ -81,7 +81,10 @@ export function Setup({
           </button>
           <p className="small muted">
             SigLIP2 {precision.toUpperCase()} · E5 INT8 · OCR{" "}
-            {languages || "installed languages"}. This check stays offline.
+            {languages === "auto"
+              ? "automatic script groups"
+              : languages || "installed languages"}
+            . This check stays offline.
           </p>
           {busy && <p role="status">{task?.phase || "Queued"}</p>}
           {(error || task?.error) && <p role="alert">{error || task?.error}</p>}
@@ -109,7 +112,7 @@ export function Setup({
                 Installed OCR languages:{" "}
                 {installed.join(", ") || "None detected"}
               </p>
-              {suggested && suggested !== languages && (
+              {suggested && suggested !== languages && languages !== "auto" && (
                 <button
                   type="button"
                   className="secondary"

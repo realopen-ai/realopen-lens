@@ -162,9 +162,12 @@ def bundle_ocr(bundle, executable, source_data=None, identity=None):
     copied = code / "bin" / executable.name
     listed = run(str(copied), "--list-langs", env=env)
     if not set(registry).issubset(set(listed.splitlines()[1:])):
-        raise ValueError("Private OCR runtime cannot load its four language/orientation packs")
+        raise ValueError("Private OCR runtime cannot load its language/orientation packs")
     command = ["/usr/bin/codesign", "--force", "--sign", identity or "-"]
     if identity:
         command += ["--options", "runtime", "--timestamp"]
     run(*command, str(bundle))
-    print(f"Bundled {version}: {len(records)} binaries, eng/fra/ara/osd", flush=True)
+    print(
+        f"Bundled {version}: {len(records)} binaries, {len(registry) - 1} languages + orientation",
+        flush=True,
+    )

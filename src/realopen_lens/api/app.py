@@ -21,6 +21,8 @@ from realopen_lens.api.tasks import TaskManager, TERMINAL
 from realopen_lens.indexing.service import collection_status
 from realopen_lens.learning import feedback
 from realopen_lens.runtime.jobs import writer_lock
+from realopen_lens.ocr.languages import LANGUAGES
+from realopen_lens.ocr import preferences as ocr_preferences
 from realopen_lens.storage.catalog import identifier
 
 
@@ -67,6 +69,17 @@ class ImageActionInput(Input):
 
 class FolderInput(Input):
     collection_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+
+
+class FolderOcrRefreshInput(FolderInput):
+    languages: str | None = Field(
+        default=None, pattern=r"^[A-Za-z0-9_]+(?:\+[A-Za-z0-9_]+)*$", max_length=128
+    )
+
+
+class OcrPreferencesInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    languages: str = Field(min_length=1, max_length=128)
 
 
 class FolderRefreshInput(FolderInput):
@@ -239,8 +252,11 @@ def create_app(
                 {
                     "allowed_roots": [str(p) for p in roots],
                     "default_siglip_precision": (precision_default()),
+                    "ocr_language_options": LANGUAGES,
                     "default_ocr_languages": (
-                        preferred_ocr_languages() if preferred_ocr_languages else ""
+                        ocr_preferences.read(
+                            root, preferred_ocr_languages() if preferred_ocr_languages else ""
+                        )
                     ),
                 }
             ),
@@ -248,6 +264,10 @@ def create_app(
         )
         response.set_cookie(cookie_name, token, httponly=True, samesite="strict")
         return response
+
+    @app.post("/api/workspace/ocr")
+    def save_ocr_preferences(body: OcrPreferencesInput):
+        return ocr_preferences.save(root, body.languages)
 
     @app.get("/api/workspace")
     def workspace():
@@ -294,8 +314,10 @@ def create_app(
         )
 
     @app.post("/api/collections/refresh", status_code=202)
-    def refresh_folder(body: FolderInput):
-        return app.state.manager.refresh_folder(body.collection, body.collection_id)
+    def refresh_folder(body: FolderOcrRefreshInput):
+        return app.state.manager.refresh_folder(
+            body.collection, body.collection_id, languages=body.languages
+        )
 
     @app.post("/api/collections/rename")
     def rename_folder(body: FolderRenameInput):

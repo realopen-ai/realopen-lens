@@ -2,7 +2,7 @@
 
 The native Windows x64 build produces `RealOpenLens-windows-x64.zip` and a SHA256
 sidecar. It includes Python, Tcl/Tk, the browser gallery, ONNX Runtime and a private
-Tesseract 5.5.3 engine with English, French, Arabic and orientation data. Node.js,
+Tesseract 5.5.3 engine with [19 OCR language packs](multilingual-ocr.md) and orientation data. Node.js,
 Python, Homebrew and a separate OCR installation are not required on the target PC.
 Model weights are downloaded separately with explicit consent during device setup.
 
@@ -51,7 +51,7 @@ versions and failure diagnostics. Checks exercise:
 
 - frozen imports, gallery assets, license notices and Tcl/Tk resources;
 - the actual launcher view in both themes and its collapsible setup card;
-- private English/French/Arabic OCR and orientation with host tools hidden;
+- private OCR pack initialization and orientation with host tools hidden;
 - allowed/rejected worker dispatch and resident JSON protocol handling;
 - workspace CLI and authenticated loopback API, including non-Latin paths;
 - setup reporting missing model weights while bundled OCR is ready;

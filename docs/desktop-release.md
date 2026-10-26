@@ -59,7 +59,7 @@ shasum -a 256 -c RealOpenLens-macos-arm64.zip.sha256
 
 ## OCR provisioning
 
-The macOS ZIP includes **Tesseract 5 with English, French, Arabic and orientation
+The macOS ZIP includes **Tesseract 5 with 19 OCR language packs and orientation
 detection data**, including its non-system dylibs. The target Mac needs no separate
 OCR installation. Device setup verifies bundled hashes and language availability.
 The launcher, frozen CLI and isolated workers all use the same private engine/data
@@ -125,7 +125,7 @@ photos, paths or credentials in a public report.
    Check dark/light layouts, collapse/expand behavior and folder selection.
 3. Confirm the model download explicitly. Test cancellation, retry, progress and
    checksum failure reporting; confirm completed downloads pass setup verification.
-4. Verify bundled English/French/Arabic selection from Finder and errors for an
+4. Verify bundled OCR language selection from Finder and errors for an
    unavailable language. Host Tesseract and Homebrew are not required.
 5. Index a small disposable folder containing a known text image and a photograph.
    Observe live progress; verify the reference text, expected results and thumbnails.

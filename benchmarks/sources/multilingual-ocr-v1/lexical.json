@@ -1,0 +1,13 @@
+[
+  {"id":"simplified-substring","query":"连接失败","text":"网络连接失败请重新启动应用程序","distractor":"网络连接成功欢迎使用","language":"chi_sim"},
+  {"id":"traditional-substring","query":"連線失敗","text":"網路連線失敗請重新啟動應用程式","distractor":"網路連線成功歡迎使用","language":"chi_tra"},
+  {"id":"japanese-substring","query":"請求書","text":"本日の請求書番号は47291です","distractor":"本日の電車は駅に着きました","language":"jpn"},
+  {"id":"japanese-kana","query":"アプリ","text":"アプリケーションを再起動してください","distractor":"サーバーを確認してください","language":"jpn"},
+  {"id":"chinese-single","query":"猫","text":"白色的猫在花园里","distractor":"火车明天早上出发","language":"chi_sim"},
+  {"id":"hindi-vowels","query":"दिन","text":"दिन","distractor":"दान","language":"hin"},
+  {"id":"bengali-vowels","query":"দিন","text":"দিন","distractor":"দান","language":"ben"},
+  {"id":"korean-compose","query":"청구서","text":"청구서 번호 47291","distractor":"기차표 안내","language":"kor"},
+  {"id":"russian","query":"подключения","text":"Ошибка подключения сервера","distractor":"Билет на поезд","language":"rus"},
+  {"id":"urdu","query":"ادائیگی","text":"آج ادائیگی موصول ہوئی","distractor":"سرور دستیاب نہیں ہے","language":"urd"},
+  {"id":"persian","query":"پرداخت","text":"پرداخت امروز دریافت شد","distractor":"سرور در دسترس نیست","language":"fas"}
+]

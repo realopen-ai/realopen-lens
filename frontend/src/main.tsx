@@ -22,6 +22,7 @@ import { Workspace } from "./Workspace";
 import { FolderPicker } from "./FolderPicker";
 import { FolderActions } from "./FolderActions";
 import { Setup } from "./Setup";
+import { OcrLanguages, DEFAULT_OCR_OPTIONS } from "./OcrLanguages";
 import { QueryMemory } from "./QueryMemory";
 import { Training } from "./Training";
 import {
@@ -169,16 +170,25 @@ function App() {
   const [defaultPrecision, setDefaultPrecision] = useState("int8");
   const [precisionEdited, setPrecisionEdited] = useState(false);
   const [languagesEdited, setLanguagesEdited] = useState(false);
+  const [languageOptions, setLanguageOptions] =
+    useState<Record<string, string>>(DEFAULT_OCR_OPTIONS);
   const [defaultLanguages, setDefaultLanguages] = useState("");
+  const [ocrFolder, setOcrFolder] = useState("");
+  const [ocrSaving, setOcrSaving] = useState(false);
+  const [ocrNotice, setOcrNotice] = useState("");
+  const [ocrError, setOcrError] = useState("");
   useEffect(() => {
     if (!importing) return;
     let active = true;
     void api<{
       default_siglip_precision?: string;
       default_ocr_languages?: string;
+      ocr_language_options?: Record<string, string>;
     }>("/session")
       .then((session) => {
         if (active) {
+          if (session.ocr_language_options)
+            setLanguageOptions(session.ocr_language_options);
           setDefaultPrecision(
             session.default_siglip_precision === "fp32" ? "fp32" : "int8",
           );
@@ -675,9 +685,12 @@ function App() {
         allowed_roots: string[];
         default_siglip_precision?: string;
         default_ocr_languages?: string;
+        ocr_language_options?: Record<string, string>;
       }>("/session");
       if (disposed) return;
       setRoots(session.allowed_roots);
+      if (session.ocr_language_options)
+        setLanguageOptions(session.ocr_language_options);
       if (session.default_siglip_precision) {
         setDefaultPrecision(session.default_siglip_precision);
         setPrecision(session.default_siglip_precision);
@@ -1257,16 +1270,6 @@ function App() {
             />
           </div>
           <div hidden={view !== "workspace"}>
-            <Setup
-              tasks={tasks}
-              watch={watch}
-              precision={precision}
-              languages={languages}
-              onLanguages={(value) => {
-                setLanguages(value);
-                setLanguagesEdited(true);
-              }}
-            />
             <Workspace
               active={view === "workspace"}
               onReady={() => {
@@ -1278,6 +1281,117 @@ function App() {
               }}
               tasks={tasks}
               watch={watch}
+            />
+            <OcrLanguages
+              value={languages}
+              options={languageOptions}
+              onChange={(value) => {
+                setLanguages(value);
+                setLanguagesEdited(true);
+              }}
+            />
+            <div className="workspace-ocr-actions">
+              <p className="small muted">
+                Save the default for new folders. Searches use the OCR already
+                indexed; reprocess an existing folder to change its OCR
+                languages. Ordinary folder refresh keeps that folder's saved
+                settings.
+              </p>
+              <button
+                className="secondary"
+                disabled={
+                  ocrSaving || !languages || languages === defaultLanguages
+                }
+                onClick={async () => {
+                  setOcrSaving(true);
+                  setOcrNotice("");
+                  setOcrError("");
+                  try {
+                    const saved = await post<{ languages: string }>(
+                      "/workspace/ocr",
+                      { languages },
+                    );
+                    setDefaultLanguages(saved.languages);
+                    setOcrNotice(
+                      "OCR default saved. Existing folders are unchanged.",
+                    );
+                  } catch (error) {
+                    setOcrError(String(error));
+                  } finally {
+                    setOcrSaving(false);
+                  }
+                }}
+              >
+                Save OCR default
+              </button>
+              {collections.length > 0 && (
+                <div className="workspace-ocr-apply">
+                  <label>
+                    Reprocess a folder with these languages
+                    <select
+                      value={ocrFolder}
+                      onChange={(event) => setOcrFolder(event.target.value)}
+                    >
+                      <option value="">Choose a folder</option>
+                      {collections.map((folder) => (
+                        <option key={folder.id} value={folder.id}>
+                          {folder.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    className="secondary"
+                    disabled={ocrSaving || !ocrFolder || !languages}
+                    onClick={async () => {
+                      const folder = collections.find(
+                        (item) => item.id === ocrFolder,
+                      );
+                      if (!folder) return;
+                      setOcrSaving(true);
+                      setOcrNotice("");
+                      setOcrError("");
+                      try {
+                        const task = await post<Task>("/collections/refresh", {
+                          collection: folder.name,
+                          collection_id: folder.id,
+                          languages,
+                        });
+                        watch(task);
+                        setOcrNotice(
+                          `Reprocessing ${folder.name}. Follow live progress in Activity. Search uses the previous index until the new one is ready.`,
+                        );
+                      } catch (error) {
+                        setOcrError(String(error));
+                      } finally {
+                        setOcrSaving(false);
+                      }
+                    }}
+                  >
+                    Reprocess OCR
+                  </button>
+                </div>
+              )}
+              {ocrNotice && (
+                <p role="status" className="small">
+                  {ocrNotice}
+                </p>
+              )}
+              {ocrError && (
+                <p role="alert" className="error">
+                  {ocrError}
+                </p>
+              )}
+            </div>
+            <Setup
+              tasks={tasks}
+              watch={watch}
+              precision={precision}
+              languages={languages}
+              onLanguages={(value) => {
+                setLanguages(value);
+                setLanguagesEdited(true);
+              }}
             />
           </div>
           <section hidden={view !== "activity"} aria-label="Task history">
@@ -2160,21 +2274,18 @@ function App() {
                     <option value="fp32">FP32 · higher memory</option>
                   </select>
                 </label>
-                <label>
-                  Installed OCR languages
-                  <input
-                    required
-                    value={languages}
-                    onChange={(e) => {
-                      setLanguagesEdited(true);
-                      setLanguages(e.target.value);
-                    }}
-                  />
-                </label>
+                <OcrLanguages
+                  value={languages}
+                  options={languageOptions}
+                  disabled={indexSubmitting}
+                  onChange={(value) => {
+                    setLanguages(value);
+                    setLanguagesEdited(true);
+                  }}
+                />
                 <p className="field-help">
-                  New folders default to INT8 below 16 GB RAM and FP32 at 16 GB
-                  or above. Existing collections keep their current precision.
-                  Models and language packs must already be installed.
+                  Models and language packs must already be installed. Existing
+                  folders keep their current vision precision.
                 </p>
               </details>
               <div className="import-setup">

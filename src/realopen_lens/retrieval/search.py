@@ -4,7 +4,6 @@ from dataclasses import dataclass, replace
 from collections.abc import Callable
 import json
 from pathlib import Path
-import sqlite3
 import subprocess
 import sys
 from time import perf_counter
@@ -21,6 +20,7 @@ from realopen_lens.retrieval.candidates import CandidateDepths
 from realopen_lens.retrieval.ranking import (
     hybrid_rank,
     lexical_index,
+    open_lexical,
     lexical_scores,
     lexical_frequencies,
     rank_lexical,
@@ -391,7 +391,7 @@ def search_collection(
             on_progress({"phase": "retrieval"})
         path = local_path(catalog.root, manifest["artifacts"]["lexical"]["path"])
         index = (
-            sqlite3.connect(path.as_uri() + "?mode=ro", uri=True)
+            open_lexical(path, ocr_records)
             if len(lookup) == len(manifest["images"])
             else lexical_index(ocr_records)
         )

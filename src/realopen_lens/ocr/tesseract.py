@@ -37,7 +37,18 @@ def _environment(executable: str, languages: str) -> dict[str, Any]:
         timeout=10,
         env=runtime.environment(executable),
     )
-    requested = languages.split("+")
+    installed = result.stdout.splitlines()[1:]
+    automatic_mode = languages == "auto"
+    if automatic_mode:
+        from realopen_lens.ocr import automatic
+
+        if "osd" not in installed:
+            raise ValueError("Automatic OCR requires the osd orientation/script pack")
+        requested = automatic.available(installed)
+        if not requested:
+            raise ValueError("Automatic OCR needs a supported language pack")
+    else:
+        requested = languages.split("+")
     if not all(re.fullmatch(r"[A-Za-z0-9_]+", code) for code in requested):
         raise ValueError("Invalid Tesseract language codes")
     missing = set(requested) - set(result.stdout.splitlines()[1:])
@@ -61,6 +72,8 @@ def _environment(executable: str, languages: str) -> dict[str, Any]:
         "engine_build": version.stdout.splitlines(),
         "language_pack_sha256": hashes,
     }
+    if automatic_mode:
+        provenance["automatic_language_policy"] = automatic.policy()
     bundled = runtime.fingerprint(executable)
     if bundled:
         provenance["bundled_runtime_sha256"] = bundled
@@ -256,6 +269,12 @@ def extract(
     if executable is None:
         raise ValueError("Tesseract 5 is required for OCR")
     environment = _environment(executable, languages)
+    automatic_mode = languages == "auto"
+    environment = {
+        **environment,
+        "ocr_language_mode": "auto" if automatic_mode else "manual",
+        "selected_languages": None if automatic_mode else languages,
+    }
     start = monotonic()
     attempts: list[dict[str, Any]] = []
     failed_attempts: list[dict[str, Any]] = []
@@ -314,6 +333,23 @@ def extract(
                     from realopen_lens.ocr.regions import mask_regions
 
                     source = keep(mask_regions(source, detection))
+            if automatic_mode:
+                from realopen_lens.ocr.automatic import detect
+
+                selection = detect(
+                    source,
+                    executable,
+                    list(environment["language_pack_sha256"]),
+                    threads,
+                    min(3, timeout / 4),
+                )
+                languages = selection["selected_languages"]
+                environment.update(selected_languages=languages, script_detection=selection)
+                if selection["fallback"]:
+                    warnings.append(
+                        "Automatic script detection uncertain or unavailable; "
+                        "used all installed supported OCR packs"
+                    )
             region = _source_region(path, original_size)
             full_region = (0, 0, *original_size)
             rgb = keep(source.copy())
@@ -435,6 +471,15 @@ def extract(
         best = max(attempts, key=_quality)
         if (
             not initial_recovered
+            and "kor" in languages.split("+")
+            and re.search(r"[\uac00-\ud7af]", best["text"])
+        ):
+            # Auto/sparse layout can fragment Hangul into confident Latin-looking
+            # pieces. A bounded uniform-block pass is useful only with actual
+            # Korean evidence; selected packs alone do not trigger it on photos.
+            attempt(gray, 6, "korean-text-block", region)
+        if (
+            not initial_recovered
             and max(region[2] - region[0], region[3] - region[1]) > 3000
             and len(best["words"]) >= 8
         ):
@@ -496,6 +541,19 @@ def extract(
                     }
                 )
         selected = first if initial_recovered else max(attempts, key=_quality)
+        block = next((a for a in attempts if a["input"] == "korean-text-block"), None)
+        if (
+            not initial_recovered
+            and block is not None
+            and (
+                _quality(block) >= _quality(selected)
+                or (
+                    _quality(block) >= 0.85 * _quality(selected)
+                    and (block["confidence"] or 0) >= (selected["confidence"] or 0) + 5
+                )
+            )
+        ):
+            selected = block
         if not selected["words"]:
             warnings.append("Empty OCR output; text absence has not been established")
         elif (selected["confidence"] or 0) < 55:

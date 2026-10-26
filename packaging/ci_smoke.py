@@ -198,6 +198,23 @@ def validate(archive: Path, report_path: Path):
                     timeout=30,
                 )
                 assert "Invoice" in recognized.stdout and "ABC-123" in recognized.stdout
+                # Loading every bundled pack detects incompatible data/native builds;
+                # accuracy on each script is evaluated by the multilingual benchmark.
+                for language in json.loads(
+                    Path(__file__).with_name("tessdata.json").read_text(encoding="utf-8")
+                ):
+                    if language == "osd":
+                        continue
+                    loaded = subprocess.run(
+                        [str(engine), str(target), "stdout", "-l", language, "--psm", "6", "tsv"],
+                        env=env,
+                        capture_output=True,
+                        text=True,
+                        encoding="utf-8",
+                        check=True,
+                        timeout=30,
+                    )
+                    assert loaded.stdout.startswith("level\tpage_num\t")
                 oriented = subprocess.run(
                     [str(engine), str(target), "stdout", "-l", "osd", "--psm", "0"],
                     env=env,
@@ -353,11 +370,16 @@ def validate(archive: Path, report_path: Path):
                             "ok"
                         ]
                         assert next(c for c in task["result"]["checks"] if c["id"] == "ocr")["ok"]
-                        assert set(task["result"]["ocr"]["installed_languages"]) == {
-                            "eng",
-                            "fra",
-                            "ara",
-                        }
+                        expected_languages = set(
+                            json.loads(
+                                Path(__file__)
+                                .with_name("tessdata.json")
+                                .read_text(encoding="utf-8")
+                            )
+                        ) - {"osd"}
+                        assert (
+                            set(task["result"]["ocr"]["installed_languages"]) == expected_languages
+                        )
                     finally:
                         if windows:
                             # A service-hosted Windows runner may have no console;

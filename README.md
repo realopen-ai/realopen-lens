@@ -81,7 +81,10 @@ Example searches:
 > “Un schéma expliquant les réseaux de neurones”
 
 These examples illustrate intended behavior, not measured retrieval results.
-Tested language coverage will be published as evaluation progresses.
+Desktop bundles include [19 OCR language packs](docs/multilingual-ocr.md), selected
+through named manual choices (English/French/Arabic by default) or optional local
+automatic script-group detection. Synthetic diagnostics cover every pack;
+independent real-world language review remains incomplete.
 
 ## Local by design
 

@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from realopen_lens.ocr import runtime
+from realopen_lens.ocr.languages import BUNDLED_PACKS
 
 
 def packaging_module():
@@ -49,7 +50,7 @@ def private_runtime(tmp_path, monkeypatch, request):
         "tessdata": {},
         "tsv_sha256": hashlib.sha256(tsv.read_bytes()).hexdigest(),
     }
-    for name in ("eng", "fra", "ara", "osd"):
+    for name in sorted(BUNDLED_PACKS):
         data = name.encode()
         (resources / "tessdata" / f"{name}.traineddata").write_bytes(data)
         manifest["tessdata"][name] = {"sha256": hashlib.sha256(data).hexdigest()}
@@ -85,7 +86,7 @@ def test_private_engine_ignores_host_prefix_and_loader_overrides(private_runtime
     assert runtime.fingerprint(str(engine)) is not None
 
 
-@pytest.mark.parametrize("part", ["engine", "ara", "osd", "tsv"])
+@pytest.mark.parametrize("part", ["engine", "ara", "jpn", "osd", "tsv"])
 def test_damaged_private_resource_is_reported(private_runtime, part):
     engine, resources, _ = private_runtime
     path = (
@@ -199,3 +200,11 @@ def test_runtime_identity_ignores_signing_and_notices_but_tracks_original_binari
     manifest["files"][0]["source_sha256"] = "new-engine-build"
     path.write_text(json.dumps(manifest), encoding="utf-8")
     assert runtime.fingerprint(str(engine)) != first
+
+
+def test_missing_new_pack_manifest_entry_is_rejected(private_runtime):
+    engine, resources, manifest = private_runtime
+    del manifest["tessdata"]["jpn"]
+    (resources / "runtime.json").write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="Invalid bundled OCR manifest"):
+        runtime.verify(str(engine))

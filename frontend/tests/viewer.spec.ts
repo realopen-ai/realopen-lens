@@ -7,6 +7,7 @@ async function setupViewer(
     failDetails?: boolean;
     librarySource?: boolean;
     metadata?: boolean;
+    selection?: "auto" | "fallback";
   } = {},
 ) {
   const a = "a".repeat(64),
@@ -105,6 +106,24 @@ async function setupViewer(
           `Full OCR for ${id === a ? "red" : "green"}. ` +
           "Texte français مرحبا ".repeat(40),
         groups: [group],
+        ...(options.selection
+          ? {
+              ocr_language_selection: {
+                mode: "auto",
+                selected_languages:
+                  options.selection === "fallback"
+                    ? "eng+fra+ara+jpn"
+                    : "jpn+eng",
+                script_detection: {
+                  groups: options.selection === "fallback" ? [] : ["Japanese"],
+                  fallback:
+                    options.selection === "fallback"
+                      ? "uncertain_script"
+                      : null,
+                },
+              },
+            }
+          : {}),
       });
     }
     if (path === "/api/image-actions") return json({ opened: true });
@@ -301,3 +320,21 @@ test("viewer displays retained camera, capture timezone and GPS locally", async 
     animations: "disabled",
   });
 });
+
+for (const selection of ["auto", "fallback"] as const) {
+  test(`viewer shows actual OCR packs and ${selection} routing provenance`, async ({
+    page,
+  }) => {
+    const { dialog } = await setupViewer(page, { selection });
+    const region = dialog.getByRole("region", {
+      name: "OCR language selection",
+    });
+    await expect(region).toContainText("Automatic script groups");
+    await expect(region).toContainText(
+      selection === "fallback" ? "Used: eng+fra+ara+jpn" : "Used: jpn+eng",
+    );
+    if (selection === "fallback")
+      await expect(region).toContainText("Detection was uncertain");
+    else await expect(region).toContainText("Japanese");
+  });
+}

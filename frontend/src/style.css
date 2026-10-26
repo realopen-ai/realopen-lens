@@ -2425,3 +2425,117 @@ footer > span:first-child {
     font-size: 1.1rem;
   }
 }
+
+.ocr-languages {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin: 22px 0;
+  min-width: 0;
+}
+.ocr-languages legend {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 5px;
+}
+.ocr-languages .ocr-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 3px 24px 14px 0;
+  font-size: 12px;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+.ocr-languages input[type="radio"],
+.ocr-languages input[type="checkbox"] {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  min-height: 0;
+  padding: 0;
+  accent-color: var(--green);
+  margin: 0;
+}
+.ocr-language-choices summary {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  padding: 4px 0;
+}
+.ocr-language-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px 0;
+  max-height: 200px;
+  overflow: auto;
+}
+.ocr-language-grid .checkbox {
+  font-size: 11px;
+  align-items: start;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 6px;
+  margin: 0;
+}
+.ocr-languages .ocr-code-label {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+  max-width: 420px;
+  font-size: 11px;
+  margin: 18px 0 0;
+}
+.ocr-languages .ocr-code-label input {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 11px 12px;
+  color: var(--text);
+  background: var(--surface-soft);
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  font: inherit;
+  font-size: 13px;
+}
+.ocr-languages > .small {
+  margin: 14px 0 2px;
+  line-height: 1.6;
+}
+@media (max-width: 600px) {
+  .ocr-language-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.workspace-ocr-actions {
+  margin: -8px 0 24px;
+}
+.workspace-ocr-actions > p {
+  max-width: 720px;
+  line-height: 1.6;
+}
+.workspace-ocr-apply {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  margin-top: 20px;
+}
+.workspace-ocr-apply label {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+}
+.workspace-ocr-apply select {
+  min-width: 200px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  color: var(--text);
+  background: var(--surface-soft);
+  font: inherit;
+}

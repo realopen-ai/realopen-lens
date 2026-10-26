@@ -163,12 +163,12 @@ class LauncherView:
             wraplength=610,
             justify="left",
         ).pack(anchor="w", pady=(0, 12))
-        ttk.Label(
-            setup,
-            text="OCR languages (blank detects installed languages)",
-            style="Small.Card.Lens.TLabel",
-        ).pack(anchor="w")
-        ttk.Entry(setup, textvariable=languages, style="Lens.TEntry").pack(fill="x", pady=(6, 10))
+        from realopen_lens.desktop.languages import LanguagePicker
+
+        self.language_picker = LanguagePicker(
+            setup, languages, actions.get("ocr_changed", lambda: None)
+        )
+        self.language_picker.pack(fill="x", pady=(0, 10))
         setup_controls = ttk.Frame(setup, style="Inset.Lens.TFrame")
         setup_controls.pack(fill="x")
         self.check_setup = ttk.Button(
@@ -355,6 +355,20 @@ class LauncherView:
         )
         self.style.map(
             "Lens.TRadiobutton",
+            background=[("active", p["surface"])],
+            indicatorbackground=[("selected", p["accent"])],
+        )
+        self.style.configure(
+            "Lens.TCheckbutton",
+            background=p["surface"],
+            foreground=p["text"],
+            font=("Helvetica", 11),
+            indicatorbackground=p["surface"],
+            indicatorforeground=p["accent"],
+            focuscolor=p["accent"],
+        )
+        self.style.map(
+            "Lens.TCheckbutton",
             background=[("active", p["surface"])],
             indicatorbackground=[("selected", p["accent"])],
         )

@@ -4,12 +4,14 @@ import math
 import re
 import sqlite3
 import unicodedata
+from pathlib import Path
 from typing import Any
 from collections import defaultdict
 
 import numpy as np
 
 from realopen_lens.retrieval.candidates import CandidateDepths
+from realopen_lens.retrieval import text as unicode_text
 from realopen_lens.retrieval.identifiers import (
     code_identifier,
     numeric_identifier_match,
@@ -30,16 +32,33 @@ def rank_vectors(
     return sorted(best, key=lambda key: (-best[key], key))[:limit]
 
 
+LEXICAL_VERSION = 2
+
+
+def open_lexical(path: Path, records: list[dict[str, Any]]) -> sqlite3.Connection:
+    """Use compatible snapshots; rebuild legacy tokenization in memory, never in place."""
+    database = sqlite3.connect(path.as_uri() + "?mode=ro", uri=True)
+    if database.execute("PRAGMA user_version").fetchone()[0] == LEXICAL_VERSION:
+        return database
+    database.close()
+    return lexical_index(records)
+
+
 def lexical_index(records: list[dict[str, Any]]) -> sqlite3.Connection:
     database = sqlite3.connect(":memory:")
+    database.execute(f"PRAGMA user_version={LEXICAL_VERSION}")
     database.execute(
         "CREATE VIRTUAL TABLE ocr USING fts5(image_id UNINDEXED, text, "
-        "tokenize=\"unicode61 tokenchars '_'\")"
+        "tokenize=\"unicode61 remove_diacritics 0 categories 'L* N* Co M*' tokenchars '_'\")"
     )
     contents = []
     for item in records:
         observed = _tokens(item["text"])
         extra = set().union(*(_tokens(text) for text in item.get("alternate_texts", []))) - observed
+        normalized_text = _search_text(item["text"])
+        extra |= unicode_text.grams(normalized_text, singles=True) - unicode_text.words(
+            normalized_text
+        )
         contents.append(
             (item["image_id"], _search_text(item["text"]) + "\n" + " ".join(sorted(extra)))
         )
@@ -122,12 +141,11 @@ _STOPWORDS = set(
 
 
 def _search_text(text: str) -> str:
-    normalized = unicodedata.normalize("NFD", unicodedata.normalize("NFKC", text).casefold())
-    return "".join(char for char in normalized if unicodedata.category(char) != "Mn")
+    return unicode_text.normalize(text)
 
 
 def _tokens(text: str) -> set[str]:
-    return set(re.findall(r"\w+", _search_text(text)))
+    return unicode_text.tokens(text)
 
 
 def _query_tokens(text: str) -> set[str]:

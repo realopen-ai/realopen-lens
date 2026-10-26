@@ -41,14 +41,15 @@ For a new library:
 
 1. Choose the model precision and an existing model folder, or explicitly confirm
    **Download models / cancel**. Downloads retain byte progress and cancellation.
-2. Review **Text recognition**. The macOS app includes Tesseract 5, English,
-   French, Arabic and orientation data (also included in Windows and Linux archives). Setup verifies these private resources;
+2. Review **Text recognition**. The macOS app includes Tesseract 5, [19 OCR language packs](multilingual-ocr.md)
+   and orientation data (also included in Windows and Linux archives). Setup verifies these private resources;
    Homebrew or a separate OCR installation is not needed on the target Mac.
    Source installations still use their installed Tesseract/languages.
-3. Leave OCR languages blank to detect a usable installed selection, or specify
-   codes such as `eng+fra`. An explicit missing language is reported and never
-   silently dropped. Detected/saved language preferences become the gallery's
-   default for new folders. Existing folders keep their indexed languages.
+3. **Choose languages** defaults to English/French/Arabic; expand the list to
+   enable others. **Automatic script groups** is optional and uses `osd` to choose
+   corresponding packs per image, with a visible all-pack fallback when uncertain.
+   Saved preferences become the gallery's default for new folders. Existing folders
+   keep their indexed mode/languages until explicitly reconfigured and refreshed.
 4. Open the library, select **Add folder**, choose its source directory and start
    indexing. Progress remains visible while indexing runs.
 
@@ -123,9 +124,10 @@ build inputs. Matching local data are reused; missing/mismatched packs are fetch
 from the pinned upstream URLs at build time and checked for size/SHA256. No OCR
 download occurs on the end user's first launch. Actual engine/library hashes and
 architectures are recorded in `Contents/Resources/lens-ocr/runtime.json`.
-Bundled language selection currently covers English/French/Arabic; additional
-packs are not managed by the desktop setup yet. CLI/source installations retain
-their existing system OCR behavior.
+The bundled engine includes all [19 supported OCR packs](multilingual-ocr.md).
+The existing language field selects which packs recognition loads; installed packs
+are not all enabled automatically. Defaults and saved selections remain unchanged.
+CLI/source installations retain their existing system OCR behavior.
 
 The current artifact is a development build. PyInstaller applies an ad-hoc macOS
 signature; there is no Developer ID signature or notarization. Check build logs for
@@ -207,7 +209,7 @@ finished-server log and no logged server errors; timeouts/forced kills fail.
 
 ### Build caches
 
-All three platforms cache uv/npm downloads and pinned `eng/fra/ara/osd` data. OCR data
+All three platforms cache uv/npm downloads and all pinned language/orientation data. OCR data
 is keyed by the language registry, then checked for size/SHA256 on every run;
 missing/corrupt files are replaced only with verified downloads. The build
 rechecks those same pins when copying data into the app.
