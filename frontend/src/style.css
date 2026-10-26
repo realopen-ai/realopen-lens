@@ -2510,3 +2510,32 @@ footer > span:first-child {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.workspace-ocr-actions {
+  margin: -8px 0 24px;
+}
+.workspace-ocr-actions > p {
+  max-width: 720px;
+  line-height: 1.6;
+}
+.workspace-ocr-apply {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  margin-top: 20px;
+}
+.workspace-ocr-apply label {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+}
+.workspace-ocr-apply select {
+  min-width: 200px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  color: var(--text);
+  background: var(--surface-soft);
+  font: inherit;
+}

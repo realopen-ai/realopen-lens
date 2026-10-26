@@ -311,3 +311,48 @@ test("fresh OCR settings default to manual English French and Arabic", async ({
   ).not.toBeChecked();
   await expect(dialog.getByLabel("Language codes")).toHaveValue("eng+fra+ara");
 });
+
+test("workspace OCR defaults save across reload and explain existing indexes", async ({
+  page,
+}) => {
+  await device(page);
+  let saved = "eng+fra+ara";
+  await page.route("**/api/session", (route) =>
+    route.fulfill({
+      json: {
+        allowed_roots: ["/photos"],
+        default_ocr_languages: saved,
+        default_siglip_precision: "int8",
+        ocr_language_options: { eng: "English", fra: "French", ara: "Arabic" },
+      },
+    }),
+  );
+  await page.route("**/api/workspace/ocr", (route) => {
+    saved = route.request().postDataJSON().languages;
+    return route.fulfill({ json: { languages: saved } });
+  });
+  await page.reload();
+  await page
+    .getByRole("button", { name: "Workspace settings", exact: true })
+    .click();
+  await page
+    .getByRole("radio", { name: "Automatic script groups", exact: true })
+    .check();
+  await page
+    .getByRole("button", { name: "Save OCR default", exact: true })
+    .click();
+  await expect(page.getByRole("status")).toContainText(
+    "Existing folders are unchanged",
+  );
+  expect(saved).toBe("auto");
+  await page.reload();
+  await page
+    .getByRole("button", { name: "Workspace settings", exact: true })
+    .click();
+  await expect(
+    page.getByRole("radio", { name: "Automatic script groups", exact: true }),
+  ).toBeChecked();
+  await expect(
+    page.getByText(/Searches use the OCR already indexed/),
+  ).toBeVisible();
+});

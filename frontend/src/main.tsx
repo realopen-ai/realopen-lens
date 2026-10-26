@@ -173,6 +173,10 @@ function App() {
   const [languageOptions, setLanguageOptions] =
     useState<Record<string, string>>(DEFAULT_OCR_OPTIONS);
   const [defaultLanguages, setDefaultLanguages] = useState("");
+  const [ocrFolder, setOcrFolder] = useState("");
+  const [ocrSaving, setOcrSaving] = useState(false);
+  const [ocrNotice, setOcrNotice] = useState("");
+  const [ocrError, setOcrError] = useState("");
   useEffect(() => {
     if (!importing) return;
     let active = true;
@@ -1286,6 +1290,99 @@ function App() {
                 setLanguagesEdited(true);
               }}
             />
+            <div className="workspace-ocr-actions">
+              <p className="small muted">
+                Save the default for new folders. Searches use the OCR already
+                indexed; reprocess an existing folder to change its OCR
+                languages. Ordinary folder refresh keeps that folder's saved
+                settings.
+              </p>
+              <button
+                className="secondary"
+                disabled={
+                  ocrSaving || !languages || languages === defaultLanguages
+                }
+                onClick={async () => {
+                  setOcrSaving(true);
+                  setOcrNotice("");
+                  setOcrError("");
+                  try {
+                    const saved = await post<{ languages: string }>(
+                      "/workspace/ocr",
+                      { languages },
+                    );
+                    setDefaultLanguages(saved.languages);
+                    setOcrNotice(
+                      "OCR default saved. Existing folders are unchanged.",
+                    );
+                  } catch (error) {
+                    setOcrError(String(error));
+                  } finally {
+                    setOcrSaving(false);
+                  }
+                }}
+              >
+                Save OCR default
+              </button>
+              {collections.length > 0 && (
+                <div className="workspace-ocr-apply">
+                  <label>
+                    Reprocess a folder with these languages
+                    <select
+                      value={ocrFolder}
+                      onChange={(event) => setOcrFolder(event.target.value)}
+                    >
+                      <option value="">Choose a folder</option>
+                      {collections.map((folder) => (
+                        <option key={folder.id} value={folder.id}>
+                          {folder.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    className="secondary"
+                    disabled={ocrSaving || !ocrFolder || !languages}
+                    onClick={async () => {
+                      const folder = collections.find(
+                        (item) => item.id === ocrFolder,
+                      );
+                      if (!folder) return;
+                      setOcrSaving(true);
+                      setOcrNotice("");
+                      setOcrError("");
+                      try {
+                        const task = await post<Task>("/collections/refresh", {
+                          collection: folder.name,
+                          collection_id: folder.id,
+                          languages,
+                        });
+                        watch(task);
+                        setOcrNotice(
+                          `Reprocessing ${folder.name}. Follow live progress in Activity. Search uses the previous index until the new one is ready.`,
+                        );
+                      } catch (error) {
+                        setOcrError(String(error));
+                      } finally {
+                        setOcrSaving(false);
+                      }
+                    }}
+                  >
+                    Reprocess OCR
+                  </button>
+                </div>
+              )}
+              {ocrNotice && (
+                <p role="status" className="small">
+                  {ocrNotice}
+                </p>
+              )}
+              {ocrError && (
+                <p role="alert" className="error">
+                  {ocrError}
+                </p>
+              )}
+            </div>
             <Setup
               tasks={tasks}
               watch={watch}
