@@ -1,0 +1,21 @@
+{
+  "eng": ["Invoice number 47291\nTotal amount 125 euros\nPayment received today", "Connection failed\nServer unavailable\nPlease restart the application", "Train ticket\nDeparture tomorrow morning\nDestination city center"],
+  "fra": ["Facture numéro 47291\nMontant total 125 euros\nPaiement reçu aujourd’hui", "Connexion échouée\nServeur indisponible\nVeuillez redémarrer l’application", "Billet de train\nDépart demain matin\nDestination centre-ville"],
+  "ara": ["فاتورة رقم 47291\nالمبلغ الإجمالي 125 يورو\nتم استلام الدفع اليوم", "فشل الاتصال\nالخادم غير متاح\nيرجى إعادة تشغيل التطبيق", "تذكرة قطار\nالمغادرة صباح الغد\nالوجهة وسط المدينة"],
+  "spa": ["Factura número 47291\nImporte total 125 euros\nPago recibido hoy", "Error de conexión\nServidor no disponible\nReinicie la aplicación", "Billete de tren\nSalida mañana por la mañana\nDestino centro de la ciudad"],
+  "por": ["Fatura número 47291\nValor total 125 euros\nPagamento recebido hoje", "Falha de conexão\nServidor indisponível\nReinicie a aplicação", "Bilhete de trem\nPartida amanhã de manhã\nDestino centro da cidade"],
+  "deu": ["Rechnung Nummer 47291\nGesamtbetrag 125 Euro\nZahlung heute erhalten", "Verbindung fehlgeschlagen\nServer nicht verfügbar\nBitte Anwendung neu starten", "Zugfahrkarte\nAbfahrt morgen früh\nZiel Stadtzentrum"],
+  "ita": ["Fattura numero 47291\nImporto totale 125 euro\nPagamento ricevuto oggi", "Connessione non riuscita\nServer non disponibile\nRiavviare l’applicazione", "Biglietto del treno\nPartenza domani mattina\nDestinazione centro città"],
+  "ind": ["Faktur nomor 47291\nJumlah total 125 euro\nPembayaran diterima hari ini", "Koneksi gagal\nServer tidak tersedia\nSilakan mulai ulang aplikasi", "Tiket kereta\nBerangkat besok pagi\nTujuan pusat kota"],
+  "tur": ["Fatura numarası 47291\nToplam tutar 125 avro\nÖdeme bugün alındı", "Bağlantı başarısız\nSunucu kullanılamıyor\nLütfen uygulamayı yeniden başlatın", "Tren bileti\nYarın sabah hareket\nHedef şehir merkezi"],
+  "vie": ["Hóa đơn số 47291\nTổng số tiền 125 euro\nĐã nhận thanh toán hôm nay", "Kết nối thất bại\nMáy chủ không khả dụng\nVui lòng khởi động lại ứng dụng", "Vé tàu\nKhởi hành sáng mai\nĐiểm đến trung tâm thành phố"],
+  "rus": ["Счёт номер 47291\nОбщая сумма 125 евро\nОплата получена сегодня", "Ошибка подключения\nСервер недоступен\nПерезапустите приложение", "Билет на поезд\nОтправление завтра утром\nПункт назначения центр города"],
+  "hin": ["चालान संख्या 47291\nकुल राशि 125 यूरो\nभुगतान आज प्राप्त हुआ", "कनेक्शन विफल\nसर्वर उपलब्ध नहीं है\nकृपया अनुप्रयोग पुनः आरंभ करें", "रेल टिकट\nप्रस्थान कल सुबह\nगंतव्य शहर का केंद्र"],
+  "ben": ["চালান নম্বর 47291\nমোট পরিমাণ 125 ইউরো\nআজ অর্থ প্রদান করা হয়েছে", "সংযোগ ব্যর্থ\nসার্ভার উপলব্ধ নয়\nঅনুগ্রহ করে অ্যাপ্লিকেশন পুনরায় চালু করুন", "ট্রেনের টিকিট\nআগামীকাল সকালে যাত্রা\nগন্তব্য শহরের কেন্দ্র"],
+  "urd": ["رسید نمبر 47291\nکل رقم 125 یورو\nآج ادائیگی موصول ہوئی", "کنکشن ناکام\nسرور دستیاب نہیں ہے\nبراہ کرم ایپ دوبارہ شروع کریں", "ٹرین کا ٹکٹ\nروانگی کل صبح\nمنزل شہر کا مرکز"],
+  "fas": ["صورتحساب شماره 47291\nمبلغ کل 125 یورو\nپرداخت امروز دریافت شد", "اتصال ناموفق\nسرور در دسترس نیست\nلطفاً برنامه را دوباره راه‌اندازی کنید", "بلیط قطار\nحرکت فردا صبح\nمقصد مرکز شهر"],
+  "chi_sim": ["发票号码47291\n总金额125欧元\n今天已收到付款", "连接失败\n服务器不可用\n请重新启动应用程序", "火车票\n明天早上出发\n目的地市中心"],
+  "chi_tra": ["發票號碼47291\n總金額125歐元\n今天已收到付款", "連線失敗\n伺服器無法使用\n請重新啟動應用程式", "火車票\n明天早上出發\n目的地市中心"],
+  "jpn": ["請求書番号47291\n合計金額125ユーロ\n本日支払いを受領しました", "接続に失敗しました\nサーバーを利用できません\nアプリを再起動してください", "電車の切符\n明日の朝出発\n目的地は市の中心部"],
+  "kor": ["청구서 번호 47291\n총 금액 125 유로\n오늘 결제를 받았습니다", "연결 실패\n서버를 사용할 수 없습니다\n앱을 다시 시작하세요", "기차표\n내일 아침 출발\n목적지는 도심입니다"]
+}
