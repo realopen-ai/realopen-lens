@@ -8,6 +8,37 @@ read-only repository permissions and does not create tags or publish releases.
 Run it from Actions on the reviewed commit. See [Linux packaging](desktop-linux.md)
 for Linux compatibility, installation and native acceptance commands.
 
+## Run model-bearing acceptance in GitHub Actions
+
+After the workflow change is merged, open **Actions → Desktop release candidate →
+Run workflow**, select the reviewed branch/commit and check **Run inference
+acceptance (downloads pinned INT8/FP32 models)**. Leave the option unchecked for
+packaging-only acceptance. Regular PR builds remain model-free.
+
+The option applies to macOS arm64, Windows x64 and Ubuntu 24.04 x64 together.
+Each native runner builds its archive and uses the shared `desktop-acceptance`
+action. When enabled, it restores model files from an OS/registry-keyed cache,
+fetches missing or invalid pinned files from Hugging Face, and verifies checksums
+for both SigLIP2 profiles. E5 stays INT8. Verified models are cached before archive
+acceptance, so an inference failure does not discard a successful model download.
+Cached files are verified on every run. Cache upload failure is nonfatal; model
+preparation or acceptance failure fails the job. Linux runs under Xvfb.
+
+The action runs the **extracted frozen application**, not source inference, with
+both precisions sequentially. Inspect each platform's evidence artifact:
+
+- `candidate-acceptance/acceptance.json` must have `status: passed`,
+  `inference: passed`, and results for both `int8` and `fp32`.
+- `inference-int8.log` and `inference-fp32.log` retain the actual indexing, OCR,
+  lexical/hybrid search, cached-refresh, resident-worker and gallery outcomes.
+- `candidate-models.log` records model preparation and checksum verification.
+
+The checkbox explicitly enables network access for model provisioning; inference
+uses local models. Models are neither bundled into the app nor uploaded as release
+artifacts. Package-only runs report `inference: not_run`, even when cached models
+happen to exist. Model-bearing candidate jobs allow up to 90 minutes; this is a
+manual release check, not an additional download on every push.
+
 ## Reproduce archive acceptance
 
 ```sh
@@ -66,7 +97,7 @@ The launcher, frozen CLI and isolated workers all use the same private engine/da
 and do not inherit a host `TESSDATA_PREFIX` override.
 
 The build machine supplies Tesseract 5; use Homebrew or `--tesseract` to select it.
-The helper reuses matching local language files or fetches the four upstream files
+The helper reuses matching local language files or fetches the upstream files
 pinned by size/SHA256 in `packaging/tessdata.json`. Runtime libraries are discovered,
 copied and relocated, not downloaded during app startup. Their hashes/architectures
 are retained in the bundle manifest. Source installations still use system Tesseract
