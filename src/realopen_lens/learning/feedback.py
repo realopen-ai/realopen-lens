@@ -21,6 +21,7 @@ from realopen_lens.storage.feedback import FeedbackStore
 class RecordedSearch:
     run_id: str
     results: list[search.SearchResult]
+    payload: dict | None = None
 
 
 def _record(
@@ -29,6 +30,7 @@ def _record(
     options: dict,
     trace: dict,
     index_dir: Path | None,
+    defer_record: bool = False,
 ) -> RecordedSearch:
     root = index_dir or default_directory()
     collection_name = options.get("collection", "personal")
@@ -129,6 +131,8 @@ def _record(
     }
     if scope is not None:
         payload["scope"] = scope
+    if defer_record:
+        return RecordedSearch("", results, payload)
     with FeedbackStore(root) as store:
         run_id = store.add_run(payload)
     return RecordedSearch(run_id, results)
@@ -144,6 +148,7 @@ def search_and_record(
     """
     if "trace" in options or "profile" in options:
         raise ValueError("Recorded search owns its trace and profile")
+    defer_record = options.pop("defer_record", False)
     trace: dict = {}
     options.setdefault("feedback_trace", {})
     options.setdefault("metadata_trace", {})
@@ -154,6 +159,7 @@ def search_and_record(
         options,
         trace,
         index_dir,
+        defer_record=defer_record,
     )
 
 
@@ -163,6 +169,7 @@ def similar_and_record(
     """Record production image similarity search without storing the external path."""
     if "trace" in options:
         raise ValueError("Recorded search owns its trace")
+    defer_record = options.pop("defer_record", False)
     trace: dict = {}
     return _record(
         lambda: images.search_similar(image, index_dir=index_dir, trace=trace, **options),
@@ -170,6 +177,7 @@ def similar_and_record(
         options,
         trace,
         index_dir,
+        defer_record=defer_record,
     )
 
 

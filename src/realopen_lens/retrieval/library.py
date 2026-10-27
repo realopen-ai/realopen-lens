@@ -122,6 +122,7 @@ class LibrarySession:
         use_feedback: bool = True,
         interpret_metadata: bool = True,
         save_run: bool = False,
+        defer_record: bool = False,
         on_progress: Callable[[dict], None] | None = None,
         trace: dict | None = None,
         profile: dict | None = None,
@@ -599,6 +600,7 @@ class LibrarySession:
             if scope is not None:
                 ensure_scope(self.root, LIBRARY_ID, scope)
             run_id = None
+            record_payload = None
             if save_run:
                 from realopen_lens.storage.feedback import FeedbackStore
 
@@ -634,8 +636,11 @@ class LibrarySession:
                     candidates={},
                     results=[asdict(r) for r in results],
                 )
-                with FeedbackStore(self.root) as store:
-                    run_id = store.add_run(payload)
+                if defer_record:
+                    record_payload = payload
+                else:
+                    with FeedbackStore(self.root) as store:
+                        run_id = store.add_run(payload)
             if profile is not None:
                 profile.update(
                     total_seconds=perf_counter() - started,
@@ -655,6 +660,7 @@ class LibrarySession:
                     else {"results": [asdict(r) for r in results]}
                 ),
                 "run_id": run_id,
+                **({"_record_payload": record_payload} if defer_record else {}),
                 "interpretation": interpretation,
                 "ranking": {
                     "kind": "metadata" if metadata_only else mode,
