@@ -10,6 +10,10 @@ on:
         description: Run archive acceptance and retain release-candidate evidence
         type: boolean
         default: false
+      inference-acceptance:
+        description: Download pinned models and validate both inference profiles for candidates
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -18,7 +22,7 @@ jobs:
   linux:
     name: Build and test Linux x64 tarball
     runs-on: ubuntu-24.04
-    timeout-minutes: ${{ inputs.candidate && 35 || 30 }}
+    timeout-minutes: ${{ inputs.inference-acceptance && 90 || inputs.candidate && 35 || 30 }}
     steps:
       - uses: actions/checkout@v4
       - name: Identify native runner image
@@ -64,7 +68,10 @@ jobs:
         run: xvfb-run -a uv run --no-sync python packaging/ci_smoke.py dist/RealOpenLens-linux-x64.tar.gz
       - name: Validate the exact candidate archive
         if: inputs.candidate
-        run: xvfb-run -a uv run --no-sync python packaging/acceptance.py dist/RealOpenLens-linux-x64.tar.gz --output build/candidate-acceptance
+        uses: ./.github/actions/desktop-acceptance
+        with:
+          archive: dist/RealOpenLens-linux-x64.tar.gz
+          inference: ${{ inputs.inference-acceptance }}
       - name: Retain archive and checksum
         uses: actions/upload-artifact@v4
         with:
@@ -83,6 +90,7 @@ jobs:
             build/desktop-ci-*.log
             build/desktop-ci-report.json
             build/candidate-build.log
+            build/candidate-models.log
             build/candidate-acceptance/
           if-no-files-found: ignore
           retention-days: ${{ inputs.retention-days }}

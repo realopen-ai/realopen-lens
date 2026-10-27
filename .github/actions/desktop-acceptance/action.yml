@@ -1,0 +1,57 @@
+name: Validate desktop release candidate
+description: Shared archive acceptance with optional verified and cached inference models
+inputs:
+  archive:
+    description: Exact platform archive to validate
+    required: true
+  inference:
+    description: Explicitly download pinned models and test INT8 and FP32 inference
+    required: false
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - name: Restore pinned inference models
+      if: inputs.inference == 'true'
+      id: models
+      uses: actions/cache/restore@v4
+      with:
+        path: build/acceptance-models
+        key: ${{ runner.os }}-desktop-inference-models-v1-${{ hashFiles('src/realopen_lens/models/models.lock.json') }}
+    - name: Fetch and verify both SigLIP2 profiles with INT8 E5
+      if: inputs.inference == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p build
+        {
+          for precision in int8 fp32; do
+            uv run --no-sync lens models fetch --directory build/acceptance-models --precision int8 --siglip-precision "$precision"
+            uv run --no-sync lens models verify --directory build/acceptance-models --precision int8 --siglip-precision "$precision"
+          done
+        } 2>&1 | tee build/candidate-models.log
+    - name: Save verified inference models
+      if: inputs.inference == 'true' && steps.models.outputs.cache-hit != 'true'
+      continue-on-error: true
+      uses: actions/cache/save@v4
+      with:
+        path: build/acceptance-models
+        key: ${{ steps.models.outputs.cache-primary-key }}
+    - name: Validate exact archive and requested inference profiles
+      shell: bash
+      env:
+        LENS_CANDIDATE_ARCHIVE: ${{ inputs.archive }}
+        LENS_CANDIDATE_INFERENCE: ${{ inputs.inference }}
+      run: |
+        set -euo pipefail
+        args=("$LENS_CANDIDATE_ARCHIVE" --output build/candidate-acceptance)
+        case "$LENS_CANDIDATE_INFERENCE" in
+          true) args+=(--models build/acceptance-models --precision both) ;;
+          false) ;;
+          *) echo "Invalid inference acceptance option" >&2; exit 1 ;;
+        esac
+        if [ "$RUNNER_OS" = "Linux" ]; then
+          xvfb-run -a uv run --no-sync python packaging/acceptance.py "${args[@]}"
+        else
+          uv run --no-sync python packaging/acceptance.py "${args[@]}"
+        fi

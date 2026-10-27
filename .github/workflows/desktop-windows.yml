@@ -10,6 +10,10 @@ on:
         description: Run archive acceptance and retain release-candidate evidence
         type: boolean
         default: false
+      inference-acceptance:
+        description: Download pinned models and validate both inference profiles for candidates
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -85,7 +89,10 @@ jobs:
         run: uv run --no-sync python packaging/ci_smoke.py dist/RealOpenLens-windows-x64.zip
       - name: Validate the exact candidate archive
         if: inputs.candidate
-        run: uv run --no-sync python packaging/acceptance.py dist/RealOpenLens-windows-x64.zip --output build/candidate-acceptance
+        uses: ./.github/actions/desktop-acceptance
+        with:
+          archive: dist/RealOpenLens-windows-x64.zip
+          inference: ${{ inputs.inference-acceptance }}
       - name: Retain portable archive and checksum
         uses: actions/upload-artifact@v4
         with:
@@ -104,6 +111,7 @@ jobs:
             build/desktop-ci-*.log
             build/desktop-ci-report.json
             build/candidate-build.log
+            build/candidate-models.log
             build/candidate-acceptance/
             build/windows-ocr-installed/vcpkg/status
             build/vcpkg/buildtrees/**/*.log

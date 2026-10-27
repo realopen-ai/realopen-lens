@@ -10,6 +10,10 @@ on:
         description: Run archive acceptance and retain release-candidate evidence
         type: boolean
         default: false
+      inference-acceptance:
+        description: Download pinned models and validate both inference profiles for candidates
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -18,7 +22,7 @@ jobs:
   macos:
     name: Build and test macOS arm64 ZIP
     runs-on: macos-15
-    timeout-minutes: ${{ inputs.candidate && 35 || 30 }}
+    timeout-minutes: ${{ inputs.inference-acceptance && 90 || inputs.candidate && 35 || 30 }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-desktop
@@ -69,7 +73,10 @@ jobs:
         run: uv run --no-sync python packaging/ci_smoke.py dist/RealOpenLens-macos-arm64.zip
       - name: Validate the exact candidate archive
         if: inputs.candidate
-        run: uv run --no-sync python packaging/acceptance.py dist/RealOpenLens-macos-arm64.zip --output build/candidate-acceptance
+        uses: ./.github/actions/desktop-acceptance
+        with:
+          archive: dist/RealOpenLens-macos-arm64.zip
+          inference: ${{ inputs.inference-acceptance }}
       - name: Retain archive and checksum
         uses: actions/upload-artifact@v4
         with:
@@ -88,6 +95,7 @@ jobs:
             build/desktop-ci-*.log
             build/desktop-ci-report.json
             build/candidate-build.log
+            build/candidate-models.log
             build/candidate-acceptance/
           if-no-files-found: ignore
           retention-days: ${{ inputs.retention-days }}

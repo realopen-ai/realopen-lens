@@ -71,6 +71,7 @@ jobs:
               - '.github/workflows/desktop-macos.yml'
               - '.github/workflows/desktop-linux.yml'
               - '.github/actions/setup-desktop/**'
+              - '.github/actions/desktop-acceptance/**'
             gallery:
               - 'frontend/**'
               - 'src/realopen_lens/api/**'
