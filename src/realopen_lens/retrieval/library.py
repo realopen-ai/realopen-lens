@@ -117,6 +117,7 @@ class LibrarySession:
         query: str,
         *,
         limit: int = 50,
+        deep_search: bool = False,
         mode: str = "hybrid",
         use_feedback: bool = True,
         interpret_metadata: bool = True,
@@ -162,7 +163,7 @@ class LibrarySession:
         if (
             (not image_query and mode != "browse" and not query.strip())
             or len(query) > 4096
-            or not 1 <= limit <= 100
+            or not 1 <= limit <= (1000 if deep_search else 100)
             or mode not in {"hybrid", "visual", "lexical", "semantic", "browse"}
         ):
             raise ValueError("Use a valid query, search mode and 1–100 results")
@@ -466,7 +467,11 @@ class LibrarySession:
                     del vision, passages
             progress("library_fusion")
             ocr = list(records.values())
-            depths = CandidateDepths(visual=max(50, limit))
+            depths = (
+                CandidateDepths(1000, 1000, 1000)
+                if deep_search
+                else CandidateDepths(visual=max(50, limit))
+            )
             index = ranking.lexical_index(ocr) if retrieval_mode != "browse" else None
             try:
                 lexical = (
