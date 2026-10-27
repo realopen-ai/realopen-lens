@@ -223,3 +223,32 @@ def test_windows_model_acceptance_extracts_the_windows_layout(tmp_path, monkeypa
         assert report["inference"] == "passed" and set(report["results"]) == {"int8", "fp32"}
         assert len(commands) == 3
     assert not any("/usr/bin/ditto" in command for command in commands)
+
+
+@pytest.mark.parametrize("failure", ["exit", "wrong_precision"])
+def test_model_acceptance_never_passes_when_second_profile_fails(tmp_path, monkeypatch, failure):
+    import zipfile
+
+    acceptance = script("acceptance")
+    monkeypatch.setattr(acceptance.sys, "platform", "win32")
+    monkeypatch.setattr(acceptance.platform, "platform", lambda: "test-host")
+    archive = tmp_path / "candidate.zip"
+    with zipfile.ZipFile(archive, "w") as zipped:
+        zipped.writestr("RealOpenLens/RealOpenLens.exe", b"fake executable")
+
+    def run(command, **kwargs):
+        if Path(command[1]).name == "smoke.py":
+            precision = command[-1]
+            if precision == "fp32" and failure == "exit":
+                return SimpleNamespace(returncode=1)
+            kwargs["stdout"].write(json.dumps({"siglip_precision": "int8"}) + "\n")
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(acceptance.subprocess, "run", run)
+    output = tmp_path / "evidence"
+    with pytest.raises((RuntimeError, ValueError)):
+        acceptance.validate(archive, output, models=tmp_path / "models")
+    report = json.loads((output / "acceptance.json").read_text(encoding="utf-8"))
+    assert report["status"] == "failed" and report["inference"] != "passed"
+    assert set(report["results"]) == {"int8"}
+    assert report["error"]

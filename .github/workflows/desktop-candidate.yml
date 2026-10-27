@@ -2,6 +2,12 @@ name: Desktop release candidate
 
 on:
   workflow_dispatch:
+    inputs:
+      inference-acceptance:
+        description: Run inference acceptance (downloads pinned INT8/FP32 models)
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -12,15 +18,18 @@ jobs:
     with:
       retention-days: 30
       candidate: true
+      inference-acceptance: ${{ inputs.inference-acceptance }}
 
   macos:
     uses: ./.github/workflows/desktop-macos.yml
     with:
       retention-days: 30
       candidate: true
+      inference-acceptance: ${{ inputs.inference-acceptance }}
 
   linux:
     uses: ./.github/workflows/desktop-linux.yml
     with:
       retention-days: 30
       candidate: true
+      inference-acceptance: ${{ inputs.inference-acceptance }}
