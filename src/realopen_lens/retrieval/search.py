@@ -147,6 +147,7 @@ def search_collection(
     index_dir: Path | None = None,
     models: Path = Path("models"),
     limit: int = 10,
+    deep_search: bool = False,
     mode: str = "hybrid",
     threads: int = 2,
     trace: dict | None = None,
@@ -183,7 +184,12 @@ def search_collection(
             profile[name] = now - checkpoint
         checkpoint = now
 
-    if not query.strip() or len(query) > 4096 or not 1 <= limit <= 100 or not 1 <= threads <= 8:
+    if (
+        not query.strip()
+        or len(query) > 4096
+        or not 1 <= limit <= (1000 if deep_search else 100)
+        or not 1 <= threads <= 8
+    ):
         raise ValueError(
             "Use a nonempty query up to 4096 characters, 1–100 results, and 1–8 threads"
         )
@@ -195,6 +201,12 @@ def search_collection(
         raise ValueError("SigLIP2 precision must be int8 or fp32")
     if virtual_collection is not None and reranker is not None:
         raise ValueError("Rerankers require unscoped searches until scoped evaluation is supported")
+    if deep_search:
+        if reranker is not None:
+            raise ValueError("Deep continuation does not apply a trained reranker")
+        use_active_reranker = False
+        if mode == "hybrid":
+            candidate_depths = CandidateDepths(1000, 1000, 1000)
     if reranker is None and mode == "hybrid" and use_active_reranker and virtual_collection is None:
         from realopen_lens.learning.registry import active
 

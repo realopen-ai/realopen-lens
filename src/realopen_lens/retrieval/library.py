@@ -117,10 +117,12 @@ class LibrarySession:
         query: str,
         *,
         limit: int = 50,
+        deep_search: bool = False,
         mode: str = "hybrid",
         use_feedback: bool = True,
         interpret_metadata: bool = True,
         save_run: bool = False,
+        defer_record: bool = False,
         on_progress: Callable[[dict], None] | None = None,
         trace: dict | None = None,
         profile: dict | None = None,
@@ -162,7 +164,7 @@ class LibrarySession:
         if (
             (not image_query and mode != "browse" and not query.strip())
             or len(query) > 4096
-            or not 1 <= limit <= 100
+            or not 1 <= limit <= (1000 if deep_search else 100)
             or mode not in {"hybrid", "visual", "lexical", "semantic", "browse"}
         ):
             raise ValueError("Use a valid query, search mode and 1–100 results")
@@ -466,7 +468,11 @@ class LibrarySession:
                     del vision, passages
             progress("library_fusion")
             ocr = list(records.values())
-            depths = CandidateDepths(visual=max(50, limit))
+            depths = (
+                CandidateDepths(1000, 1000, 1000)
+                if deep_search
+                else CandidateDepths(visual=max(50, limit))
+            )
             index = ranking.lexical_index(ocr) if retrieval_mode != "browse" else None
             try:
                 lexical = (
@@ -594,6 +600,7 @@ class LibrarySession:
             if scope is not None:
                 ensure_scope(self.root, LIBRARY_ID, scope)
             run_id = None
+            record_payload = None
             if save_run:
                 from realopen_lens.storage.feedback import FeedbackStore
 
@@ -629,8 +636,11 @@ class LibrarySession:
                     candidates={},
                     results=[asdict(r) for r in results],
                 )
-                with FeedbackStore(self.root) as store:
-                    run_id = store.add_run(payload)
+                if defer_record:
+                    record_payload = payload
+                else:
+                    with FeedbackStore(self.root) as store:
+                        run_id = store.add_run(payload)
             if profile is not None:
                 profile.update(
                     total_seconds=perf_counter() - started,
@@ -650,6 +660,7 @@ class LibrarySession:
                     else {"results": [asdict(r) for r in results]}
                 ),
                 "run_id": run_id,
+                **({"_record_payload": record_payload} if defer_record else {}),
                 "interpretation": interpretation,
                 "ranking": {
                     "kind": "metadata" if metadata_only else mode,

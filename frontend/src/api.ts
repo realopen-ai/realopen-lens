@@ -144,6 +144,11 @@ export interface Task {
       mixed_precision_experimental?: boolean;
     };
     results?: ImageResult[];
+    next_cursor?: string | null;
+    total?: number;
+    truncated?: boolean;
+    pool_limit?: number;
+    pagination?: { head_count: number; tail_ranking: string };
     run_id?: string | null;
     images?: number;
     reused_stages?: Record<string, number>;

@@ -1,14 +1,13 @@
 import hashlib
 import json
 import subprocess
+import socket
 import sys
 
 import pytest
 from PIL import Image
-from typer.testing import CliRunner
 
 from realopen_lens.models import manager as models
-from benchmarks.__main__ import app
 from realopen_lens.encoders.onnx import image_rgb
 
 
@@ -68,9 +67,26 @@ def test_exif_orientation_is_applied_without_modifying_original(tmp_path):
 
 
 def test_cli_does_not_download_when_corpus_empty(tmp_path):
-    result = CliRunner().invoke(app, ["run", "--data", str(tmp_path)])
-    assert result.exit_code == 1
-    assert "Add images to data/" in result.output
+    # The CLI installs an irreversible process-wide audit hook. Keep it out of
+    # pytest: Windows asyncio uses a TCP loopback socketpair for its event loop.
+    result = subprocess.run(
+        [sys.executable, "-m", "benchmarks", "run", "--data", str(tmp_path)],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=30,
+    )
+    assert result.returncode == 1
+    assert "Add images to data/" in result.stdout + result.stderr
+    # Check TCP explicitly even on Unix, whose asyncio socketpair can hide this
+    # leak. Later API tests must still be able to initialize an event loop.
+    with socket.socket() as listener:
+        listener.bind(("127.0.0.1", 0))
+        listener.listen(1)
+        listener.settimeout(2)
+        with socket.create_connection(listener.getsockname(), timeout=2):
+            connection, _ = listener.accept()
+            connection.close()
 
 
 def test_model_manifest_pins_full_revisions_and_sha256():

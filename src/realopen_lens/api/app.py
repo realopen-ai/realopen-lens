@@ -37,6 +37,7 @@ class ScopedInput(Input):
 
 
 class SearchInput(ScopedInput):
+    paginate: bool = False
     all_folders: bool = False
     interpret_metadata: bool = True
     query: str = Field(min_length=1, max_length=4096)
@@ -47,6 +48,7 @@ class SearchInput(ScopedInput):
 
 
 class SimilarInput(ScopedInput):
+    paginate: bool = False
     all_folders: bool = False
     image_id: str = Field(pattern=r"^[a-f0-9]{64}$")
     limit: int = Field(default=50, ge=1, le=100)
@@ -560,6 +562,10 @@ def create_app(
         elif revision is not None:
             raise HTTPException(422, "A virtual revision requires a virtual collection")
 
+    @app.get("/api/search-pages")
+    def search_page(cursor: str):
+        return app.state.manager.pages.page(cursor)
+
     @app.post("/api/tasks/search", status_code=202)
     def search(body: SearchInput):
         if body.all_folders:
@@ -662,6 +668,7 @@ def create_app(
         request: Request,
         collection: str = "personal",
         save_run: bool = False,
+        paginate: bool = False,
         all_folders: bool = False,
         virtual_collection: str | None = None,
         virtual_revision: int | None = None,
@@ -691,6 +698,7 @@ def create_app(
                 {
                     "collection": collection,
                     "save_run": save_run,
+                    "paginate": paginate,
                     "limit": 50,
                     "upload": str(path),
                     "all_folders": all_folders,

@@ -80,6 +80,7 @@ def search_similar(
     index_dir: Path | None = None,
     models: Path = Path("models"),
     limit: int = 10,
+    deep_search: bool = False,
     threads: int = 2,
     include_self: bool = False,
     siglip_precision: str | None = None,
@@ -95,7 +96,7 @@ def search_similar(
     """
     if (image is None) == (image_id is None):
         raise ValueError("Supply exactly one image path or image_id")
-    if not 1 <= limit <= 100 or not 1 <= threads <= 8:
+    if not 1 <= limit <= (1000 if deep_search else 100) or not 1 <= threads <= 8:
         raise ValueError("Use 1–100 results and 1–8 threads")
     if siglip_precision is not None and siglip_precision not in {"int8", "fp32"}:
         raise ValueError("SigLIP2 precision must be int8 or fp32")

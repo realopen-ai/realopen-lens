@@ -111,6 +111,13 @@ def _prepare(index_dir: Path, review: Path, output: Path, on_progress=None) -> d
                 raise ValueError(
                     "Use unreranked precision-compatible hybrid searches with 50/channel"
                 )
+            if ranking.get("pagination") and any(
+                row["run_id"] == run_id and row.get("candidate") is None for row in rows
+            ):
+                raise ValueError(
+                    "Deep-page feedback is retained for query memory and export; "
+                    "training it requires a separate deeper-candidate evaluation"
+                )
             query = normalize_query(run["query"]["text"])
             if query in queries:
                 raise ValueError("Select only one run per normalized query")

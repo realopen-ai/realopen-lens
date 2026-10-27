@@ -126,6 +126,9 @@ function App() {
   const [browseOrder, setBrowseOrder] = useState<"newest" | "oldest">("newest");
   const [browseSnapshot, setBrowseSnapshot] = useState<string | null>(null);
   const [nextOffset, setNextOffset] = useState<number | null>(null);
+  const [searchCursor, setSearchCursor] = useState<string | null>(null);
+  const [searchCapped, setSearchCapped] = useState(false);
+  const searchPageBusy = useRef(false);
   const pageSentinel = useRef<HTMLDivElement>(null);
   const pageBusy = useRef(false);
   const browsePreference = useRef({ library: false, order: browseOrder });
@@ -345,6 +348,7 @@ function App() {
     if (offset && pageBusy.current) return;
     pageBusy.current = true;
     setView("library");
+    setSearchCursor(null);
     const libraryGroup = library || group?.collection_id === "library-v1";
     setAllFolders(libraryGroup);
     if (libraryGroup)
@@ -627,12 +631,14 @@ function App() {
       setInterpretation(task.result.interpretation || null);
       setResultRanking(
         task.result.ranking
-          ? `${task.result.ranking.kind}${task.result.ranking.sha256 ? ` · ${task.result.ranking.sha256.slice(0, 8)}` : ""}${task.result.ranking.mixed_precision_experimental ? " · mixed precision (experimental)" : ""}`
+          ? `${task.result.ranking.kind}${task.result.ranking.kind === "logistic" && task.result.pagination ? " · later pages use hybrid" : ""}${task.result.ranking.sha256 ? ` · ${task.result.ranking.sha256.slice(0, 8)}` : ""}${task.result.ranking.mixed_precision_experimental ? " · mixed precision (experimental)" : ""}`
           : "",
       );
       setMemoryEnabled(Boolean(task.result.feedback?.enabled));
       setImages(task.result.results);
-      setTotal(task.result.results.length);
+      setTotal(task.result.total ?? task.result.results.length);
+      setSearchCursor(task.result.next_cursor || null);
+      setSearchCapped(Boolean(task.result.truncated));
       const savedRun = task.result.run_id || null;
       setRunId(savedRun);
       const remembered = Object.fromEntries(
@@ -856,6 +862,7 @@ function App() {
     }
     body = {
       ...body,
+      paginate: true,
       ...(!("virtual_collection" in body) && scope
         ? { virtual_collection: scope.id, virtual_revision: scope.revision }
         : {}),
@@ -868,6 +875,8 @@ function App() {
     const version = ++requestVersion.current;
     foreground.current = "submitting";
     setInterpretation(null);
+    setSearchCursor(null);
+    setSearchCapped(false);
     setImages([]);
     setTotal(0);
     setRunId(null);
@@ -907,6 +916,8 @@ function App() {
     const version = ++requestVersion.current;
     foreground.current = "submitting";
     setInterpretation(null);
+    setSearchCursor(null);
+    setSearchCapped(false);
     setImages([]);
     setTotal(0);
     setRunId(null);
@@ -917,7 +928,7 @@ function App() {
     setTitle(`Similar to ${file.name}`);
     try {
       const task = await uploadImage(
-        `/tasks/upload?collection=${encodeURIComponent(collection)}&save_run=${record}&all_folders=${allFolders}${scope ? `&virtual_collection=${scope.id}&virtual_revision=${scope.revision}` : ""}`,
+        `/tasks/upload?paginate=true&collection=${encodeURIComponent(collection)}&save_run=${record}&all_folders=${allFolders}${scope ? `&virtual_collection=${scope.id}&virtual_revision=${scope.revision}` : ""}`,
         file,
         (loaded, total) => setUploadBytes({ loaded, total }),
       );
@@ -936,6 +947,44 @@ function App() {
       setUploadBytes(null);
     }
   }
+  async function loadSearchPage() {
+    if (!searchCursor || searchPageBusy.current) return;
+    const version = requestVersion.current;
+    searchPageBusy.current = true;
+    setLoading(true);
+    setError("");
+    try {
+      const page = await api<NonNullable<Task["result"]>>(
+        `/search-pages?cursor=${encodeURIComponent(searchCursor)}`,
+      );
+      if (version !== requestVersion.current) return;
+      setImages((old) => {
+        const seen = new Set(old.map((row) => row.image_id));
+        return [
+          ...old,
+          ...(page.results || []).filter((row) => !seen.has(row.image_id)),
+        ];
+      });
+      setSearchCursor(page.next_cursor || null);
+      setLabels((old) => ({
+        ...Object.fromEntries(
+          (page.results || [])
+            .filter((row) => row.feedback?.label)
+            .map((row) => [row.image_id, row.feedback!.label!]),
+        ),
+        ...old,
+      }));
+    } catch (error) {
+      if (version === requestVersion.current) {
+        setError(String(error));
+        setSearchCursor(null);
+      }
+    } finally {
+      searchPageBusy.current = false;
+      if (version === requestVersion.current) setLoading(false);
+    }
+  }
+
   function enableFeedback() {
     setSaveRun(true);
     if (repeatSearch?.kind === "upload") void upload(repeatSearch.file, true);
@@ -2161,6 +2210,26 @@ function App() {
                 ))}
               </div>
             )}
+            {!isBrowse &&
+              (searchCursor || (images.length > 0 && searchCapped)) && (
+                <div className="load-more">
+                  <p className="small muted">
+                    Showing {images.length} of {total} retrieved results
+                    {searchCapped
+                      ? " · Search pool capped at 1,000 images; refine your query for more specific matches."
+                      : "."}
+                  </p>
+                  {searchCursor && (
+                    <button
+                      className="secondary"
+                      disabled={loading}
+                      onClick={() => void loadSearchPage()}
+                    >
+                      {loading ? "Loading more results…" : "Load more results"}
+                    </button>
+                  )}
+                </div>
+              )}
             {isBrowse && nextOffset !== null && (
               <div className="load-more" ref={pageSentinel}>
                 <button
