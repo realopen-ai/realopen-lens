@@ -37,6 +37,9 @@ class TaskManager:
         self.tasks: dict[str, dict[str, Any]] = {}
         self.cancelled: set[str] = set()
         self.closed = False
+        from realopen_lens.api.search_pages import SearchPages
+
+        self.pages = SearchPages(index_dir)
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="lens-jobs")
         self.session: SearchSession | None = None
         self.identity: tuple | None = None
@@ -187,6 +190,135 @@ class TaskManager:
                 request["source_identity"] = source_identity
             return self.submit("index", request)
 
+    def _retrieve(self, kind: str, request: dict, progress, options: dict) -> dict:
+        collection = request["collection"]
+        if request.get("all_folders"):
+            if self.library_session is None:
+                self._release_session()
+                self.library_session = LibrarySession(
+                    index_dir=self.root, models=self.models, threads=self.threads
+                )
+            if kind == "similar":
+                payload = self.library_session.similar(
+                    Path(request["upload"]) if request.get("upload") else None,
+                    image_id=request.get("image_id"),
+                    collection=collection,
+                    limit=request["limit"],
+                    deep_search=request.get("deep_search", False),
+                    save_run=request.get("save_run", False),
+                    defer_record=request.get("defer_record", False),
+                    on_progress=progress,
+                    virtual_collection=request.get("virtual_collection"),
+                    virtual_revision=request.get("virtual_revision"),
+                )
+            else:
+                payload = self.library_session.search(
+                    request["query"],
+                    limit=request["limit"],
+                    deep_search=request.get("deep_search", False),
+                    mode=request["mode"],
+                    use_feedback=request.get("use_feedback", True),
+                    interpret_metadata=request.get("interpret_metadata", True),
+                    save_run=request.get("save_run", False),
+                    defer_record=request.get("defer_record", False),
+                    on_progress=progress,
+                    virtual_collection=request.get("virtual_collection"),
+                    virtual_revision=request.get("virtual_revision"),
+                )
+        elif kind == "search":
+            from realopen_lens.indexing.service import collection_status
+
+            precision = collection_status(collection, self.root)["siglip_precision"]
+            identity = (collection, precision)
+            if self.identity != identity:
+                self._release_session()
+                self.session = SearchSession(
+                    collection=collection,
+                    index_dir=self.root,
+                    models=self.models,
+                    threads=self.threads,
+                )
+                self.identity = identity
+            assert self.session is not None
+            feedback_state: dict = {}
+            interpretation: dict = {}
+            kwargs = {
+                "interpret_metadata": request.get("interpret_metadata", True),
+                "metadata_trace": interpretation,
+                "use_feedback": request.get("use_feedback", True),
+                "feedback_trace": feedback_state,
+                "limit": request["limit"],
+                "mode": request["mode"],
+                "deep_search": request.get("deep_search", False),
+                "on_progress": progress,
+                "virtual_collection": request.get("virtual_collection"),
+                "virtual_revision": request.get("virtual_revision"),
+            }
+            ranking: dict = {"kind": request["mode"], "sha256": None}
+            if request.get("save_run"):
+                recorded = self.session.search_recorded(
+                    request["query"], defer_record=request.get("defer_record", False), **kwargs
+                )
+                results, run_id = recorded.results, recorded.run_id
+                from realopen_lens.learning.feedback import saved_search
+
+                ranking["sha256"] = (recorded.payload or saved_search(run_id, index_dir=self.root))[
+                    "ranking"
+                ]["reranker_sha256"]
+            else:
+                trace: dict = {}
+                if request["mode"] == "hybrid":
+                    kwargs["trace"] = trace
+                results = self.session.search(request["query"], **kwargs)
+                run_id = None
+                ranking["sha256"] = trace.get("reranker_sha256")
+            if ranking["sha256"]:
+                ranking["kind"] = "logistic"
+            elif interpretation and not interpretation["visual_query"]:
+                ranking["kind"] = "metadata"
+            payload = {
+                "_record_payload": (
+                    recorded.payload
+                    if request.get("defer_record") and request.get("save_run")
+                    else None
+                ),
+                "results": [asdict(r) for r in results],
+                "run_id": run_id,
+                "ranking": ranking,
+                "feedback": feedback_state,
+                "interpretation": interpretation or None,
+            }
+        else:
+            self._release_session()
+            image_options = {
+                "image_id": request.get("image_id"),
+                "collection": collection,
+                "limit": request["limit"],
+                "deep_search": request.get("deep_search", False),
+                "virtual_collection": request.get("virtual_collection"),
+                "virtual_revision": request.get("virtual_revision"),
+                **options,
+            }
+            path = Path(request["upload"]) if request.get("upload") else None
+            if request.get("save_run"):
+                recorded = similar_and_record(
+                    path, defer_record=request.get("defer_record", False), **image_options
+                )
+                results, run_id = recorded.results, recorded.run_id
+            else:
+                results = search_similar(path, **image_options)
+                run_id = None
+            payload = {
+                "results": [asdict(r) for r in results],
+                "run_id": run_id,
+                "_record_payload": (
+                    recorded.payload
+                    if request.get("defer_record") and request.get("save_run")
+                    else None
+                ),
+            }
+        return payload
+
     def _release_session(self):
         if self.library_session is not None:
             self.library_session.close()
@@ -300,112 +432,17 @@ class TaskManager:
                 )
                 payload = asdict(result)
                 status = result.status
-            elif kind in {"search", "similar"} and request.get("all_folders"):
-                if self.library_session is None:
-                    self._release_session()
-                    self.library_session = LibrarySession(
-                        index_dir=self.root, models=self.models, threads=self.threads
-                    )
-                if kind == "similar":
-                    payload = self.library_session.similar(
-                        Path(request["upload"]) if request.get("upload") else None,
-                        image_id=request.get("image_id"),
-                        collection=collection,
-                        limit=request["limit"],
-                        save_run=request.get("save_run", False),
-                        on_progress=progress,
-                        virtual_collection=request.get("virtual_collection"),
-                        virtual_revision=request.get("virtual_revision"),
+            elif kind in {"search", "similar"}:
+                if request.get("paginate"):
+                    payload = self.pages.create(
+                        {**request, "kind": kind},
+                        lambda values: self._retrieve(kind, values, progress, options),
                     )
                 else:
-                    payload = self.library_session.search(
-                        request["query"],
-                        limit=request["limit"],
-                        mode=request["mode"],
-                        use_feedback=request.get("use_feedback", True),
-                        interpret_metadata=request.get("interpret_metadata", True),
-                        save_run=request.get("save_run", False),
-                        on_progress=progress,
-                        virtual_collection=request.get("virtual_collection"),
-                        virtual_revision=request.get("virtual_revision"),
-                    )
-                status = "completed"
-            elif kind == "search":
-                from realopen_lens.indexing.service import collection_status
-
-                precision = collection_status(collection, self.root)["siglip_precision"]
-                identity = (collection, precision)
-                if self.identity != identity:
-                    self._release_session()
-                    self.session = SearchSession(
-                        collection=collection,
-                        index_dir=self.root,
-                        models=self.models,
-                        threads=self.threads,
-                    )
-                    self.identity = identity
-                assert self.session is not None
-                feedback_state: dict = {}
-                interpretation: dict = {}
-                kwargs = {
-                    "interpret_metadata": request.get("interpret_metadata", True),
-                    "metadata_trace": interpretation,
-                    "use_feedback": request.get("use_feedback", True),
-                    "feedback_trace": feedback_state,
-                    "limit": request["limit"],
-                    "mode": request["mode"],
-                    "on_progress": progress,
-                    "virtual_collection": request.get("virtual_collection"),
-                    "virtual_revision": request.get("virtual_revision"),
-                }
-                ranking: dict = {"kind": request["mode"], "sha256": None}
-                if request.get("save_run"):
-                    recorded = self.session.search_recorded(request["query"], **kwargs)
-                    results, run_id = recorded.results, recorded.run_id
-                    from realopen_lens.learning.feedback import saved_search
-
-                    ranking["sha256"] = saved_search(run_id, index_dir=self.root)["ranking"][
-                        "reranker_sha256"
-                    ]
-                else:
-                    trace: dict = {}
-                    if request["mode"] == "hybrid":
-                        kwargs["trace"] = trace
-                    results = self.session.search(request["query"], **kwargs)
-                    run_id = None
-                    ranking["sha256"] = trace.get("reranker_sha256")
-                if ranking["sha256"]:
-                    ranking["kind"] = "logistic"
-                elif interpretation and not interpretation["visual_query"]:
-                    ranking["kind"] = "metadata"
-                payload = {
-                    "results": [asdict(r) for r in results],
-                    "run_id": run_id,
-                    "ranking": ranking,
-                    "feedback": feedback_state,
-                    "interpretation": interpretation or None,
-                }
-                status = "completed"
-            else:
-                self._release_session()
-                image_options = {
-                    "image_id": request.get("image_id"),
-                    "collection": collection,
-                    "limit": request["limit"],
-                    "virtual_collection": request.get("virtual_collection"),
-                    "virtual_revision": request.get("virtual_revision"),
-                    **options,
-                }
-                path = Path(request["upload"]) if request.get("upload") else None
-                if request.get("save_run"):
-                    recorded = similar_and_record(path, **image_options)
-                    results, run_id = recorded.results, recorded.run_id
-                else:
-                    results = search_similar(path, **image_options)
-                    run_id = None
-                payload = {"results": [asdict(r) for r in results], "run_id": run_id}
+                    payload = self._retrieve(kind, request, progress, options)
                 status = "completed"
             if kind in {"search", "similar"}:
+                payload.pop("_record_payload", None)
                 payload["virtual_collection"] = request.get("virtual_collection")
                 payload["virtual_revision"] = request.get("virtual_revision")
             # Once an operation has committed (index/feedback), report its real outcome.
