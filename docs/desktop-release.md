@@ -1,4 +1,4 @@
-# Desktop release readiness
+# Desktop releases
 
 Release tooling supports **macOS arm64, Windows x64 and Ubuntu 24.04 x64**.
 The macOS archive is ad-hoc signed; the Windows ZIP and Linux tarball are unsigned. The manual **Desktop release
@@ -75,9 +75,11 @@ artifact names are `desktop-candidate-macos-arm64-<commit>` and
 `desktop-candidate-linux-x64-<commit>`, with separate platform evidence artifacts.
 
 Without `--models`, the report explicitly records inference as **not_run**. A
-passing packaging-only run does not imply inference acceptance. CI intentionally
-does not download model weights. Tesseract is installed on the build runner and
-copied into the artifact; pinned language data may be fetched during the build.
+passing packaging-only run does not imply inference acceptance. Ordinary PR CI
+does not download model weights; manual candidates can explicitly enable cached
+model provisioning with the inference acceptance checkbox. Tesseract is installed
+on the build runner and copied into the artifact; pinned language data may be
+fetched during the build.
 Acceptance uses the extracted app with host OCR hidden from PATH. These checks run on an existing host;
 they do not establish fresh-OS installation, Finder privacy prompts or Gatekeeper
 behavior. No retrieval-quality metric is inferred from the synthetic invoice.
@@ -109,12 +111,12 @@ saved/manual choices override this recommendation. E5 remains INT8 in both cases
 
 ## Optional Developer ID signing and notarization
 
-The planned hobby-project prerelease uses the ad-hoc signed ZIP. Paid Apple
-membership and notarization are optional, not publication gates for that
-experimental build. Clearly label it unnotarized and link users to
+The default macOS distribution is ad-hoc signed and unnotarized. Developer ID
+signing/notarization is optional; it is not required to use the stable release
+version. Identify the archive accurately and link users to
 [Apple's instructions for opening an app from an unidentified developer](https://support.apple.com/en-us/102445).
 
-The release path requires an installed **Developer ID Application** certificate
+The optional `--release` signing path requires an installed **Developer ID Application** certificate
 and an existing `notarytool` Keychain profile. The build helper never imports
 certificates, changes Keychains or stores Apple passwords. Prepare credentials
 outside the repository following [Apple's notarization workflow](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow).
@@ -179,12 +181,30 @@ and in Python distribution license metadata. Refresh it against the actual froze
 inventory when dependency/runtime versions change. The project license does not
 replace these terms.
 
-After reviewed-commit CI, final archive acceptance
-and dependency-notice review, prepare a **draft prerelease** in
-GitHub Releases. Attach the exact validated ZIP and checksum, supported OS/architecture,
-OCR setup instructions and known limitations. Review diagnostic reports for local
-paths before attaching them. A release tag must identify the source used for that
-archive. Identify the current build as ad-hoc signed and unnotarized; only claim
-Developer ID signing/notarization if the optional release path was completed and
-validated. Publishing the draft is a separate explicit action. GitHub Packages is
-not needed to distribute this desktop ZIP; Python package publication is separate.
+The first stable version is **0.1.0**, with tag **`v0.1.0`**. The earlier
+`v0.1.0-alpha.1` tag remains the historical prerelease. See the
+[versioning policy](versioning.md) and [prepared release notes](releases/v0.1.0.md).
+
+1. Merge the final release changes. Check that package/runtime/gallery versions
+   agree and use that exact commit for the candidate run.
+2. Run **Desktop release candidate** on that commit with **Run inference
+   acceptance** enabled. Require all three native reports to show `status: passed`,
+   `inference: passed` and results for `int8` and `fp32`.
+3. Retain each exact validated archive and SHA256 sidecar. The bundled platform
+   README is part of the artifact, so a change to it requires a new build. Do not
+   rebuild or edit archives after acceptance.
+4. Prepare a draft GitHub Release titled **RealOpen Lens 0.1.0**, using tag
+   `v0.1.0` at the candidate's source SHA. Copy the prepared notes and attach the
+   three platform archives and their three checksum files. Keep the original asset
+   filenames so checksum verification works unchanged.
+5. Review notes, notices and supported targets, then publish as a regular release
+   with **Set as a pre-release** unchecked. Version 0.1.0 contains explicitly
+   labelled optional experiments; this does not make the entire release a prerelease.
+
+A green run from an earlier source SHA is not evidence for a newly built archive.
+Retain its artifacts only for that earlier candidate. Review diagnostic reports for
+local paths before attaching them publicly; synthetic acceptance logs are separate
+from personal-image indexes. Only claim Developer ID signing/notarization if that
+optional path was actually completed. Publishing is a separate explicit action;
+release tooling does not create tags or publish automatically. GitHub Packages is
+not needed for desktop downloads; Python package publication remains separate.

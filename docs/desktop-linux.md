@@ -1,4 +1,4 @@
-# Linux desktop packaging (experimental)
+# Linux desktop package
 
 The initial target is **Ubuntu 24.04 x64 with a graphical desktop**. The native
 build produces `RealOpenLens-linux-x64.tar.gz` and its `.tar.gz.sha256` file.
@@ -65,7 +65,9 @@ On a graphical desktop, Xvfb is unnecessary. Optional `--models models` exercise
 existing INT8 and FP32 weights through frozen indexing/OCR/search, refresh,
 resident encoding and gallery startup/shutdown. `--precision int8` or `fp32`
 selects one profile. Without weights, acceptance records inference as `not_run`.
-CI does not download embedding models.
+Ordinary PR CI does not download embedding models. Enable **Run inference acceptance**
+in the manual candidate workflow to provision verified cached models and exercise
+both profiles through this same wrapper. See the [release guide](desktop-release.md#run-model-bearing-acceptance-in-github-actions).
 
 Eleven extracted-package checks cover ELF/icon/license metadata, frozen imports
 and Tcl/Tk, launcher rendering in both themes under Xvfb, private multilingual OCR
