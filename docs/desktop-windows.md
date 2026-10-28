@@ -1,4 +1,4 @@
-# Windows desktop package (experimental)
+# Windows desktop package
 
 The native Windows x64 build produces `RealOpenLens-windows-x64.zip` and a SHA256
 sidecar. It includes Python, Tcl/Tk, the browser gallery, ONNX Runtime and a private
@@ -10,7 +10,7 @@ Model weights are downloaded separately with explicit consent during device setu
 
 1. Extract the **entire** ZIP into a local folder. Keep `_internal` beside
    `RealOpenLens.exe`; do not run the executable from inside the ZIP.
-2. Open `RealOpenLens.exe`. This unsigned experimental application can trigger
+2. Open `RealOpenLens.exe`. This unsigned application can trigger
    Windows security prompts. Only run a trusted project download; do not disable
    antivirus protections.
 3. In **Device setup**, choose an existing model folder or confirm the model
@@ -39,8 +39,8 @@ queries in non-Latin scripts.
 
 Pull requests and pushes to `main` build Windows packages when desktop inputs
 change, using the same component gate as macOS. Documentation-only changes skip
-the builds. **Desktop release candidate** also builds both platforms manually.
-The Windows steps live in the reusable `desktop-windows.yml` workflow. Both platforms
+the builds. **Desktop release candidate** builds all three platforms manually.
+The Windows steps live in the reusable `desktop-windows.yml` workflow. All platforms
 use the same dependency setup action and core smoke checks; manual candidates use
 the same checksum-bound acceptance wrapper and archive-mutation check.
 
@@ -63,11 +63,13 @@ Manual candidate artifacts use `desktop-candidate-windows-x64-<commit>` and reta
 `candidate-acceptance/acceptance.json` plus individual package results/logs. Ordinary
 PR/main runs retain their smoke report; both modes test the extracted ZIP.
 
-These package checks do **not** download embedding models or establish retrieval
-accuracy. Real-model indexing/search can additionally be checked with existing
-weights using `packaging/smoke.py`. Native Windows execution is performed by the
-Windows runner; macOS unit tests do not substitute for it. Publish a Windows
-release asset only after the native package job succeeds for that exact commit.
+Ordinary package checks do not download embedding models. Enable **Run inference
+acceptance** in the manual candidate workflow to provision verified cached models
+and test the extracted Windows app with both INT8 and FP32 SigLIP2 (E5 INT8).
+The report must show `inference: passed` and both precision results; model-free
+success alone is insufficient for model-bearing acceptance. This exercises the
+runtime, not retrieval accuracy. See the [release guide](desktop-release.md#run-model-bearing-acceptance-in-github-actions).
+Publish the exact Windows archive/checksum validated for the release commit.
 
 ## Building locally on Windows x64
 

@@ -1,8 +1,8 @@
-RealOpen Lens by RealOpen AI - Windows x64 (experimental)
+RealOpen Lens 0.1.0 by RealOpen AI - Windows x64
 
 Extract the complete ZIP into a writable local folder before starting
 RealOpenLens.exe. Keep _internal beside the executable. Do not run from inside
-the ZIP. Python, the gallery and Tesseract (English/French/Arabic/orientation)
+the ZIP. Python, the gallery and Tesseract (19 OCR languages plus orientation data)
 are included; Python, Node.js and a separate OCR install are not needed.
 
 Device setup offers an explicit model download on first launch. Internet is
@@ -13,7 +13,7 @@ Open image library, choose Add folder, and start indexing. Original files stay
 in place. Use Quit Lens to stop the local gallery. Your library and logs live
 under %LOCALAPPDATA%\RealOpenLens (independent of this extracted directory).
 
-This unsigned experimental application may trigger Windows security prompts.
+This unsigned application may trigger Windows security prompts.
 Only run a download from the project release you trust. Do not disable antivirus.
 
 License and dependency notices: _internal\licenses\realopen-lens\

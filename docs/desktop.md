@@ -1,4 +1,4 @@
-# Desktop build (experimental)
+# macOS desktop and build guide
 
 For the native Windows x64 ZIP, first-run instructions and Windows CI checks, see
 [Windows desktop packaging](desktop-windows.md). For the Ubuntu 24.04 x64 tarball,
@@ -230,29 +230,18 @@ Cache upload failures do not waive any checks. Final archives, signatures,
 PyInstaller analysis/output, virtual environments and `node_modules` are rebuilt;
 caches do not substitute for fresh dependency installation or archive acceptance.
 
-Successful development archives and always-uploaded diagnostics have seven-day artifact
-retention. The JSON report records individual check outcomes/timing and is written
-even on failure; build/server logs are retained alongside it. These artifacts are
-not notarized releases. Interactive desktop integration and real-model inference
-remain distinct from model-free package checks. Native Linux builds and package checks run in their own Ubuntu workflow; optional
-frozen inference requires existing model weights on the target host.
+Successful PR build archives and always-uploaded diagnostics have seven-day
+retention; manual candidate artifacts have 30-day retention. Reports bind the
+individual outcomes and timings to the exact archive checksum.
 
-The macOS arm64 development build was exercised with real local INT8 models:
-frozen indexing completed all four stages without failed/degraded files, OCR
-returned the fixture text, text search returned the indexed image, the HTTP gallery
-served HTML, and an isolated resident process encoded both SigLIP2 (768 dimensions)
-and E5 (384). The native control window started and shut down an isolated server.
-The Python suite passed 587 tests with one optional OCR skip; formatting, lint,
-native/Windows type checks and the frontend build passed. These checks used a host
-with existing models and Tesseract; they do not establish clean-machine setup or
-retrieval quality. Download progress/checksum/cancellation were tested with controlled
-responses; a fresh network model download was not executed.
+Manual candidates can enable **Run inference acceptance** for all three platforms.
+The shared `desktop-acceptance` action provisions checksum-verified cached models
+and runs the extracted app with INT8 and FP32 SigLIP2, keeping E5 INT8. It checks
+real indexing/OCR/search, unchanged-refresh reuse, resident encoders and the gallery
+lifecycle. Ordinary PR builds remain model-free. See [release acceptance](desktop-release.md#run-model-bearing-acceptance-in-github-actions)
+for controls, logs and the required `inference: passed` evidence.
 
-Windows has its own native build and extracted-package CI workflow; see the Windows
-guide above for its scope. Linux has a matching native Ubuntu workflow and
-portable tarball; see the Linux guide for its compatibility baseline. Developer
-ID signing/notarization is optional for the experimental macOS ad-hoc signed
-prerelease.
-
-See [desktop release readiness](desktop-release.md) for archive acceptance,
-checksums, release candidates, signing/notarization and clean-machine acceptance.
+macOS distribution uses the ad-hoc signed, unnotarized archive by default. Optional
+Developer ID signing/notarization is a separate build path. See the
+[release guide](desktop-release.md) for checksums, publication and signing options,
+and the [0.1.0 release notes](releases/v0.1.0.md) for features and platform scope.
