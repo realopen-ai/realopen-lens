@@ -253,7 +253,7 @@ class FolderRefresh:
                         stable_since=instant,
                         next_check=instant + SETTLE_SECONDS,
                     )
-                elif instant - state["stable_since"] < SETTLE_SECONDS:
+                elif instant < state["stable_since"] + SETTLE_SECONDS:
                     state["state"] = "settling"
                 elif any(t["status"] not in TERMINAL for t in self.manager.tasks.values()):
                     state["state"] = "waiting"

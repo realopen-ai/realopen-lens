@@ -476,3 +476,25 @@ def test_interrupted_task_recovery_advances_revision_and_retains_automation(web)
         assert recovered.auto_refresh.describe(folder["id"])["enabled"]
     finally:
         recovered.close()
+
+
+@pytest.mark.parametrize("instant", [118.003, 1014.004, 1000.125])
+def test_settled_refresh_starts_at_its_absolute_deadline(web, monkeypatch, instant):
+    import math
+    from realopen_lens.api import refresh
+
+    client, root, store, run = web
+    monkeypatch.setattr(refresh, "monotonic", lambda: instant)
+    configure(client)
+    indexer(monkeypatch, run)
+    image(root / "new.png", "blue")
+    drive(client, instant)
+    deadline = instant + refresh.SETTLE_SECONDS
+    # No early indexing, even just one representable instant before the deadline.
+    drive(client, math.nextafter(deadline, -math.inf))
+    assert client.get("/api/tasks").json() == []
+    # At a floating-point magnitude boundary, deadline - instant can be < 10.
+    drive(client, deadline)
+    queued = client.get("/api/tasks").json()
+    assert len(queued) == 1, client.get("/api/collections").json()
+    assert completed(client, queued[0]["id"])["status"] == "completed"
