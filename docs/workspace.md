@@ -1,6 +1,6 @@
 # Everyday local workspace
 
-A workspace keeps the collection catalog, derived indexes, saved search/feedback
+A workspace keeps the collection catalog, derived indexes, recorded search/feedback
 history, virtual collections and duplicate reviews in one directory. Original images
 and model weights stay at their existing paths. Workspace setup does not download,
 reindex, train, activate a model, or modify the source indexes.

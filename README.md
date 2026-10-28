@@ -1,37 +1,53 @@
 # RealOpen Lens
 
-Experimental native launcher/build instructions: [Desktop packaging](docs/desktop.md).
-Windows x64 ZIP build and CI instructions: [Windows desktop](docs/desktop-windows.md).
-Ubuntu 24.04 x64 tarball and CI instructions: [Linux desktop](docs/desktop-linux.md).
+Private, offline image search for your own collection, by RealOpen AI.
 
-Private, offline image search for your own collection.
+RealOpen Lens finds photos, screenshots, diagrams and document images using visual
+content, visible text and retained metadata. Your originals stay in place; indexing,
+search, feedback and organization run locally.
 
-RealOpen Lens is being built to help you find photos, screenshots, diagrams, and
-document images by their visual content and the text they contain. It combines
-multilingual image embeddings, optical character recognition (OCR), and hybrid
-retrieval, with a lightweight ranking model that can learn from explicit feedback.
+**Release version: 0.1.0.** The core includes a desktop launcher, local gallery,
+resumable indexing, multilingual OCR, hybrid text/image search and collection
+management. Optional experimental features are identified below. See the
+[0.1.0 release notes](docs/releases/v0.1.0.md) and [changelog](CHANGELOG.md).
 
-> **Status: early development.** Persistent folder indexing and CLI search are
-> available, alongside inference and retrieval benchmarks and an opt-in experimental
-> logistic reranker. A local gallery/API, explicit query feedback and reviewed training
-> workflows are implemented. Neural ranking and standalone app bundles remain planned.
+## Install and start
 
-Start with the [collection indexing and search guide](docs/collections.md), the
-[benchmark setup and usage guide](docs/benchmark.md), or the
-[500-image benchmark guide](docs/large-benchmark.md). Add your own
-images to the root `data/` folder, which is ignored by Git.
+Download the archive for your platform and its checksum from
+[GitHub Releases](https://github.com/realopen-ai/realopen-lens/releases).
 
-After [installing the package, Tesseract, and local models](docs/collections.md#setup-and-first-collection):
+| Platform target | Archive | Instructions |
+| --- | --- | --- |
+| macOS, Apple silicon (arm64) | `RealOpenLens-macos-arm64.zip` | [macOS desktop](docs/desktop.md#first-run-setup) |
+| Windows, x64 | `RealOpenLens-windows-x64.zip` | [Windows desktop](docs/desktop-windows.md#starting-lens) |
+| Ubuntu 24.04, x64 graphical desktop | `RealOpenLens-linux-x64.tar.gz` | [Linux desktop](docs/desktop-linux.md#install-and-start) |
+
+Extract the complete application, open the launcher, then use **Device setup** to
+choose existing models or explicitly download them. Open the image library and
+select **Add folder**. You can select folders anywhere your OS permissions allow;
+they do not need to be inside this repository's `data/` directory.
+
+The archives include Python, the gallery, Tesseract, 19 OCR language packs and
+orientation data. Python, Node.js and a separate OCR installation are not needed
+on the target device. Model weights are provisioned separately. Once setup is
+complete, indexing and search work offline. The macOS app is ad-hoc signed and
+unnotarized; Windows and Linux archives are unsigned. See the platform guides for
+startup requirements and OS security prompts.
+
+For source/CLI installation, use the [collection guide](docs/collections.md).
+Benchmark contributors can use the [benchmark guide](docs/benchmark.md) and
+[500-image study](docs/large-benchmark.md). The root `data/` directory is an ignored
+convenience for development, not an application requirement.
 
 ```sh
-uv run --no-sync lens index data --index-dir runs/personal-index --log
+uv run --no-sync lens index /path/to/images --index-dir runs/personal-index --log
 uv run --no-sync lens status --index-dir runs/personal-index
 uv run --no-sync lens search "database connection error" --index-dir runs/personal-index
 ```
 
 ## Everyday workspace
 
-Keep saved searches, relevance labels, virtual collections and duplicate reviews
+Keep recorded searches, relevance labels, virtual collections and duplicate reviews
 together in a [persistent workspace](docs/workspace.md). Existing matching indexes
 can be previewed and imported without modifying their originals. After setup,
 `uv run --no-sync lens serve` opens the default workspace on port 8765.
@@ -54,16 +70,16 @@ npm ci
 npm run build
 cd ..
 uv sync --locked --extra web --no-editable --reinstall-package realopen-lens
-uv run --no-sync lens serve --index-dir runs/personal-index-fp32 --allow-root data
+uv run --no-sync lens serve --index-dir runs/personal-index --allow-root /path/to/images
 ```
 
 Open **http://127.0.0.1:8765**. Use your existing index directory; a fresh directory
 starts an empty library. Models and Tesseract language packs must be installed
-before indexing when running from source. The macOS desktop bundle includes
-Tesseract with English, French, Arabic and orientation data. Compiled assets run
+before indexing when running from source. Desktop bundles include
+Tesseract with 19 OCR language packs and orientation data. Compiled assets run
 locally without a Vite server or internet.
 
-## What you'll be able to do
+## Features
 
 - Search images using natural-language descriptions in multiple languages.
 - Find screenshots by error messages, code snippets, and other visible text.
@@ -90,9 +106,9 @@ independent real-world language review remains incomplete.
 ## Local by design
 
 Images, thumbnails, extracted text, embeddings, queries, and feedback stay on your
-device. The application will run without cloud inference, accounts, or telemetry.
+device. The application runs without cloud inference, accounts, or telemetry.
 Initial setup can download model files explicitly; offline model bundle import is
-also planned. Once installed, indexing and search will work without a network
+also planned. Once setup is complete, indexing and search work without a network
 connection.
 
 Original images remain in their existing folders. Lens stores its index and
@@ -100,14 +116,17 @@ derived data separately.
 
 ## Built for consumer hardware
 
-The first release targets **macOS, Windows, and Linux**, with **CPU-only operation
-and 8 GB RAM** as the minimum hardware goal. New collections default to INT8
-SigLIP2 below 16 GB physical RAM and FP32 at 16 GB or above; E5 stays INT8.
-Docker and a dedicated GPU are not required.
+Lens uses CPU inference; Docker and a dedicated GPU are not required. New
+collections default to INT8 SigLIP2 below 16 GiB physical RAM and FP32 at 16 GiB
+or above, with E5 INT8 in both profiles. Saved preferences and explicit choices
+are respected. Memory and latency depend on image sizes, OCR languages and the
+selected model profile; see the [precision guide](docs/siglip2-precision.md).
 
-Hardware support, memory use, and performance are targets awaiting validation on
-real machines. Language support will be evaluated separately for visual search,
-OCR, and text retrieval.
+Native release acceptance exercises packaged INT8/FP32 inference through GitHub's
+macOS 15 arm64, Windows Server 2022 x64 and Ubuntu 24.04 x64 runners. These are the
+validation hosts; they do not establish compatibility with every OS version,
+architecture or Linux distribution. Ubuntu's desktop/browser/fonts remain host
+requirements. See the [release scope and limitations](docs/releases/v0.1.0.md#scope-and-limitations).
 
 ## How it works
 
@@ -150,26 +169,25 @@ downloaded model weights and OCR language data retain their own licenses.
 See [third-party notices](THIRD_PARTY_NOTICES.md) for the desktop dependency
 inventory, copyright notices and license texts.
 
-## Roadmap
+## Release scope and future work
 
-- [x] Build the Python package, CLI, and resumable ingestion pipeline.
-- [x] Reuse [dependency-scoped stage caches](docs/stage-cache.md) with explicit live progress.
-- [x] Implement visual, lexical, and semantic OCR retrieval with hybrid fusion.
-- [x] Publish reproducible baseline evaluations by language and image category.
-- [x] Train and evaluate an experimental logistic reranker against hybrid fusion.
-- [x] Add explicit relevance feedback, exact-query memory, and local model training/evaluation.
-- [x] Add model activation/rollback controls; retain hybrid ranking as the default.
-- [x] Add folder management, virtual collections, and reviewable duplicate groups.
-- [x] Add opt-in [automatic folder refresh](docs/automatic-refresh.md) with live progress.
-- [x] Build the local image gallery with live task progress.
-- [x] Add [library-wide text and image search](docs/library-search.md) across INT8/FP32 folders.
-- [x] Organize and search [cross-folder virtual collections](docs/virtual-collections.md).
-- [x] Package an experimental macOS desktop launcher with device setup guidance.
-- [ ] Expand independent multilingual OCR/relevance review before promoting learned ranking.
-- [ ] Compare a small neural reranker against hybrid and logistic baselines.
-- [x] Add native Windows x64 packaging and extracted-package CI checks.
-- [ ] Validate and publish the Windows desktop candidate from native CI.
-- [ ] Build and validate the Linux desktop package.
+The 0.1.0 core includes:
+
+- Resumable indexing, incremental stage caches and live progress/cancellation.
+- Visual, lexical and semantic OCR retrieval with hybrid fusion.
+- Folder, library-wide and virtual-collection text/image search, with pagination.
+- EXIF/HEIF metadata, offline GPS place lookup and natural-language constraints.
+- Timeline browsing and an image viewer with OCR, metadata and source actions.
+- Explicit relevance feedback, exact-query memory and reviewed local training controls.
+- Folder refresh/rename/removal, virtual collections and duplicate review.
+- macOS arm64, Windows x64 and Ubuntu 24.04 x64 desktop packages with bundled OCR.
+- Reproducible evaluations and native package/model acceptance workflows.
+
+Optional automatic script-group OCR, learned reranking, mixed-precision library
+ranking and text-region OCR remain experimental. Hybrid ranking and manually
+selected whole-image Tesseract remain the default paths. Broader independent
+multilingual review, a neural reranker, saved-search shortcuts and expanded OS
+coverage are future work, not required for this release.
 
 See [the collection guide](docs/collections.md) for installation and CLI usage, and
 [the benchmark guide](docs/benchmark.md) for offline setup, query judgments, and
@@ -186,14 +204,19 @@ The engine is grouped by responsibility:
 
 ```text
 src/realopen_lens/
+├── api/            # Local HTTP adapter, tasks and progress streams
+├── desktop/        # Native launcher, device setup and model provisioning
 ├── indexing/       # Discovery, incremental orchestration, processing stages
 ├── encoders/       # CPU ONNX encoders and image preprocessing
 ├── ocr/            # Tesseract, backend selection, experimental alternatives
+├── metadata/       # EXIF, capture dates, offline places and query constraints
+├── organization/   # Folders, virtual collections and duplicate groups
 ├── retrieval/      # Ranking, fusion, and saved-collection search
 ├── learning/       # Explicit reranker features and local JSON inference
 ├── storage/        # SQLite catalog, caches, immutable search generations
 ├── runtime/        # Worker processes, supervision, offline enforcement
 ├── models/         # Artifact management and pinned manifests
+├── workspace/      # Persistent workspace identity and imports
 ├── cli.py
 ├── search.py       # Stable public search entry points
 └── __init__.py
@@ -253,7 +276,9 @@ uv run --no-sync lens feedback runs --index-dir runs/personal-index
 ```
 
 Label returned results as relevant or irrelevant, correct/remove labels, and
-export them as JSONL. Feedback does not automatically change ranking or train models.
+export them as JSONL. With exact-query memory enabled, relevant images are promoted and irrelevant images
+are hidden for that exact query and scope. Feedback never automatically trains or
+activates a model. See [relevance feedback](docs/relevance-feedback.md).
 
 For repeated queries, an explicit [resident search session](docs/resident-inference.md)
 reuses query encoders through the Python API or `lens search --interactive`.
